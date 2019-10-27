@@ -1,0 +1,11 @@
+# This input file is wrong
+# there are two ways to raise an error
+# one is to put the symbol equal "=" in a comment (liker I just did)
+# or to give a wrong key = value pair
+
+Italy = nation
+
+Italy is not a keyword
+
+proteinZZZ = 2f3z
+and protein has been misstyped
