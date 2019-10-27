@@ -23,7 +23,7 @@ class GetInputFromFile(GetFile):
     
     It returns a dictionary """
 
-    possible_keys = ('protein', 'ligand', 'protein_filetype', 'ligand_filetype')
+    possible_keys = ('protein', 'ligand', 'protein_filetype', 'ligand_elaboration_program')
 
     def __init__(self, filename):
         super().__init__(filename)
@@ -62,8 +62,7 @@ class GetInputFromFile(GetFile):
                         input_variables[key] = value
 
                     else:
-                        exeption_string = 'Input Problem\nUknown input key {}'.format(key)
-                        raise Exception(exeption_string)
+                        raise ValueError('InvalidInputKey ', key)
                 
             return input_variables
 

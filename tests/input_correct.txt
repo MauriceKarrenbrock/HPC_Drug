@@ -1,0 +1,17 @@
+#This is a correct input example
+#Everything is a comment exept for key equal value lines
+#Error occurs only for wrong keys
+#not kase-sensitive
+------------------------------------------------
+
+Protein code and desired file type, possible values 'cif' or 'pdb'
+'cif' is for PDBx/mmCIF (default)
+'pdb' for standard PDB file
+
+protein = 2f3z
+protein_filetype = cif
+
+The program with wich elaborate the ligand (optimization and potential)
+default primadorac
+
+ligand_elaboration_program = primadorac
