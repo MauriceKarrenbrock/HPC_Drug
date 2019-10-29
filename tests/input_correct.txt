@@ -1,17 +1,36 @@
 #This is a correct input example
-#Everything is a comment exept for key equal value lines
+#Every line beginning with '#' is a comment
 #Error occurs only for wrong keys
-#not kase-sensitive
-------------------------------------------------
+#kase-sensitive
+#------------------------------------------------
 
-Protein code and desired file type, possible values 'cif' or 'pdb'
-'cif' is for PDBx/mmCIF (default)
-'pdb' for standard PDB file
+#Protein code and desired file type, possible values 'cif' or 'pdb'
+#'cif' is for PDBx/mmCIF
+#'pdb' for standard PDB file (default)
 
 protein = 2f3z
-protein_filetype = cif
+protein_filetype = pdb
 
-The program with wich elaborate the ligand (optimization and potential)
-default primadorac
+#the model to take from pdb or mmcif, if omitted all of them will be taken
+PDB_model = 1
+
+#local tells if the program shall use a pdb (or mmcif) file already
+#on the computer
+#if 'no' (default) it will download it from the wwPDB database
+#if 'yes' insert the absolute path in filepath
+#any keyword different from yes and no will abort the program
+
+local = no
+#filepath = None
+
+#the ligand can be given as a pdb file (use absolute path) or as a SMILES
+#if you use $protein keyword or don't define it at all
+#the program will take any 'not protein and not water'
+#structure from the protein's file as the ligand (at your own risk)
+
+ligand = $protein
+
+#The program with wich elaborate the ligand (optimization and potential)
+#default primadorac
 
 ligand_elaboration_program = primadorac
