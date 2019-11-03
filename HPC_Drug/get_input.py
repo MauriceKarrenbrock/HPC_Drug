@@ -25,9 +25,12 @@ class ParseInputFromFile(GetFile):
     :param:filename
     the name of the input file or it's absolute path"""
 
-    possible_keys = ('protein', 'ligand',\
-        'protein_filetype', 'ligand_elaboration_program',\
-            'local', 'filepath', 'PDB_model')
+    possible_keys = ('protein', 'ligand',
+                    'protein_filetype',
+                    'ligand_elaboration_program',
+                    'local', 'filepath', 'PDB_model',
+                    'ligand_in_protein', 'ph',
+                    'repairing_method')
 
     def __init__(self, filename):
         super().__init__(filename)
@@ -54,7 +57,6 @@ class ParseInputFromFile(GetFile):
 
             for line in lines:
 
-                line = line.replace(" ", "")
                 line = line.strip()
 
                 # the '#' identifies a comment
@@ -68,6 +70,9 @@ class ParseInputFromFile(GetFile):
                 if len(line) == 2:
 
                     key, value = line
+
+                    key = key.strip()
+                    value = value.strip()
 
                     if key in self.possible_keys:
                         input_variables[key] = value

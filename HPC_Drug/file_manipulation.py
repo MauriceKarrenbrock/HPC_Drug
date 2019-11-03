@@ -89,7 +89,10 @@ class PDBCruncer(FileCruncer):
 
         ligand = structures.Ligand(ligand_name, filename, None, 'pdb')
 
-        ligand.structure = parser.select('not protein and not water')
+        if ligand_name != None:
+            ligand.structure = parser.select('not protein resname ' + ligand_name)
+        else:
+            ligand.structure = parser.select('not protein not water')
 
         return ligand
     
@@ -165,3 +168,69 @@ class MMCIFCruncer(FileCruncer):
 
         p = PDBCruncer()
         p.write_PDB(f"{pdb_name}", structure)
+
+class PDBRepair(FileCruncer):
+    """This calss contains the various options to add
+    missing atoms and missing hydrogens"""
+
+    def __init__(self):
+        pass
+    
+    def add_missing_atoms(self, pdb_id, input_filename, ph = '7.0',
+                        repairing_method = 'pdbfixer',
+                        output_filename = None):
+        """This function returns a repaired PDB with missing atoms and hydrogens
+        chooses the right repairing method with repairing_method (pdbfixer is default)
+        The returned PDB is called output_filename
+        if output_filename is None (default) the file is saved as
+        {protein_id}_repaired.pdb in the working directory
+        returns the output_filename
+
+        does only work on the protein, not on the ligand
+        
+        You can choose the pH at which the hydrogens shall be added
+        default = 7.0
+        ph type = string"""
+
+        if repairing_method == 'pdbfixer':
+            import pdbfixer
+            import simtk.openmm.app
+            import os
+
+            fixer = self.fix_pdbfixer(input_filename, ph)
+
+            if output_filename == None:
+                output_filename = pdb_id + '_repaired.pdb'
+            
+            simtk.openmm.app.PDBFile.writeFile(fixer.topology, fixer.positions, open(output_filename, 'w'))
+            
+            if not os.path.exists(output_filename):
+                raise Exception(f'was not able to write {output_filename}')
+            else:
+                
+                output_filename = os.getcwd() + '/' + output_filename
+                return output_filename
+        
+        else:
+            raise NotImplementedError(f'{repairing_method}')
+
+
+
+
+
+    def fix_pdbfixer(self, input_filename, ph = '7.0'):
+        """This method is called by add_missing_atoms"""
+        
+        import pdbfixer
+        import simtk.openmm.app
+        fixer = pdbfixer.PDBFixer(filename= input_filename)
+        fixer.findMissingResidues()
+        fixer.findNonstandardResidues()
+        fixer.replaceNonstandardResidues()
+        #fixer.removeHeterogens(False)
+        fixer.findMissingAtoms()
+        fixer.addMissingAtoms()
+        fixer.addMissingHydrogens(float(ph))
+        #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
+
+        return fixer
