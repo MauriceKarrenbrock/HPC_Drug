@@ -11,14 +11,18 @@ def choose_pipeline(*args, **kwargs):
 
     if input_dict['protein_filetype'] == 'pdb':
         # Protein is a pdb file
-        if (input_dict['ligand'] == None or input_dict['ligand'] == '$protein'):
-            #ligand shall be taken from pdb (at your own risk)
+        if (input_dict['ligand_in_protein'] == None or input_dict['ligand_in_protein'] == 'yes'):
+            #ligand will be taken from pdb (at your own risk)
             
             return PdbNoLigand_Pipeline(protein = input_dict['protein'],\
-                protein_filetype = input_dict['protein_filetype'],\
-                    local = input_dict['local'], filepath = input_dict['filepath'], ligand = input_dict['ligand'],\
-                        ligand_elaboration_program = input_dict['ligand_elaboration_program'],\
-                            PDB_model = input_dict['PDB_model'])
+                                        protein_filetype = input_dict['protein_filetype'],\
+                                        local = input_dict['local'],
+                                        filepath = input_dict['filepath'],
+                                        ligand = input_dict['ligand'],\
+                                        ligand_elaboration_program = input_dict['ligand_elaboration_program'],\
+                                        PDB_model = input_dict['PDB_model'],
+                                        ph = input_dict['ph'],
+                                        repairing_method = input_dict['repairing_method'])
 
         else:
             # ligand is given
@@ -27,7 +31,7 @@ def choose_pipeline(*args, **kwargs):
 
     elif input_dict['protein_filetype'] == 'cif':
         # Protein is a pdb file
-        if (input_dict['ligand'] == None or input_dict['ligand'] == '$protein'):
+        if (input_dict['ligand_in_protein'] == None or input_dict['ligand_in_protein'] == 'yes'):
             #ligand shall be taken from pdb (at your own risk)
             
             return CifNoLigand_Pipeline()
@@ -43,13 +47,19 @@ class Pipeline(object):
     """General pipeline class"""
     
     def __init__(self, protein = None, protein_filetype = None,\
-        local = None, filepath = None, ligand = None, ligand_elaboration_program = None, PDB_model = None):
+                local = None, filepath = None, ligand = None,\
+                ligand_elaboration_program = None,
+                PDB_model = None, ph = '7.0',
+                repairing_method = 'pdbfixer'):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
         self.local = local
         self.protein_filename = filepath
         self.model = PDB_model
+
+        self.ph = ph
+        self.repairing_method = repairing_method
         
         #ligand can be a pdb file or a smiles
         self.ligand_filename = ligand
@@ -90,10 +100,13 @@ class PdbNoLigand_Pipeline(Pipeline):
             #protein filename points to an existing file
             #nothing is done
             pass
+        
+        repairer = file_manipulation.PDBRepair()
+        self.protein_filename = repairer.add_missing_atoms(self.protein_id, self.protein_filename, self.ph, self.repairing_method, None)
 
         cruncer = file_manipulation.ProteinCruncer(self.protein_filetype)
         Protein = cruncer.get_protein(self.protein_id, self.protein_filename, self.model, None)
-        Ligand = cruncer.get_ligand(self.protein_id, self.protein_filename, self.model, None)
+        Ligand = cruncer.get_ligand(self.protein_id, self.protein_filename, self.ligand_filename, self.model, None)
 
         Protein.write_PDB(f"{self.protein_id}_protein.pdb")
         Ligand.write_PDB(f"{self.protein_id}_ligand.pdb")

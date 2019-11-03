@@ -14,6 +14,17 @@ protein_filetype = pdb
 #the model to take from pdb or mmcif, if omitted all of them will be taken
 PDB_model = 1
 
+#The ph at which the hydrogens sahll be added to the protein
+#default = 7.0
+ph = 7.0
+
+#with wich tool the pdb shall be fixed
+#adding missing atoms, missing hydrogens and substituting
+#non standard residues with standard ones
+#default is pdbfixer (needs openmm and conda environment)
+
+repairing_method = pdbfixer
+
 #local tells if the program shall use a pdb (or mmcif) file already
 #on the computer
 #if 'no' (default) it will download it from the wwPDB database
@@ -23,12 +34,17 @@ PDB_model = 1
 local = no
 #filepath = None
 
-#the ligand can be given as a pdb file (use absolute path) or as a SMILES
-#if you use $protein keyword or don't define it at all
-#the program will take any 'not protein and not water'
-#structure from the protein's file as the ligand (at your own risk)
+#if ligand_in_protein = yes (default) ligand will be taken from the
+#protein pdb file, taking all the atoms with th PDB identifier
+#ligand = PDB identifier(s) (es HOH, HETATM, DOD)
+#if ligand is omitted will take all not water not protein atoms (at your own risk)
 
-ligand = $protein
+#if ligand_in_protein = no ligand will be given as input
+#ligand = SMILES or path/to/PDB
+#the ligand can be given as a pdb file (I suggest to use absolute path) or as a SMILES
+
+ligand_in_protein = yes
+ligand = HOH CA
 
 #The program with wich elaborate the ligand (optimization and potential)
 #default primadorac
