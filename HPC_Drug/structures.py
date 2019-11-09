@@ -8,13 +8,25 @@ class Structure(object):
 class Protein(Structure):
     """The general Protein class"""
 
-    def __init__(self, protein_id = None, filename = None, structure = None, file_type = None, model = None):
+    def __init__(self, protein_id = None, filename = None,
+                structure = None, substitutions_dict = None,
+                sulf_bonds = None, seqres = None,
+                file_type = 'cif', model = None):
         self.protein_id = protein_id
         self.model = model
         self.file_type = file_type
-        if filename == None:
-            self.structure_file = protein_id + '.' + file_type
+        self.filename = filename
+
+        if protein_id == None:
+            raise Exception('need a protein id')
+        elif self.filename == None:
+            self.filename = protein_id + '.' + file_type
+        
         self.structure = structure
+
+        self.substitutions_dict = substitutions_dict
+        self.sulf_bonds = sulf_bonds
+        self.seqres = seqres
     
     def write_PDB(self, filename = None):
         import file_manipulation as fm
@@ -29,18 +41,21 @@ class Protein(Structure):
 class Ligand(Structure):
     """The general Ligand class"""
 
-    def __init__(self, ligand_id = None, filename = None, structure = None, file_type = None):
-        self.ligand_id = ligand_id
+    def __init__(self, ligand_resname = None, filename = None, structure = None, file_type = 'pdb'):
+        self.ligand_resname = ligand_resname
         self.file_type = file_type
-        if filename == None:
-            self.structure_file = ligand_id + '.' + file_type
+
+        self.filename = filename
+
         self.structure = structure
     
-    def write_PDB(self, filename = None):
+    def write_PDB(self, filename):
         import file_manipulation as fm
 
         if filename == None:
-            filename = self.ligand_id + '_ligand.pbd'
+            filename = self.ligand_resname + '_ligand.pbd'
 
         w = fm.ProteinCruncer('pdb')
         w.write_PDB(self.structure, filename)
+
+        return filename

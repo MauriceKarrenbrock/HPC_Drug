@@ -5,18 +5,19 @@
 #------------------------------------------------
 
 #Protein code and desired file type, possible values 'cif' or 'pdb'
-#'cif' is for PDBx/mmCIF
-#'pdb' for standard PDB file (default)
+#'cif' is for PDBx/mmCIF (default)
+#'pdb' for standard PDB file (not implemented)
 
-protein = 2f3z
-protein_filetype = pdb
+protein = 2rfh
+protein_filetype = cif
 
-#the model to take from pdb or mmcif, if omitted all of them will be taken
-PDB_model = 1
+#the model to take from the mmcif, if omitted model = 0 will be taken (starts from 0)
+#(choosing the model is deprecated)
+#Protein_model = 0
 
-#The ph at which the hydrogens sahll be added to the protein
+#The ph at which the hydrogens shall be added to the protein
 #default = 7.0
-ph = 7.0
+ph = 1.0
 
 #with wich tool the pdb shall be fixed
 #adding missing atoms, missing hydrogens and substituting
@@ -25,26 +26,24 @@ ph = 7.0
 
 repairing_method = pdbfixer
 
-#local tells if the program shall use a pdb (or mmcif) file already
+#local tells if the program shall use a protein file that is already
 #on the computer
 #if 'no' (default) it will download it from the wwPDB database
 #if 'yes' insert the absolute path in filepath
 #any keyword different from yes and no will abort the program
 
 local = no
-#filepath = None
+#filepath = 2rfh.pdb
 
 #if ligand_in_protein = yes (default) ligand will be taken from the
-#protein pdb file, taking all the atoms with th PDB identifier
-#ligand = PDB identifier(s) (es HOH, HETATM, DOD)
-#if ligand is omitted will take all not water not protein atoms (at your own risk)
+#protein mmcif file
 
 #if ligand_in_protein = no ligand will be given as input
 #ligand = SMILES or path/to/PDB
 #the ligand can be given as a pdb file (I suggest to use absolute path) or as a SMILES
 
 ligand_in_protein = yes
-ligand = HOH CA
+#ligand = ligand.pdb
 
 #The program with wich elaborate the ligand (optimization and potential)
 #default primadorac
