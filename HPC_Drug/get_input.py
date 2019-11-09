@@ -28,7 +28,7 @@ class ParseInputFromFile(GetFile):
     possible_keys = ('protein', 'ligand',
                     'protein_filetype',
                     'ligand_elaboration_program',
-                    'local', 'filepath', 'PDB_model',
+                    'local', 'filepath', 'Protein_model',
                     'ligand_in_protein', 'ph',
                     'repairing_method')
 
@@ -83,11 +83,29 @@ class ParseInputFromFile(GetFile):
                 else:
                     raise ValueError(f'Imput must be key = value not like this: "{line}"')
 
-            # PDB_model must be an integer
-            if input_variables['PDB_model'] != None:
-                input_variables['PDB_model'] = int(input_variables['PDB_model'])
+        input_variables = self.refine_input(input_variables)    
+        
+        return input_variables
 
-            return input_variables
+    def refine_input(self, input_variables = None):
+
+        """Makes the needed casts from string"""
+
+        if type(input_variables) != dict:
+            raise Exception('Need a dictionary')
+
+        # Protein_model must be an integer
+        if input_variables['Protein_model'] != None:
+            input_variables['Protein_model'] = int(input_variables['Protein_model'])
+
+        #ph must be a float
+        if input_variables['ph'] != None:
+            input_variables['ph'] = float(input_variables['ph'])
+        
+        return input_variables
+
+        
+
 
 
         
