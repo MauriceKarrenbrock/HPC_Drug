@@ -25,12 +25,20 @@ class ParseInputFromFile(GetFile):
     :param:filename
     the name of the input file or it's absolute path"""
 
-    possible_keys = ('protein', 'ligand',
+    possible_keys = ('protein',
+                    'ligand',
                     'protein_filetype',
                     'ligand_elaboration_program',
-                    'local', 'filepath', 'Protein_model',
-                    'ligand_in_protein', 'ph',
-                    'repairing_method')
+                    'ligand_elaboration_program_path',
+                    'local',
+                    'filepath',
+                    'Protein_model',
+                    'Protein_chain',
+                    'ligand_in_protein',
+                    'ph',
+                    'repairing_method',
+                    'MD_program',
+                    'MD_program_path')
 
     def __init__(self, filename):
         super().__init__(filename)
@@ -53,9 +61,8 @@ class ParseInputFromFile(GetFile):
         input_variables = self.create_input_dict()
 
         with open(self.filename) as f:
-            lines = f.readlines()
 
-            for line in lines:
+            for line in f:
 
                 line = line.strip()
 
@@ -81,7 +88,7 @@ class ParseInputFromFile(GetFile):
                         raise ValueError('InvalidInputKey ', key)
                 
                 else:
-                    raise ValueError(f'Imput must be key = value not like this: "{line}"')
+                    raise ValueError(f"Input must be key = value not like this: '{line}'")
 
         input_variables = self.refine_input(input_variables)    
         
@@ -97,6 +104,16 @@ class ParseInputFromFile(GetFile):
         # Protein_model must be an integer
         if input_variables['Protein_model'] != None:
             input_variables['Protein_model'] = int(input_variables['Protein_model'])
+        #default is zero
+        elif input_variables['Protein_model'] == None:
+            input_variables['Protein_model'] = 0
+
+        #The standar chain is 'A'
+        if input_variables['Protein_chain'] == None:
+            input_variables['Protein_chain'] = 'A'
+        #need it uppercase
+        else:
+            input_variables['Protein_chain'] = input_variables['Protein_chain'].upper().strip()
 
         #ph must be a float
         if input_variables['ph'] != None:

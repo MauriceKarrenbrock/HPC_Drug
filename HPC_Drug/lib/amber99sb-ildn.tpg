@@ -1,0 +1,5664 @@
+####################################################################
+#  amber99sb charges taken from http://www.gromacs.org/ 23/12/2015
+#  file amber99sb-star-ildnp.tgz
+#
+#                      CHAIN RESIDUES 
+#####################################################################
+
+
+RESIDUE ala 
+atoms 
+group
+     n    n           -0.41570
+     h    h            0.27190
+group
+    ca    ct           0.03370
+    ha    h1           0.08230
+group
+    cb    ct          -0.18250
+   hb1    hc           0.06030
+   hb2    hc           0.06030
+   hb3    hc           0.06030
+group
+     c    c            0.59730
+     o    o           -0.56790
+end
+bonds 
+     n     h   n    ca  ca    ha
+    ca    cb   ca   c   cb   hb1
+    cb   hb2   cb   hb3  c     o
+end 
+
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end     
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+                   
+RESIDUE gly 
+atoms 
+group
+     n    n           -0.41570 
+     h    h            0.27190 
+group
+    ca    ct          -0.02520 
+   ha1    h1           0.06980 
+   ha2    h1           0.06980 
+group
+     c    c            0.59730 
+     o    o           -0.56790 
+end
+bonds 
+     n     h
+     n    ca
+    ca   ha1
+    ca   ha2
+    ca     c
+     c     o
+end
+imphd 
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END
+                        
+RESIDUE ser 
+atoms 
+group
+     n    n           -0.41570   
+     h    h            0.27190   
+group
+    ca    ct          -0.02490   
+    ha    h1           0.08430   
+group
+    cb    ct           0.21170   
+   hb1    h1           0.03520   
+   hb2    h1           0.03520   
+group
+    og    oh          -0.65460   
+    hg    ho           0.42750   
+group
+     c    c            0.59730   
+     o    o           -0.56790   
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    og    og    hg
+     c     o  
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE thr 
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct          -0.03890  
+    ha    h1           0.10070  
+group
+    cb    ct           0.36540  
+    hb    h1           0.00430  
+group
+   cg2    ct          -0.24380  
+  hg21    hc           0.06420  
+  hg22    hc           0.06420  
+  hg23    hc           0.06420  
+group
+   og1    oh          -0.67610  
+   hg1    ho           0.41020  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb    hb
+    cb   cg2    cb   og1   cg2  hg21
+   cg2  hg22   cg2  hg23   og1   hg1
+     c     o   
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE leu  (ildn corrected; note new type ctl) 
+atoms 
+group
+     n    n           -0.41570 
+     h    h            0.27190 
+group
+    ca    ct          -0.05180 
+    ha    h1           0.09220 
+group
+    cb    ct          -0.11020 
+   hb1    hc           0.04570 
+   hb2    hc           0.04570 
+group
+    cg    ctl          0.35310 
+    hg    hc          -0.03610 
+group
+   cd1    ct          -0.41210 
+  hd11    hc           0.10000 
+  hd12    hc           0.10000 
+  hd13    hc           0.10000 
+group
+   cd2    ct          -0.41210 
+  hd21    hc           0.10000 
+  hd22    hc           0.10000 
+  hd23    hc           0.10000 
+group
+     c    c            0.59730 
+     o    o           -0.56790 
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg    hg
+    cg   cd1    cg   cd2   cd1  hd11
+   cd1  hd12   cd1  hd13   cd2  hd21
+   cd2  hd22   cd2  hd23     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+RESIDUE ile (ildn corrected)  
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct          -0.05970  
+    ha    h1           0.08690  
+group
+    cb    ct           0.13030  
+    hb    hc           0.01870  
+group
+   cg2    cti         -0.32040  
+  hg21    hc           0.08820  
+  hg22    hc           0.08820  
+  hg23    hc           0.08820  
+group
+   cg1    ct          -0.04300  
+  hg11    hc           0.02360  
+  hg12    hc           0.02360  
+group
+    cd1    ct          -0.06600  
+   hd11    hc           0.01860  
+   hd12    hc           0.01860  
+   hd13    hc           0.01860  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb    hb
+    cb   cg2    cb   cg1   cg2  hg21
+   cg2  hg22   cg2  hg23   cg1  hg11
+   cg1  hg12   cg1    cd1    cd1   hd11
+   cd1  hd12    cd1   hd13     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE val 
+atoms 
+group
+     n    n           -0.41570 
+     h    h            0.27190 
+group
+    ca    ct          -0.08750 
+    ha    h1           0.09690 
+group
+    cb    ct           0.29850 
+    hb    hc          -0.02970 
+group
+   cg1    ct          -0.31920 
+  hg11    hc           0.07910 
+  hg12    hc           0.07910 
+  hg13    hc           0.07910 
+group
+   cg2    ct          -0.31920 
+  hg21    hc           0.07910 
+  hg22    hc           0.07910 
+  hg23    hc           0.07910 
+group
+     c    c            0.59730 
+     o    o           -0.56790 
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb    hb
+    cb   cg1    cb   cg2   cg1  hg11
+   cg1  hg12   cg1  hg13   cg2  hg21
+   cg2  hg22   cg2  hg23     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end     
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+                   
+RESIDUE asn  (ildn corrected)
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct           0.01430  
+    ha    h1           0.10480  
+group
+    cb    ct          -0.20410  
+   hb1    hc           0.07970  
+   hb2    hc           0.07970  
+group
+    cg    cos          0.71300  
+   od1    o           -0.59310  
+group
+   nd2    nda         -0.91910  
+  hd21    h            0.41960  
+  hd22    h            0.41960  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   od1
+    cg   nd2   nd2  hd21   nd2  hd22
+     c     o   
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cb   nd2    cg   od1
+    cg  hd21   nd2  hd22
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE gln 
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct          -0.00310  
+    ha    h1           0.08500  
+group
+    cb    ct          -0.00360  
+   hb1    hc           0.01710  
+   hb2    hc           0.01710  
+group
+    cg    ct          -0.06450  
+   hg1    hc           0.03520  
+   hg2    hc           0.03520  
+group
+    cd    c            0.69510  
+   oe1    o           -0.60860  
+group
+   ne2    n           -0.94070  
+  he21    h            0.42510  
+  he22    h            0.42510  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end 
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   hg1
+    cg   hg2    cg    cd    cd   oe1
+    cd   ne2   ne2  he21   ne2  he22
+     c     o 
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   ne2    cd   oe1
+    cd  he21   ne2  he22
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+                        
+RESIDUE  arg 
+atoms 
+group
+     n    n           -0.34790   
+     h    h            0.27470   
+group
+    ca    ct          -0.26370   
+    ha    h1           0.15600   
+group
+    cb    ct          -0.00070   
+   hb1    hc           0.03270   
+   hb2    hc           0.03270   
+group
+    cg    ct           0.03900   
+   hg1    hc           0.02850   
+   hg2    hc           0.02850   
+group
+    cd    ct           0.04860   
+   hd1    h1           0.06870   
+   hd2    h1           0.06870   
+group
+    ne    n2          -0.52950   
+    he    h            0.34560   
+group
+    cz    ca           0.80760   
+group
+   nh1    n2          -0.86270   
+  hh11    h            0.44780   
+  hh12    h            0.44780   
+group
+   nh2    n2          -0.86270   
+  hh21    h            0.44780   
+  hh22    h            0.44780   
+group
+     c    c            0.73410   
+     o    o           -0.58940   
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   hg1
+    cg   hg2    cg    cd    cd   hd1
+    cd   hd2    cd    ne    ne    he
+    ne    cz    cz   nh1    cz   nh2
+   nh1  hh11   nh1  hh12   nh2  hh21
+   nh2  hh22     c     o  
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    ne   nh1    cz   nh2
+    cd    cz    ne    he
+    cz  hh11   nh1  hh12
+    cz  hh21   nh2  hh22
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+               
+RESIDUE  hsd 
+atoms 
+group
+     n    n           -0.41570   
+     h    h            0.27190   
+group
+    ca    ct           0.01880   
+    ha    h1           0.08810   
+group
+    cb    ct          -0.04620   
+   hb1    hc           0.04020   
+   hb2    hc           0.04020   
+group
+    cg    cc          -0.02660   
+   nd1    na          -0.38110   
+   hd1    h            0.36490   
+group
+   ce1    cr           0.20570   
+   he1    h5           0.13920   
+group
+   ne2    nb          -0.57270   
+   cd2    cv           0.12920   
+   hd2    h4           0.11470   
+group
+     c    c            0.59730   
+     o    o           -0.56790   
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   nd1
+    cg   cd2   nd1   hd1   nd1   ce1
+   ce1   he1   ce1   ne2   ne2   cd2
+   cd2   hd2     c     o 
+end 
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   ce1   nd1   hd1
+    cg   ne2   cd2   hd2
+   nd1   ne2   ce1   he1
+   nd1   cd2    cg    cb
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+RESIDUE hse 
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct          -0.05810  
+    ha    h1           0.13600  
+group
+    cb    ct          -0.00740  
+   hb1    hc           0.03670  
+   hb2    hc           0.03670  
+group
+    cg    cc           0.18680  
+   nd1    nb          -0.54320  
+   ce1    cr           0.16350  
+   he1    h5           0.14350  
+group
+   ne2    na          -0.27950  
+   he2    h            0.33390  
+group
+   cd2    cw          -0.22070  
+   hd2    h4           0.18620  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end 
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb2
+    cb   hb1    cb    cg    cg   nd1
+    cg   cd2   nd1   ce1   ce1   he1
+   ce1   ne2   ne2   he2   ne2   cd2
+   cd2   hd2     c     o     
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+   ce1   cd2   ne2   he2
+    cg   ne2   cd2   hd2
+   nd1   ne2   ce1   he1
+   nd1   cd2    cg    cb
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+
+
+RESIDUE hsp 
+atoms
+group 
+     n    n           -0.34790  
+     h    h            0.27470  
+group 
+    ca    ct          -0.13540  
+    ha    h1           0.12120  
+group 
+    cb    ct          -0.04140  
+   hb1    hc           0.08100  
+   hb2    hc           0.08100  
+group 
+    cg    cc          -0.00120  
+   nd1    na          -0.15130  
+   hd1    h            0.38660  
+group 
+   ce1    cr          -0.01700  
+   he1    h5           0.26810  
+group 
+   ne2    na          -0.17180  
+   he2    h            0.39110  
+group 
+   cd2    cw          -0.11410  
+   hd2    h4           0.23170  
+group 
+     c    c            0.73410  
+     o    o           -0.58940  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   nd1
+    cg   cd2   nd1   hd1   nd1   ce1
+   ce1   he1   ce1   ne2   ne2   he2
+   ne2   cd2   cd2   hd2     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   ce1   nd1   hd1
+   ce1   cd2   ne2   he2
+    cg   ne2   cd2   hd2
+   nd1   ne2   ce1   he1
+   nd1   cd2    cg    cb
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE trp
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct          -0.02750  
+    ha    h1           0.11230  
+group
+    cb    ct          -0.00500  
+   hb1    hc           0.03390  
+   hb2    hc           0.03390  
+group
+    cg    c*          -0.14150  
+   cd1    cw          -0.16380  
+   hd1    h4           0.20620  
+group
+   ne1    na          -0.34180  
+   he1    h            0.34120  
+group
+   ce2    cn           0.13800  
+   cz2    ca          -0.26010  
+   hz2    ha           0.15720  
+group
+   ch2    ca          -0.11340  
+   hh2    ha           0.14170  
+   cz3    ca          -0.19720  
+   hz3    ha           0.14470  
+group
+   ce3    ca          -0.23870  
+   he3    ha           0.17000  
+   cd2    cb           0.12430  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   cd1
+    cg   cd2   cd1   hd1   cd1   ne1
+   ne1   he1   ne1   ce2   ce2   cz2
+   ce2   cd2   cz2   hz2   cz2   ch2
+   ch2   hh2   ch2   cz3   cz3   hz3
+   cz3   ce3   ce3   he3   ce3   cd2
+     c     o    
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+   cd1   ce2   ne1   he1
+   ce2   ch2   cz2   hz2
+   cz2   cz3   ch2   hh2
+   ch2   ce3   cz3   hz3
+   cz3   cd2   ce3   he3
+    cg   ne1   cd1   hd1
+   cd1    cd2  cg   cb
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE phe 
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct          -0.00240  
+    ha    h1           0.09780  
+group
+    cb    ct          -0.03430  
+   hb1    hc           0.02950  
+   hb2    hc           0.02950  
+group
+    cg    ca           0.01180  
+group
+   cd1    ca          -0.12560  
+   hd1    ha           0.13300  
+group
+   ce1    ca          -0.17040  
+   he1    ha           0.14300  
+group
+    cz    ca          -0.10720  
+    hz    ha           0.12970  
+group
+   ce2    ca          -0.17040  
+   he2    ha           0.14300  
+group
+   cd2    ca          -0.12560  
+   hd2    ha           0.13300  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   cd1
+    cg   cd2   cd1   hd1   cd1   ce1
+   ce1   he1   ce1    cz    cz    hz
+    cz   ce2   ce2   he2   ce2   cd2
+   cd2   hd2     c     o     
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   ce2   cd2   hd2
+    cz   cd2   ce2   he2
+   ce1   ce2    cz    hz
+   cd1    cz   ce1   he1
+    cg   ce1   cd1   hd1
+   cd1   cd2    cg    cb
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                       
+RESIDUE tyr 
+atoms
+group 
+     n    n           -0.41570  
+     h    h            0.27190  
+group 
+    ca    ct          -0.00140  
+    ha    h1           0.08760  
+group 
+    cb    ct          -0.01520  
+   hb1    hc           0.02950  
+   hb2    hc           0.02950  
+group 
+    cg    ca          -0.00110  
+   cd1    ca          -0.19060  
+   hd1    ha           0.16990  
+group 
+   ce1    ca          -0.23410  
+   he1    ha           0.16560  
+    cz    c            0.32260  
+group 
+    oh    oh          -0.55790  
+    hh    ho           0.39920  
+group 
+   ce2    ca          -0.23410  
+   he2    ha           0.16560  
+   cd2    ca          -0.19060  
+   hd2    ha           0.16990  
+group 
+     c    c            0.59730  
+     o    o           -0.56790  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   cd1
+    cg   cd2   cd1   hd1   cd1   ce1
+   ce1   he1   ce1    cz    cz    oh
+    cz   ce2    oh    hh   ce2   he2
+   ce2   cd2   cd2   hd2     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   ce2   cd2   hd2
+    cz   cd2   ce2   he2
+   cd1    cz   ce1   he1
+    cg   ce1   cd1   hd1
+   cd1   cd2    cg    cb
+   ce1   ce2    cz    oh
+end 
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE glu 
+atoms 
+group
+     n    n           -0.51630  
+     h    h            0.29360  
+group
+    ca    ct           0.03970  
+    ha    h1           0.11050  
+group
+    cb    ct           0.05600  
+   hb1    hc          -0.01730  
+   hb2    hc          -0.01730  
+group
+    cg    ct           0.01360  
+   hg1    hc          -0.04250  
+   hg2    hc          -0.04250  
+group
+    cd    c            0.80540  
+   oe1    o2          -0.81880  
+   oe2    o2          -0.81880  
+group
+     c    c            0.53660  
+     o    o           -0.58190  
+end
+bonds 
+     n     h
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    cg
+    cg   hg1
+    cg   hg2
+    cg    cd
+    cd   oe1
+    cd   oe2
+     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   oe1    cd   oe2
+end 
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+                        
+RESIDUE asp  (ildn corrected)
+atoms 
+group
+     n    n           -0.51630 
+     h    h            0.29360 
+group
+    ca    ct           0.03810 
+    ha    h1           0.08800 
+group
+    cb    ct          -0.03030 
+   hb1    hc          -0.01220 
+   hb2    hc          -0.01220 
+group
+    cg    coa          0.79940 
+   od1    oa          -0.80140 
+   od2    oa          -0.80140 
+group
+     c    c            0.53660 
+     o    o           -0.58190 
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   od1
+    cg   od2     c     o     
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cb   od1    cg   od2
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE lys 
+atoms 
+group
+     n    n           -0.34790   
+     h    h            0.27470   
+group
+    ca    ct          -0.24000   
+    ha    h1           0.14260   
+group
+    cb    ct          -0.00940   
+   hb1    hc           0.03620   
+   hb2    hc           0.03620   
+group
+    cg    ct           0.01870   
+   hg1    hc           0.01030   
+   hg2    hc           0.01030   
+group
+    cd    ct          -0.04790   
+   hd1    hc           0.06210   
+   hd2    hc           0.06210   
+group
+    ce    ct          -0.01430   
+   he1    hp           0.11350   
+   he2    hp           0.11350   
+group
+    nz    n3          -0.38540   
+   hz1    h            0.34000   
+   hz2    h            0.34000   
+   hz3    h            0.34000   
+group
+     c    c            0.73410   
+     o    o           -0.58940   
+end 
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   hg1
+    cg   hg2    cg    cd    cd   hd1
+    cd   hd2    cd    ce    ce   he1
+    ce   he2    ce    nz    nz   hz1
+    nz   hz2    nz   hz3     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+RESIDUE  lyn 
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct          -0.07206  
+    ha    h1           0.09940  
+group
+    cb    ct          -0.04845  
+   hb1    hc           0.03400  
+   hb2    hc           0.03400  
+group
+    cg    ct           0.06612  
+   hg1    hc           0.01041  
+   hg2    hc           0.01041  
+group
+    cd    ct          -0.03768  
+   hd1    hc           0.01155  
+   hd2    hc           0.01155  
+group
+    ce    ct           0.32604  
+   he1    hp          -0.03358  
+   he2    hp          -0.03358  
+group
+    nz    n3          -1.03581  
+   hz1    h            0.38604  
+   hz2    h            0.38604  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   hg1
+    cg   hg2    cg    cd    cd   hd1
+    cd   hd2    cd    ce    ce   he1
+    ce   he2    ce    nz    nz   hz1
+    nz   hz2     c     o     
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE pro  (ildn* corrected) 
+atoms 
+group
+     n    n           -0.25480  
+    cd    ctp           0.01920 
+   hd1    h1           0.03910  
+   hd2    h1           0.03910  
+group
+    cg    ct           0.01890  
+   hg1    hc           0.02130  
+   hg2    hc           0.02130  
+group
+    cb    ct          -0.00700  
+   hb1    hc           0.02530  
+   hb2    hc           0.02530  
+group
+    ca    ct          -0.02660  
+    ha    h1           0.06410  
+group
+     c    c            0.58960  
+     o    o           -0.57480  
+end
+bonds 
+     n    cd     n    ca    cd   hd1
+    cd   hd2    cd    cg    cg   hg1
+    cg   hg2    cg    cb    cb   hb1
+    cb   hb2    cb    ca    ca    ha
+    ca     c     c     o     
+end
+imphd
+    ca    +n     c     o
+    -c    cd     n    ca        
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+RESIDUE cysh  (zero charge) 
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct           0.02130  
+    ha    h1           0.11240  
+group
+    cb    ct          -0.12310  
+   hb1    h1           0.11120  
+   hb2    h1           0.11120  
+group
+    sg    sh          -0.31190  
+    hg    hs           0.19330  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    sg    sg    hg
+     c     o     
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+                        
+RESIDUE cysm (-1 charge)  
+atoms 
+group
+     n    n           -0.41570 
+     h    h            0.27190 
+group
+    ca    ct          -0.03510 
+    ha    h1           0.05080 
+group
+    cb    ct          -0.24130 
+   hb1    h1           0.11220 
+   hb2    h1           0.11220 
+group
+    sg    sh          -0.88440 
+group
+     c    c            0.59730 
+     o    o           -0.56790 
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    sg     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+RESIDUE cys (S-S bridge)
+atoms 
+group
+     n    n           -0.41570   
+     h    h            0.27190   
+group
+    ca    ct           0.04290   
+    ha    h1           0.07660   
+group
+    cb    ct          -0.07900   
+   hb1    h1           0.09100   
+   hb2    h1           0.09100   
+group
+    sg    s           -0.10810   
+group
+     c    c            0.59730   
+     o    o           -0.56790   
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    sg     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end 
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+RESIDUE met 
+atoms 
+group
+     n    n           -0.41570   
+     h    h            0.27190   
+group
+    ca    ct          -0.02370   
+    ha    h1           0.08800   
+group
+    cb    ct           0.03420   
+   hb1    hc           0.02410   
+   hb2    hc           0.02410   
+group
+    cg    ct           0.00180   
+   hg1    h1           0.04400   
+   hg2    h1           0.04400   
+group
+    sd    s           -0.27370   
+group
+    ce    ct          -0.05360   
+   he1    h1           0.06840   
+   he2    h1           0.06840   
+   he3    h1           0.06840   
+group
+     c    c            0.59730   
+     o    o           -0.56790   
+end 
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   hg1
+    cg   hg2    cg    sd    sd    ce
+    ce   he1    ce   he2    ce   he3
+     c     o    
+end
+
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end 
+termatom n c
+backbone n ca c
+RESIDUE_END 
+                        
+       
+RESIDUE  ash (neutral asp acid)
+atoms 
+group
+     n    n           -0.41570 
+     h    h            0.27190  
+group
+    ca    ct           0.03410 
+    ha    h1           0.08640 
+group
+    cb    ct          -0.03160 
+   hb1    hc           0.04880 
+   hb2    hc           0.04880 
+group
+    cg    c            0.64620 
+   od1    o           -0.55540 
+   od2    oh          -0.63760 
+   hd2    ho           0.47470 
+group
+     c    c            0.59730 
+     o    o           -0.56790 
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   od1
+    cg   od2   od2   hd2     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cb   od1    cg   od2
+end                   
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+RESIDUE glh (neutral glu acid) 
+atoms 
+group
+     n    n           -0.41570 
+     h    h            0.27190 
+group
+    ca    ct           0.01450 
+    ha    h1           0.07790 
+group
+    cb    ct          -0.00710 
+   hb1    hc           0.02560 
+   hb2    hc           0.02560 
+group
+    cg    ct          -0.01740 
+   hg1    hc           0.04300 
+   hg2    hc           0.04300 
+group
+    cd    c            0.68010 
+   oe1    o           -0.58380 
+   oe2    oh          -0.65110 
+   he2    ho           0.46410 
+group
+     c    c            0.59730 
+     o    o           -0.56790 
+end 
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   hg1
+    cg   hg2    cg    cd    cd   oe1
+    cd   oe2   oe2   he2     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   oe1    cd   oe2
+end 
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+#####################################################################
+##  COO- Termini
+#####################################################################
+#
+#
+#
+RESIDUE  glu-o 
+atoms 
+group
+    n    n           -0.51920
+    h    h            0.30550
+group
+   ca    ct          -0.20590
+   ha    h1           0.13990
+group
+   cb    ct           0.00710
+  hb1    hc          -0.00780
+  hb2    hc          -0.00780
+group
+   cg    ct           0.06750
+  hg1    hc          -0.05480
+  hg2    hc          -0.05480
+group
+   cd    c            0.81830
+  oe1    o2          -0.82200
+  oe2    o2          -0.82200
+group
+    c    c            0.74200
+  ot1    o2          -0.79300
+  ot2    o2          -0.79300
+end
+bonds 
+    n     h
+    n    ca
+   ca    ha
+   ca    cb
+   ca     c
+   cb   hb1
+   cb   hb2
+   cb    cg
+   cg   hg1
+   cg   hg2
+   cg    cd
+   cd   oe1
+   cd   oe2
+    c   ot1 
+    c   ot2
+end 
+imphd
+   -c    ca     n     h    
+   ca   ot1     c   ot2    
+   cg   oe1    cd   oe2    
+end                  
+termatom  n  *
+backbone n ca c
+RESIDUE_END     
+
+RESIDUE arg-o
+atoms 
+group
+     n    n           -0.34810  
+     h    h            0.27640  
+group
+    ca    ct          -0.30680  
+    ha    h1           0.14470  
+group
+    cb    ct          -0.03740  
+   hb1    hc           0.03710  
+   hb2    hc           0.03710  
+group
+    cg    ct           0.07440  
+   hg1    hc           0.01850  
+   hg2    hc           0.01850  
+group
+    cd    ct           0.11140  
+   hd1    h1           0.04680  
+   hd2    h1           0.04680  
+group
+    ne    n2          -0.55640  
+    he    h            0.34790  
+group
+    cz    ca           0.83680  
+group
+   nh1    n2          -0.87370  
+  hh11    h            0.44930  
+  hh12    h            0.44930  
+group
+   nh2    n2          -0.87370  
+  hh21    h            0.44930  
+  hh22    h            0.44930  
+group
+     c    c            0.85570  
+   ot1    o2          -0.82660  
+   ot2    o2          -0.82660  
+end 
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   hg1
+    cg   hg2    cg    cd    cd   hd1
+    cd   hd2    cd    ne    ne    he
+    ne    cz    cz   nh1    cz   nh2
+   nh1  hh11   nh1  hh12   nh2  hh21
+   nh2  hh22     c   ot1     c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+    ne   nh1    cz   nh2    
+    cd    cz    ne    he    
+    cz  hh11   nh1  hh12    
+    cz  hh21   nh2  hh22    
+end 
+termatom  n  *
+backbone n ca c
+RESIDUE_END     
+                   
+
+
+RESIDUE ser-o 
+atoms 
+group
+    n    n           -0.38210     1
+    h    h            0.26810     2
+group
+   ca    ct          -0.27220     3
+   ha    h1           0.13040     4
+group
+   cb    ct           0.11230     5
+  hb1    h1           0.08130     6
+  hb2    h1           0.08130     7
+group
+   og    oh          -0.65140     8
+   hg    ho           0.44740     9
+group
+    c    c            0.81130    10
+  ot1    o2          -0.81320    11
+  ot2    o2          -0.81320    12
+end
+bonds 
+    n     h    n    ca   ca    ha   ca    cb
+   ca     c   cb   hb1   cb   hb2   cb    og
+   og    hg    c   ot1    c   ot2
+end
+imphd
+   -c    ca     n     h    
+   ca   ot1     c   ot2    
+end                       
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+          
+RESIDUE ala-o 
+atoms
+group 
+     n    n           -0.38210 
+     h    h            0.26810 
+group 
+    ca    ct          -0.17470 
+    ha    h1           0.10670 
+group 
+    cb    ct          -0.20930 
+   hb1    hc           0.07640 
+   hb2    hc           0.07640 
+   hb3    hc           0.07640 
+group 
+     c    c            0.77310 
+   o      o2          -0.80550 
+   oxt    o2          -0.80550 
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb   hb3     c   o
+     c   oxt   
+end
+imphd
+    -c    ca     n     h    
+    ca   o     c   oxt    
+end                        
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+
+RESIDUE gly-o 
+atoms 
+group
+     n    n           -0.38210  
+     h    h            0.26810  
+group
+    ca    ct          -0.24930  
+   ha1    h1           0.10560  
+   ha2    h1           0.10560  
+group
+     c    c            0.72310  
+   ot1    o2          -0.78550  
+   ot2    o2          -0.78550  
+end
+bonds 
+     n     h
+     n    ca
+    ca   ha1
+    ca   ha2
+    ca     c
+     c   ot1
+     c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+end                         
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+
+RESIDUE thr-o 
+atoms 
+group
+    n    n           -0.38210  
+    h    h            0.26810  
+group
+   ca    ct          -0.24200  
+   ha    h1           0.12070  
+group
+   cb    ct           0.30250  
+   hb    h1           0.00780  
+group
+  cg2    ct          -0.18530  
+ hg21    hc           0.05860  
+ hg22    hc           0.05860  
+ hg23    hc           0.05860  
+group
+  og1    oh          -0.64960  
+  hg1    ho           0.41190  
+group
+    c    c            0.78100  
+  ot1    o2          -0.80440  
+  ot2    o2          -0.80440  
+end
+bonds 
+    n     h    n    ca
+   ca    ha   ca    cb
+   ca     c   cb    hb
+   cb   cg2   cb   og1
+  cg2  hg21  cg2   hg22
+  cg2  hg23  og1   hg1
+    c   ot1    c   ot2
+end
+imphd
+   -c    ca     n     h    
+   ca   ot1     c   ot2    
+end 
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+                       
+RESIDUE val-o 
+atoms 
+group
+    n    n           -0.38210   
+    h    h            0.26810   
+group
+   ca    ct          -0.34380   
+   ha    h1           0.14380   
+group
+   cb    ct           0.19400   
+   hb    hc           0.03080   
+group
+  cg1    ct          -0.30640   
+ hg11    hc           0.08360   
+ hg12    hc           0.08360   
+ hg13    hc           0.08360   
+group
+  cg2    ct          -0.30640   
+ hg21    hc           0.08360   
+ hg22    hc           0.08360   
+ hg23    hc           0.08360   
+group
+    c    c            0.83500   
+  ot1    o2          -0.81730   
+  ot2    o2          -0.81730   
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb    hb
+    cb   cg1    cb   cg2   cg1  hg11
+   cg1  hg12   cg1  hg13   cg2  hg21
+   cg2  hg22   cg2  hg23   
+   c     ot1  c   ot2
+end
+imphd
+   -c    ca     n     h    
+   ca   ot1     c   ot2    
+end 
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE hsd-o
+atoms 
+group
+     n    n           -0.38210
+     h    h            0.26810
+group
+    ca    ct          -0.17390
+    ha    h1           0.11000
+group
+    cb    ct          -0.10460
+   hb1    hc           0.05650
+   hb2    hc           0.05650
+group
+    cg    cc           0.02930
+   nd1    na          -0.38920
+   hd1    h            0.37550
+group
+   ce1    cr           0.19250
+   he1    h5           0.14180
+group
+   ne2    nb          -0.56290
+   cd2    cv           0.10010
+   hd2    h4           0.12410
+group 
+    c    c            0.76150 
+   ot1    o2          -0.80160
+   ot2    o2          -0.80160
+end 
+
+bonds 
+   n     h
+   n    ca
+  ca    ha
+  ca    cb
+  ca     c
+  cb   hb1
+  cb   hb2
+  cb    cg
+  cg   nd1
+  cg   cd2
+ nd1   hd1
+ nd1   ce1
+ ce1   he1
+ ce1   ne2
+ ne2   cd2
+ cd2   hd2
+   c   ot1
+   c   ot2
+end
+imphd
+   -c    ca     n     h    
+   ca   ot1     c   ot2    
+   cg   ce1   nd1   hd1    
+   cg   ne2   cd2   hd2    
+  nd1   ne2   ce1   he1    
+  nd1   cd2    cg    cb    
+end 
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE met-o 
+atoms 
+group
+     n    n           -0.38210
+     h    h            0.26810
+group
+    ca    ct          -0.25970
+    ha    h1           0.12770
+group
+    cb    ct          -0.02360
+   hb1    hc           0.04800
+   hb2    hc           0.04800
+group
+    cg    ct           0.04920
+   hg1    h1           0.03170
+   hg2    h1           0.03170
+group
+    sd    s           -0.26920
+group
+    ce    ct          -0.03760
+   he1    h1           0.06250
+   he2    h1           0.06250
+   he3    h1           0.06250
+group
+     c    c            0.80130
+   ot1    o2          -0.81050
+   ot2    o2          -0.81050
+end
+bonds 
+     n     h
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    cg
+    cg   hg1
+    cg   hg2
+    cg    sd
+    sd    ce
+    ce   he1
+    ce   he2
+    ce   he3
+     c   ot1
+     c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+end 
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+
+RESIDUE asp-o 
+atoms 
+group
+     n    n           -0.51920  
+     h    h            0.30550  
+group
+    ca    ct          -0.18170  
+    ha    h1           0.10460  
+group
+    cb    ct          -0.06770  
+   hb1    hc          -0.02120  
+   hb2    hc          -0.02120  
+group
+    cg    c            0.88510  
+   od1    o2          -0.81620  
+   od2    o2          -0.81620  
+group
+     c    c            0.72560  
+   ot1    o2          -0.78870  
+   ot2    o2          -0.78870  
+end 
+bonds 
+     n     h     n    ca
+    ca    ha    ca    cb
+    ca     c    cb   hb1
+    cb   hb2    cb    cg
+    cg   od1    cg   od2
+     c   ot1     c   ot2
+end 
+imphd 
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+    cb   od1    cg   od2    
+end
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE ile-o 
+atoms 
+group
+     n    n           -0.38210  
+     h    h            0.26810  
+group
+    ca    ct          -0.31000  
+    ha    h1           0.13750  
+group
+    cb    ct           0.03630  
+    hb    hc           0.07660  
+group
+   cg2    ct          -0.34980  
+  hg21    hc           0.10210  
+  hg22    hc           0.10210  
+  hg23    hc           0.10210  
+group
+   cg1    ct          -0.03230  
+  hg11    hc           0.03210  
+  hg12    hc           0.03210  
+group
+    cd    ct          -0.06990  
+   hd1    hc           0.01960  
+   hd2    hc           0.01960  
+   hd3    hc           0.01960  
+group
+     c    c            0.83430  
+   ot1    o2          -0.81900  
+   ot2    o2          -0.81900  
+end
+bonds 
+     n     h     n    ca
+    ca    ha    ca    cb
+    ca     c    cb    hb
+    cb   cg2    cb   cg1
+   cg2  hg21   cg2  hg22
+   cg2  hg23   cg1  hg11
+   cg1  hg12   cg1    cd
+    cd   hd1    cd   hd2
+    cd   hd3     c   ot1
+     c   ot2
+end
+imphd 
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+end                         
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE tyr-o
+atoms 
+group
+     n    n           -0.38210   
+     h    h            0.26810   
+group
+    ca    ct          -0.20150   
+    ha    h1           0.10920   
+group
+    cb    ct          -0.07520   
+   hb1    hc           0.04900   
+   hb2    hc           0.04900   
+group
+    cg    ca           0.02430   
+   cd1    ca          -0.19220   
+   hd1    ha           0.17800   
+group
+   ce1    ca          -0.24580   
+   he1    ha           0.16730   
+group
+    cz    c            0.33950   
+group
+    oh    oh          -0.56430   
+    hh    ho           0.40170   
+group
+   ce2    ca          -0.24580   
+   he2    ha           0.16730   
+group
+   cd2    ca          -0.19220   
+   hd2    ha           0.17800   
+group
+     c    c            0.78170   
+   ot1    o2          -0.80700   
+   ot2    o2          -0.80700   
+end 
+bonds 
+     n     h     n    ca
+    ca    ha    ca    cb
+    ca     c    cb   hb1
+    cb   hb2    cb    cg
+    cg   cd1    cg   cd2
+   cd1   hd1   cd1   ce1
+   ce1   he1   ce1    cz
+    cz    oh    cz   ce2
+    oh    hh   ce2   he2
+   ce2   cd2   cd2   hd2
+     c   ot1     c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+    cg   ce2   cd2   hd2    
+    cz   cd2   ce2   he2    
+   cd1    cz   ce1   he1    
+    cg   ce1   cd1   hd1    
+   cd1   cd2    cg    cb    
+   ce1   ce2    cz    oh    
+end                        
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+
+RESIDUE asn-o  
+atoms 
+group
+     n    n           -0.38210  
+     h    h            0.26810  
+group
+    ca    ct          -0.20800  
+    ha    h1           0.13580  
+group
+    cb    ct          -0.22990  
+   hb1    hc           0.10230  
+   hb2    hc           0.10230  
+group
+    cg    c            0.71530  
+   od1    o           -0.60100  
+group
+   nd2    n           -0.90840  
+  hd21    h            0.41500  
+  hd22    h            0.41500  
+group
+     c    c            0.80500  
+   ot1    o2          -0.81470  
+   ot2    o2          -0.81470  
+end 
+bonds 
+     n     h     n    ca
+    ca    ha    ca    cb
+    ca     c    cb   hb1
+    cb   hb2    cb    cg
+    cg   od1    cg   nd2
+   nd2  hd21   nd2  hd22
+     c   ot1     c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+    cb   nd2    cg   od1    
+    cg  hd21   nd2  hd22    
+end                   
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE leu-o 
+  atoms 
+group
+     n    n           -0.38210
+     h    h            0.26810
+group
+    ca    ct          -0.28470
+    ha    h1           0.13460
+group
+    cb    ct          -0.24690
+   hb1    hc           0.09740
+   hb2    hc           0.09740
+group
+    cg    ct           0.37060
+    hg    hc          -0.03740
+group
+   cd1    ct          -0.41630
+  hd11    hc           0.10380
+  hd12    hc           0.10380
+  hd13    hc           0.10380
+group
+   cd2    ct          -0.41630
+  hd21    hc           0.10380
+  hd22    hc           0.10380
+  hd23    hc           0.10380
+group
+     c    c            0.83260
+   ot1    o2          -0.81990
+   ot2    o2          -0.81990
+end
+bonds 
+     n     h     n    ca
+    ca    ha    ca    cb
+    ca     c    cb   hb1
+    cb   hb2    cb    cg
+    cg    hg    cg   cd1
+    cg   cd2   cd1  hd11
+   cd1  hd12   cd1  hd13
+   cd2  hd21   cd2  hd22
+   cd2  hd23     c   ot1
+     c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+end                        
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE phe-o 
+atoms 
+group
+     n    n           -0.38210   
+     h    h            0.26810   
+group
+    ca    ct          -0.18250   
+    ha    h1           0.10980   
+group
+    cb    ct          -0.09590   
+   hb1    hc           0.04430   
+   hb2    hc           0.04430   
+group
+    cg    ca           0.05520   
+group
+   cd1    ca          -0.13000   
+   hd1    ha           0.14080   
+group
+   ce1    ca          -0.18470   
+   he1    ha           0.14610   
+group
+    cz    ca          -0.09440   
+    hz    ha           0.12800   
+group
+   ce2    ca          -0.18470   
+   he2    ha           0.14610   
+group
+   cd2    ca          -0.13000   
+   hd2    ha           0.14080   
+group
+     c    c            0.76600   
+   ot1    o2          -0.80260   
+   ot2    o2          -0.80260   
+end 
+bonds 
+     n     h      n    ca
+    ca    ha     ca    cb
+    ca     c     cb   hb1
+    cb   hb2     cb    cg
+    cg   cd1     cg   cd2
+   cd1   hd1    cd1   ce1
+   ce1   he1    ce1    cz
+    cz    hz     cz   ce2
+   ce2   he2    ce2   cd2
+   cd2   hd2      c   ot1
+     c   ot2
+end 
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+    cg   ce2   cd2   hd2    
+    cz   cd2   ce2   he2    
+   ce1   ce2    cz    hz    
+   cd1    cz   ce1   he1    
+    cg   ce1   cd1   hd1    
+   cd1   cd2    cg    cb    
+end                        
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE pro-o 
+atoms 
+group
+     n    n           -0.28020
+group
+    cd    ct           0.04340
+   hd1    h1           0.03310
+   hd2    h1           0.03310
+group
+    cg    ct           0.04660
+   hg1    hc           0.01720
+   hg2    hc           0.01720
+group
+    cb    ct          -0.05430
+   hb1    hc           0.03810
+   hb2    hc           0.03810
+group
+    ca    ct          -0.13360
+    ha    h1           0.07760
+group
+     c    c            0.66310
+   ot1    o2          -0.76970
+   ot2    o2          -0.76970
+end
+bonds 
+     n    cd      n    ca
+    cd   hd1     cd   hd2
+    cd    cg     cg   hg1
+    cg   hg2     cg    cb
+    cb   hb1     cb   hb2
+    cb    ca     ca    ha
+    ca     c      c   ot1
+     c   ot2 
+end
+imphd
+    ca   ot1     c   ot2    
+    -c    cd     n    ca    
+end                         
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE gln-o 
+atoms 
+group
+     n    n           -0.38210  
+     h    h            0.26810  
+group
+    ca    ct          -0.22480  
+    ha    h1           0.12320  
+group
+    cb    ct          -0.06640  
+   hb1    hc           0.04520  
+   hb2    hc           0.04520  
+group
+    cg    ct          -0.02100  
+   hg1    hc           0.02030  
+   hg2    hc           0.02030  
+group
+    cd    c            0.70930  
+   oe1    o           -0.60980  
+group
+   ne2    n           -0.95740  
+  he21    h            0.43040  
+  he22    h            0.43040  
+group
+     c    c            0.77750  
+   ot1    o2          -0.80420  
+   ot2    o2          -0.80420  
+end
+bonds 
+     n     h      n    ca
+    ca    ha     ca    cb
+    ca     c     cb   hb1
+    cb   hb2     cb    cg
+    cg   hg1     cg   hg2
+    cg    cd     cd   oe1
+    cd   ne2    ne2  he21
+   ne2  he22      c   ot1
+     c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+    cg   ne2    cd   oe1    
+    cd  he21   ne2  he22    
+end                        
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE lys-o 
+atoms 
+group
+     n    n           -0.34810 
+     h    h            0.27640 
+group
+    ca    ct          -0.29030 
+    ha    h1           0.14380 
+group
+    cb    ct          -0.05380 
+   hb1    hc           0.04820 
+   hb2    hc           0.04820 
+group
+    cg    ct           0.02270 
+   hg1    hc           0.01340 
+   hg2    hc           0.01340 
+group
+    cd    ct          -0.03920 
+   hd1    hc           0.06110 
+   hd2    hc           0.06110 
+group
+    ce    ct          -0.01760 
+   he1    hp           0.11210 
+   he2    hp           0.11210 
+group
+    nz    n3          -0.37410 
+   hz1    h            0.33740 
+   hz2    h            0.33740 
+   hz3    h            0.33740 
+group
+     c    c            0.84880 
+   ot1    o2          -0.82520 
+   ot2    o2          -0.82520 
+end
+bonds 
+     n     h      n    ca
+    ca    ha     ca    cb
+    ca     c     cb   hb1
+    cb   hb2     cb    cg
+    cg   hg1     cg   hg2
+    cg    cd     cd   hd1
+    cd   hd2     cd    ce
+    ce   he1     ce   he2
+    ce    nz     nz   hz1
+    nz   hz2     nz   hz3
+     c   ot1      c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+end                   
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE trp-o 
+atoms 
+group
+     n    n           -0.38210
+     h    h            0.26810
+group
+    ca    ct          -0.20840
+    ha    h1           0.12720
+group
+    cb    ct          -0.07420
+   hb1    hc           0.04970
+   hb2    hc           0.04970
+group
+    cg    c*          -0.07960
+   cd1    cw          -0.18080
+   hd1    h4           0.20430
+group
+   ne1    na          -0.33160
+   he1    h            0.34130
+group
+   ce2    cn           0.12220
+group
+   cz2    ca          -0.25940
+   hz2    ha           0.15670
+group
+   ch2    ca          -0.10200
+   hh2    ha           0.14010
+group
+   cz3    ca          -0.22870
+   hz3    ha           0.15070
+group
+   ce3    ca          -0.18370
+   he3    ha           0.14910
+group
+   cd2    cb           0.10780
+group
+     c    c            0.76580
+   ot2    o2          -0.80110
+   ot1    o2          -0.80110
+end 
+bonds 
+     n     h
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    cg
+    cg   cd1
+    cg   cd2
+   cd1   hd1
+   cd1   ne1
+   ne1   he1
+   ne1   ce2
+   ce2   cz2
+   ce2   cd2
+   cz2   hz2
+   cz2   ch2
+   ch2   hh2
+   ch2   cz3
+   cz3   hz3
+   cz3   ce3
+   ce3   he3
+   ce3   cd2
+     c   ot1
+     c   ot2
+end
+imphd
+    -c    ca     n     h    
+    ca   ot1     c   ot2    
+   cd1   ce2   ne1   he1    
+   ce2   ch2   cz2   hz2    
+   cz2   cz3   ch2   hh2    
+   ch2   ce3   cz3   hz3    
+   cz3   cd2   ce3   he3    
+end                         
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE cys-o 
+atoms 
+group
+    n    n           -0.38210  
+    h    h            0.26810  
+group
+   ca    ct          -0.16350  
+   ha    h1           0.13960  
+group
+   cb    ct          -0.19960  
+  hb1    h1           0.14370  
+  hb2    h1           0.14370  
+group
+   sg    sh          -0.31020  
+   hg    hs           0.20680  
+group
+    c    c            0.74970  
+  ot1    o2          -0.79810  
+  ot2    o2          -0.79810  
+end
+bonds 
+    n     h
+    n    ca
+   ca    ha
+   ca    cb
+   ca     c
+   cb   hb1
+   cb   hb2
+   cb    sg
+   sg    hg
+    c   ot1
+    c   ot2
+end 
+imphd
+   -c    ca     n     h    
+   ca   ot1     c   ot2    
+end                  
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+RESIDUE cyx-o 
+atoms 
+group
+    n    n           -0.38210  
+    h    h            0.26810  
+group
+   ca    ct          -0.13180  
+   ha    h1           0.09380  
+group
+   cb    ct          -0.19430  
+  hb1    h1           0.12280  
+  hb2    h1           0.12280  
+group
+   sg    s           -0.05290  
+group
+    c    c            0.76180  
+  ot1    o2          -0.80410  
+  ot2    o2          -0.80410  
+end
+bonds 
+    n     h
+    n    ca
+   ca    ha
+   ca    cb
+   ca     c
+   cb   hb1
+   cb   hb2
+   cb    sg
+    c   ot1
+    c   ot2
+end 
+imphd
+   -c    ca     n     h    
+   ca   ot1     c   ot2    
+end                        
+termatom  n  *
+backbone n ca c
+RESIDUE_END
+
+#                        
+# CLYS 
+#  atoms 
+#     N    N           -0.34810     1
+#     H    H            0.27640     2
+#    CA    CT          -0.29030     3
+#    HA    H1           0.14380     4
+#    CB    CT          -0.05380     5
+#   HB1    HC           0.04820     6
+#   HB2    HC           0.04820     7
+#    CG    CT           0.02270     8
+#   HG1    HC           0.01340     9
+#   HG2    HC           0.01340    10
+#    CD    CT          -0.03920    11
+#   HD1    HC           0.06110    12
+#   HD2    HC           0.06110    13
+#    CE    CT          -0.01760    14
+#   HE1    HP           0.11210    15
+#   HE2    HP           0.11210    16
+#    NZ    N3          -0.37410    17
+#   HZ1    H            0.33740    18
+#   HZ2    H            0.33740    19
+#   HZ3    H            0.33740    20
+#     C    C            0.84880    21
+#   OT1    O2          -0.82520    22
+#   OT2    O2          -0.82520    23
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CD
+#    CD   HD1
+#    CD   HD2
+#    CD    CE
+#    CE   HE1
+#    CE   HE2
+#    CE    NZ
+#    NZ   HZ1
+#    NZ   HZ2
+#    NZ   HZ3
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#                        
+
+
+#####################################################################
+##  NH3+ Termini
+#####################################################################
+
+
+RESIDUE leu-h 
+atoms 
+group
+     n    n3           0.10100  
+    h1    h            0.21480  
+    h2    h            0.21480  
+    h3    h            0.21480   
+group
+   ca    ct           0.01040  
+    ha    hp           0.10530  
+group
+    cb    ct          -0.02440  
+   hb1    hc           0.02560  
+   hb2    hc           0.02560  
+group
+    cg    ct           0.34210  
+    hg    hc          -0.03800  
+group
+   cd1    ct          -0.41060  
+  hd11    hc           0.09800  
+  hd12    hc           0.09800  
+  hd13    hc           0.09800  
+group
+   cd2    ct          -0.41040  
+  hd21    hc           0.09800  
+  hd22    hc           0.09800  
+  hd23    hc           0.09800  
+group
+     c    c            0.61230  
+     o    o           -0.57130  
+end
+bonds 
+     n    h1     n    h2
+     n    h3     n    ca
+    ca    ha    ca    cb
+    ca     c    cb   hb1
+    cb   hb2    cb    cg
+    cg    hg    cg   cd1
+    cg   cd2   cd1  hd11
+   cd1  hd12   cd1  hd13
+   cd2  hd21   cd2  hd22
+   cd2  hd23     c     o
+end
+imphd
+    ca    +n     c     o
+end                         
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+
+RESIDUE asp-h 
+atoms 
+group
+     n    n3           0.07820  
+    h1    h            0.22000  
+    h2    h            0.22000  
+    h3    h            0.22000  
+group
+    ca    ct           0.02920  
+    ha    hp           0.11410  
+group
+    cb    ct          -0.02350  
+   hb1    hc          -0.01690  
+   hb2    hc          -0.01690  
+group
+    cg    c            0.81940  
+   od1    o2          -0.80840  
+   od2    o2          -0.80840  
+group
+     c    c            0.56210  
+     o    o           -0.58890  
+end 
+bonds 
+    n    h1
+    n    h2
+    n    h3
+    n    ca
+   ca    ha
+   ca    cb
+   ca     c
+   cb   hb1
+   cb   hb2
+   cb    cg
+   cg   od1
+   cg   od2
+    c     o
+end 
+imphd
+    ca    +n     c     o
+    cb   od1    cg   od2
+end                         
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+
+RESIDUE met-h 
+atoms 
+group
+    n    n3           0.15920  
+   h1    h            0.19840  
+   h2    h            0.19840  
+   h3    h            0.19840  
+group
+   ca    ct           0.02210  
+   ha    hp           0.11160  
+group
+   cb    ct           0.08650  
+  hb1    hc           0.01250  
+  hb2    hc           0.01250  
+group
+   cg    ct           0.03340  
+  hg1    h1           0.02920  
+  hg2    h1           0.02920  
+group
+   sd    s           -0.27740  
+group
+   ce    ct          -0.03410  
+  he1    h1           0.05970  
+  he2    h1           0.05970  
+  he3    h1           0.05970  
+group
+    c    c            0.61230  
+    o    o           -0.57130  
+end
+bonds 
+    n    h1    n    h2    n    h3
+    n    ca   ca    ha   ca    cb
+   ca     c   cb   hb1   cb   hb2
+   cb    cg   cg   hg1   cg   hg2
+   cg    sd   sd    ce   ce   he1
+   ce   he2   ce   he3    c     o
+end
+imphd
+   ca    +n     c     o
+end 
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE pro-h 
+atoms 
+group
+    n    n3          -0.20200  
+   hn1    h            0.31200  
+   hn2    h            0.31200  
+group
+   cd    ctp         -0.01200  
+  hd1    hp           0.10000  
+  hd2    hp           0.10000  
+group
+   cg    ct          -0.12100  
+  hg1    hc           0.10000  
+  hg2    hc           0.10000  
+group
+   cb    ct          -0.11500  
+  hb1    hc           0.10000  
+  hb2    hc           0.10000  
+group
+   ca    ct           0.10000  
+   ha    hp           0.10000  
+group
+    c    c            0.52600  
+    o    o           -0.50000  
+end 
+bonds 
+    n    hn1    n    hn2    n    cd    n    ca
+   cd   hd1   cd   hd2   cd    cg   cg   hg1
+   cg   hg2   cg    cb   cb   hb1   cb   hb2
+   cb    ca   ca    ha   ca     c    c     o
+end 
+
+imphd
+   ca    +n     c     o
+end
+termatom *  c
+backbone n ca c
+RESIDUE_END
+                       
+
+RESIDUE ala-h 
+atoms 
+group
+     n    n3           0.14140  
+    ht1    h            0.19970  
+    ht2    h            0.19970  
+    ht3    h            0.19970  
+group
+    ca    ct           0.09620  
+    ha    hp           0.08890  
+group
+    cb    ct          -0.05970  
+   hb1    hc           0.03000  
+   hb2    hc           0.03000  
+   hb3    hc           0.03000  
+group
+     c    c            0.61630  
+     o    o           -0.57220  
+end 
+bonds 
+cb   ca     n    ht1     n    ht2     n    ht3     n    ca     o    c           
+c    ca     ca   ha     cb   hb1    cb   hb2    cb   hb3                        
+end
+imphd
+    ca    +n     c     o
+end 
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+                        
+RESIDUE gly-h 
+atoms 
+group
+     n    n3           0.29430  
+    h1    h            0.16420  
+    h2    h            0.16420  
+    h3    h            0.16420  
+group
+    ca    ct          -0.01000  
+   ha1    hp           0.08950  
+   ha2    hp           0.08950  
+group
+     c    c            0.61630  
+     o    o           -0.57220  
+end
+bonds 
+     n    h1     n    h2     n    h3
+     n    ca    ca   ha1    ca   ha2
+    ca     c     c     o     
+end
+imphd
+    ca    +n     c     o
+end 
+termatom *  c
+backbone n ca c
+RESIDUE_END
+                        
+RESIDUE ser-h 
+atoms 
+group
+     n    n3           0.18490  
+    h1    h            0.18980  
+    h2    h            0.18980  
+    h3    h            0.18980  
+group
+    ca    ct           0.05670  
+    ha    hp           0.07820  
+group
+    cb    ct           0.25960  
+   hb1    h1           0.02730  
+   hb2    h1           0.02730  
+group
+    og    oh          -0.67140  
+    hg    ho           0.42390  
+group
+     c    c            0.61630  
+     o    o           -0.57220  
+end 
+bonds 
+     n    h1
+     n    h2
+     n    h3
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    og
+    og    hg
+     c     o
+end 
+imphd
+    ca    +n     c     o
+end 
+termatom *  c
+backbone n ca c
+RESIDUE_END
+                        
+RESIDUE thr-h 
+atoms 
+group
+     n    n3           0.18120  
+    h1    h            0.19340  
+    h2    h            0.19340  
+    h3    h            0.19340  
+group
+    ca    ct           0.00340  
+    ha    hp           0.10870  
+group
+    cb    ct           0.45140  
+    hb    h1          -0.03230  
+group
+   cg2    ct          -0.25540  
+  hg21    hc           0.06270  
+  hg22    hc           0.06270  
+  hg23    hc           0.06270  
+group
+   og1    oh          -0.67640  
+   hg1    ho           0.40700  
+group
+     c    c            0.61630  
+     o    o           -0.57220  
+end 
+bonds 
+     n    h1
+     n    h2
+     n    h3
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb    hb
+    cb   cg2
+    cb   og1
+   cg2  hg21
+   cg2  hg22
+   cg2  hg23
+   og1   hg1
+     c     o
+end
+imphd
+    ca    +n     c     o
+end                       
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+
+RESIDUE arg-h 
+atoms
+group 
+     n    n3           0.13050  
+    h1    h            0.20830  
+    h2    h            0.20830  
+    h3    h            0.20830  
+group 
+    ca    ct          -0.02230  
+    ha    hp           0.12420  
+group 
+    cb    ct           0.01180  
+   hb1    hc           0.02260  
+   hb2    hc           0.02260  
+group 
+    cg    ct           0.02360  
+   hg1    hc           0.03090  
+   hg2    hc           0.03090  
+group 
+    cd    ct           0.09350  
+   hd1    h1           0.05270  
+   hd2    h1           0.05270  
+group 
+    ne    n2          -0.56500  
+    he    h            0.35920  
+group 
+    cz    ca           0.82810  
+   nh1    n2          -0.86930  
+  hh11    h            0.44940  
+  hh12    h            0.44940  
+group 
+   nh2    n2          -0.86930  
+  hh21    h            0.44940  
+  hh22    h            0.44940  
+group 
+     c    c            0.72140  
+     o    o           -0.60130  
+end 
+bonds 
+     n    h1     n    h2     n    h3
+     n    ca    ca    ha    ca    cb
+    ca     c    cb   hb1    cb   hb2
+    cb    cg    cg   hg1    cg   hg2
+    cg    cd    cd   hd1    cd   hd2
+    cd    ne    ne    he    ne    cz
+    cz   nh1    cz   nh2   nh1  hh11
+   nh1  hh12   nh2  hh21   nh2  hh22
+     c     o   
+end
+imphd
+    ca    +n     c     o
+    ne   nh1    cz   nh2
+    cd    cz    ne    he
+    cz  hh11   nh1  hh12
+    cz  hh21   nh2  hh22
+end
+termatom *  c
+backbone n ca c
+RESIDUE_END
+                        
+RESIDUE glu-h 
+atoms 
+group
+     n    n3           0.00170  
+    h1    h            0.23910  
+    h2    h            0.23910  
+    h3    h            0.23910  
+group
+    ca    ct           0.05880  
+    ha    hp           0.12020  
+group
+    cb    ct           0.09090  
+   hb1    hc          -0.02320  
+   hb2    hc          -0.02320  
+group
+    cg    ct          -0.02360  
+   hg1    hc          -0.03150  
+   hg2    hc          -0.03150  
+group
+    cd    c            0.80870  
+   oe1    o2          -0.81890  
+   oe2    o2          -0.81890  
+group
+     c    c            0.56210  
+     o    o           -0.58890  
+end
+bonds 
+     n    h1
+     n    h2
+     n    h3
+     n    ca
+
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    cg
+    cg   hg1
+    cg   hg2
+    cg    cd
+    cd   oe1
+    cd   oe2
+     c     o
+end
+imphd
+    ca    +n     c     o
+    cg   oe1    cd   oe2
+end                        
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE  val-h 
+atoms 
+group
+     n    n3           0.05770 
+    h1    h            0.22720 
+    h2    h            0.22720 
+    h3    h            0.22720 
+group
+    ca    ct          -0.00540 
+    ha    hp           0.10930 
+group
+    cb    ct           0.31960 
+    hb    hc          -0.02210 
+group
+   cg1    ct          -0.31290 
+  hg11    hc           0.07350 
+  hg12    hc           0.07350 
+  hg13    hc           0.07350 
+group
+   cg2    ct          -0.31290 
+  hg21    hc           0.07350 
+  hg22    hc           0.07350 
+  hg23    hc           0.07350 
+group
+     c    c            0.61630 
+     o    o           -0.57220 
+end 
+bonds 
+     n    h1
+     n    h2
+     n    h3
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb    hb
+    cb   cg1
+    cb   cg2
+   cg1  hg11
+   cg1  hg12
+   cg1  hg13
+   cg2  hg21
+   cg2  hg22
+   cg2  hg23
+     c     o
+end 
+imphd
+    ca    +n     c     o
+end
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+
+RESIDUE phe-h 
+atoms 
+group
+    n    n3           0.17370  
+   h1    h            0.19210  
+   h2    h            0.19210  
+   h3    h            0.19210  
+group
+   ca    ct           0.07330  
+   ha    hp           0.10410  
+group
+   cb    ct           0.03300  
+  hb1    hc           0.01040  
+  hb2    hc           0.01040  
+group
+   cg    ca           0.00310  
+  cd1    ca          -0.13920  
+  hd1    ha           0.13740  
+group
+  ce1    ca          -0.16020  
+  he1    ha           0.14330  
+group
+   cz    ca          -0.12080  
+   hz    ha           0.13290  
+group
+  ce2    ca          -0.16030  
+  he2    ha           0.14330  
+group
+  cd2    ca          -0.13910  
+  hd2    ha           0.13740  
+group
+    c    c            0.61230  
+    o    o           -0.57130  
+end
+bonds 
+     n    h1
+     n    h2
+     n    h3
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    cg
+    cg   cd1
+    cg   cd2
+   cd1   hd1
+   cd1   ce1
+   ce1   he1
+   ce1    cz
+    cz    hz
+    cz   ce2
+   ce2   he2
+   ce2   cd2
+   cd2   hd2
+     c     o
+end
+imphd
+    ca    +n     c     o
+    cg   ce2   cd2   hd2
+    cz   cd2   ce2   he2
+   ce1   ce2    cz    hz
+   cd1    cz   ce1   he1
+    cg   ce1   cd1   hd1
+   cd1   cd2    cg    cb
+end                        
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE ile-h 
+atoms 
+group
+     n    n3           0.03110  
+    h1    h            0.23290  
+    h2    h            0.23290  
+    h3    h            0.23290  
+group
+    ca    ct           0.02570  
+    ha    hp           0.10310  
+group
+    cb    ct           0.18850  
+    hb    hc           0.02130  
+group
+   cg2    ct          -0.37200  
+  hg21    hc           0.09470  
+  hg22    hc           0.09470  
+  hg23    hc           0.09470  
+group
+   cg1    ct          -0.03870  
+  hg11    hc           0.02010  
+  hg12    hc           0.02010  
+group
+    cd    ct          -0.09080  
+   hd1    hc           0.02260  
+   hd2    hc           0.02260  
+   hd3    hc           0.02260  
+group
+     c    c            0.61230  
+     o    o           -0.57130  
+end
+bonds 
+     n    h1     n    h2
+     n    h3     n    ca
+    ca    ha    ca    cb
+    ca     c    cb    hb
+    cb   cg2    cb   cg1
+   cg2  hg21   cg2  hg22
+   cg2  hg23   cg1  hg11
+   cg1  hg12   cg1    cd
+    cd   hd1    cd   hd2
+    cd   hd3     c     o
+end
+imphd
+    ca    +n     c     o
+end                        
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE lys-h 
+atoms 
+group
+    n    n3           0.09660  
+   h1    h            0.21650  
+   h2    h            0.21650  
+   h3    h            0.21650  
+group
+   ca    ct          -0.00150  
+   ha    hp           0.11800  
+group
+   cb    ct           0.02120  
+  hb1    hc           0.02830  
+  hb2    hc           0.02830  
+group
+   cg    ct          -0.00480  
+  hg1    hc           0.01210  
+  hg2    hc           0.01210  
+group
+   cd    ct          -0.06080  
+  hd1    hc           0.06330  
+  hd2    hc           0.06330  
+group
+   ce    ct          -0.01810  
+  he1    hp           0.11710  
+  he2    hp           0.11710  
+group
+   nz    n3          -0.37640  
+  hz1    h            0.33820  
+  hz2    h            0.33820  
+  hz3    h            0.33820  
+group
+    c    c            0.72140  
+    o    o           -0.60130  
+end
+bonds 
+    n    h1     n    h2
+    n    h3     n    ca
+   ca    ha    ca    cb
+   ca     c    cb   hb1
+   cb   hb2    cb    cg
+   cg   hg1    cg   hg2
+   cg    cd    cd   hd1
+   cd   hd2    cd    ce
+   ce   he1    ce   he2
+   ce    nz    nz   hz1
+   nz   hz2    nz   hz3
+    c     o  
+end 
+imphd
+   ca    +n     c     o
+end                        
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE asn-h 
+atoms 
+group
+     n    n3           0.18010  
+    h1    h            0.19210  
+    h2    h            0.19210  
+    h3    h            0.19210  
+group
+    ca    ct           0.03680  
+    ha    hp           0.12310  
+group
+    cb    ct          -0.02830  
+   hb1    hc           0.05150  
+   hb2    hc           0.05150  
+group
+    cg    c            0.58330  
+   od1    o           -0.57440  
+group
+   nd2    n           -0.86340  
+  hd21    h            0.40970  
+  hd22    h            0.40970  
+group
+     c    c            0.61630  
+     o    o           -0.57220  
+end
+bonds 
+     n    h1      n    h2
+     n    h3      n    ca
+    ca    ha     ca    cb
+    ca     c     cb   hb1
+    cb   hb2     cb    cg
+    cg   od1     cg   nd2
+   nd2  hd21    nd2  hd22
+     c     o 
+end
+imphd
+    ca    +n     c     o
+    cb   nd2    cg   od1
+    cg  hd21   nd2  hd22
+end 
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE  gln-h 
+atoms 
+group
+     n    n3           0.14930  
+    h1    h            0.19960  
+    h2    h            0.19960  
+    h3    h            0.19960  
+group
+    ca    ct           0.05360  
+    ha    hp           0.10150  
+group
+    cb    ct           0.06510  
+   hb1    hc           0.00500  
+   hb2    hc           0.00500  
+group
+    cg    ct          -0.09030  
+   hg1    hc           0.03310  
+   hg2    hc           0.03310  
+group
+    cd    c            0.73540  
+   oe1    o           -0.61330  
+group
+   ne2    n           -1.00310  
+  he21    h            0.44290  
+  he22    h            0.44290  
+group
+     c    c            0.61230  
+     o    o           -0.57130  
+end
+bonds 
+     n    h1
+     n    h2
+     n    h3
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    cg
+    cg   hg1
+    cg   hg2
+    cg    cd
+    cd   oe1
+    cd   ne2
+   ne2  he21
+   ne2  he22
+     c     o
+end
+imphd
+    ca    +n     c     o
+    cg   ne2    cd   oe1
+    cd  he21   ne2  he22
+end
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE hsd-h 
+atoms 
+group
+     n    n3           0.15420  
+    h1    h            0.19630  
+    h2    h            0.19630  
+    h3    h            0.19630  
+group
+    ca    ct           0.09640  
+    ha    hp           0.09580  
+group
+    cb    ct           0.02590  
+   hb1    hc           0.02090  
+   hb2    hc           0.02090  
+group
+    cg    cc          -0.03990  
+group
+   nd1    na          -0.38190  
+   hd1    h            0.36320  
+group
+   ce1    cr           0.21270  
+   he1    h5           0.13850  
+group
+   ne2    nb          -0.57110  
+   cd2    cv           0.10460  
+   hd2    h4           0.12990  
+group
+     c    c            0.61230  
+     o    o           -0.57130  
+end 
+
+bonds 
+     n    h1
+     n    h2
+     n    h3
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    cg
+    cg   nd1
+    cg   cd2
+   nd1   hd1
+   nd1   ce1
+   ce1   he1
+   ce1   ne2
+   ne2   cd2
+   cd2   hd2
+     c     o
+end 
+imphd
+    ca    +n     c     o
+    cg   ce1   nd1   hd1
+    cg   ne2   cd2   hd2
+   nd1   ne2   ce1   he1
+   nd1   cd2    cg    cb
+end 
+termatom *  c
+backbone n ca c
+RESIDUE_END
+                        
+RESIDUE cysh-h 
+atoms 
+group
+    n    n3           0.13250 
+   h1    h            0.20230 
+   h2    h            0.20230 
+   h3    h            0.20230 
+group
+   ca    ct           0.09270 
+   ha    hp           0.14110 
+group
+   cb    ct          -0.11950 
+  hb1    h1           0.11880 
+  hb2    h1           0.11880 
+group
+   sg    sh          -0.32980 
+   hg    hs           0.19750 
+group
+    c    c            0.61230 
+    o    o           -0.57130 
+end
+bonds 
+    n    h1
+    n    h2
+    n    h3
+    n    ca
+   ca    ha
+   ca    cb
+   ca     c
+   cb   hb1
+   cb   hb2
+   cb    sg
+   sg    hg
+    c     o
+end 
+imphd
+   ca    +n     c     o
+end                        
+termatom *  c
+backbone n ca c
+RESIDUE_END
+
+RESIDUE tyr-h 
+atoms 
+group
+    n    n3           0.19400   
+   h1    h            0.18730   
+   h2    h            0.18730   
+   h3    h            0.18730   
+group
+   ca    ct           0.05700   
+   ha    hp           0.09830   
+group
+   cb    ct           0.06590   
+  hb1    hc           0.01020   
+  hb2    hc           0.01020   
+group
+   cg    ca          -0.02050   
+  cd1    ca          -0.20020   
+  hd1    ha           0.17200   
+group
+  ce1    ca          -0.22390   
+  he1    ha           0.16500   
+group
+   cz    c            0.31390   
+group
+   oh    oh          -0.55780   
+   hh    ho           0.40010   
+group
+  ce2    ca          -0.22390   
+  he2    ha           0.16500   
+group
+  cd2    ca          -0.20020   
+  hd2    ha           0.17200   
+group
+    c    c            0.61230   
+    o    o           -0.57130   
+end
+bonds 
+    n    h1
+    n    h2
+    n    h3
+    n    ca
+   ca    ha
+   ca    cb
+   ca     c
+   cb   hb1
+   cb   hb2
+   cb    cg
+   cg   cd1
+   cg   cd2
+  cd1   hd1
+  cd1   ce1
+  ce1   he1
+  ce1    cz
+   cz    oh
+   cz   ce2
+   oh    hh
+  ce2   he2
+  ce2   cd2
+  cd2   hd2
+    c     o
+end
+imphd
+   ca    +n     c     o
+   cg   ce2   cd2   hd2
+   cz   cd2   ce2   he2
+  cd1    cz   ce1   he1
+   cg   ce1   cd1   hd1
+  cd1   cd2    cg    cb
+  ce1   ce2    cz    oh
+end                        
+termatom *  c
+backbone n ca c
+RESIDUE_END
+                       
+
+#####################################################################
+##  Water
+#####################################################################
+
+RESIDUE  tip3 ( Total Charge =   0.0 )
+atoms
+group
+o      ow     -0.83400
+h1     hw      0.41700
+h2     hw      0.41700
+end
+
+bonds
+o   h1     o   h2     h1   h2     
+end
+
+termatom * *
+RESIDUE_END
+
+
+RESIDUE spce
+atoms
+group
+o      osp     -0.847600
+h1     hsp      0.423800
+h2     hsp      0.423800
+end
+
+bonds
+o h1  o h2  h1 h2
+end
+termatom  * *
+RESIDUE_END
+
+
+#####################################################################
+##  Ions
+#####################################################################
+
+RESIDUE na1
+atoms
+group
+na    ip   1.0
+end
+termatom * *
+RESIDUE_END
+
+
+
+RESIDUE cl1
+atoms
+group
+cl    im   -1.0
+end
+termatom * *
+RESIDUE_END
+
+
+RESIDUE po4
+atoms
+group
+p      p      +1.0         
+o1     o2     -1.0
+o2     o2     -1.0
+o3     o2     -1.0
+o4     o2     -1.0
+end
+
+bonds 
+p o1  p o2  p o3 p o4
+end 
+ 
+termatom * *
+RESIDUE_END
+ 
+RESIDUE fe
+atoms
+group
+fe   fe   3.0
+end
+termatom * *
+RESIDUE_END
+
+RESIDUE ca2+
+atoms
+group
+ca   ca2   2.0
+end
+termatom * *
+RESIDUE_END
+
+RESIDUE dum
+atoms
+group
+dum1    dum   0.000
+end
+termatom * *
+RESIDUE_END
+
+
+###############################
+###   ENDING GROUPS
+###############################
+
+RESIDUE ace ( Total Charge = 0.0 )
+atoms
+group
+c     c       0.512403
+o     o      -0.550170
+group
+ch3   ct     -0.190264
+hh31  h1      0.076010
+hh32  h1      0.076011
+hh33  h1      0.076010
+end
+
+bonds
+c o   c ch3  ch3 hh31   ch3 hh32  ch3 hh33 
+end
+
+imphd
+ch3   +n   c    o    
+end
+
+termatom  * c
+RESIDUE_END
+
+
+
+RESIDUE nme ( Total Charge = 0.0 )
+atoms
+group
+n     n      -0.423888
+h     h       0.290111
+group
+ch3   ct     -0.054293
+hh31  h1      0.062690
+hh32  h1      0.062690
+hh33  h1      0.062690
+end
+
+bonds
+n h   n ch3  ch3 hh31   ch3 hh32  ch3 hh33 
+end
+
+imphd
+ -c   ch3   n    h 
+end
+
+termatom  n *
+RESIDUE_END
+
+# nh2 ending group
+RESIDUE nhe ( Total Charge = 0.0 )
+atoms
+group
+n     n       -0.46300
+hn1   h        0.23150
+hn2   h        0.23150
+end
+
+bonds
+n hn1   n hn2  
+end
+
+imphd
+ -c   hn1   n    hn2
+end
+
+termatom  n *
+RESIDUE_END
+
+
+
+#####################################################################
+##  Organic solvents
+#####################################################################
+
+# kaldwell, kollman j. phys. chem. 1995, 99, 6208
+RESIDUE metoh
+atoms
+group
+c1    ct      0.116600
+h1    h1      0.037200
+h2    h1      0.037200
+h3    h1      0.037200
+group
+o1    oh     -0.649700
+ho    ho      0.421500
+end
+
+bonds
+c1 h1  c1 h2  c1 h3  c1  o1   o1  ho
+end
+termatom  * *
+RESIDUE_END
+
+# chelli et al pccp 1999 1,871-877
+RESIDUE glc
+atoms
+group
+c1    ct     0.182
+h1    h1     0.026
+h2    h1     0.026
+group
+c2    ct     0.055
+h3    h1     0.040
+group
+c3    ct     0.182
+h4    h1     0.026
+h5    h1     0.026
+group
+h6    ho     0.396
+o1    oh    -0.581
+group
+o2    oh    -0.585
+h7    ho     0.396
+group
+o3    oh    -0.585
+h8    ho     0.396
+end
+
+bonds 
+c1 c2
+c1 h1
+c1 h2
+c1 o3
+c2 h3
+c2 c3
+c2 o1
+c3 h4
+c3 h5
+c3 o2
+o1 h6
+o2 h7
+o3 h8
+end 
+
+termatom * *
+RESIDUE_END
+
+#fox, kollman j. phys. chem. B 1998, 102, 8070
+RESIDUE  dmso ( Total Charge =   0.0 )
+atoms
+group
+s1  s      0.307524
+o1  o     -0.517786
+group
+c1  ct    -0.262450
+h1  h1     0.122527
+h2  h1     0.122527
+h3  h1     0.122527
+group
+c2  ct    -0.262450
+h4  h1     0.122527
+h5  h1     0.122527
+h6  h1     0.122527
+end
+
+bonds
+s1 o1   s1 c1   s1 c2   c1 h1  c1 h2  c1 h3   c2 h4  c2 h5  c2 h6 
+end
+
+termatom * *
+
+RESIDUE_END
+
+
+#butane (hand-made, opls charges)
+RESIDUE  but ( Total Charge =   0.0 )
+atoms
+group
+c1     ct     -0.180000
+h11    hc      0.060000
+h12    hc      0.060000
+h13    hc      0.060000
+group
+c2     ct     -0.120000
+h21    hc      0.060000
+h22    hc      0.060000
+group
+c3     ct     -0.120000
+h31    hc      0.060000
+h32    hc      0.060000
+group
+c4     ct     -0.180000
+h41    hc      0.060000
+h42    hc      0.060000
+h43    hc      0.060000
+end
+
+bonds
+c1 h11 c1 h12 c1 h13
+c1 c2
+c2 h21 c2 h22
+c2 c3
+c3 h31 c3 h32
+c3 c4
+c4 h41 c4 h42 c4 h43
+end
+
+termatom * *
+RESIDUE_END
+
+
+#  benzene (GAFF, cardelli JCTC  2015)
+RESIDUE benz         (total charge =0.00)
+atoms 
+group            
+c1   ca     -0.130521      
+h11  ha      0.130521      
+group         
+c2   ca     -0.130521 
+h21  ha      0.130521        
+group         
+c3   ca     -0.130521   
+h31  ha      0.130521   
+group         
+c4   ca     -0.130521  
+h41  ha      0.130521  
+group         
+c5   ca     -0.130521
+h51  ha      0.130521
+group    
+c6   ca     -0.130521
+h61  ha      0.130521
+end
+bonds
+c1   c2     c1   h11
+c2   c3     c2   h21
+c3   c4     c3   h31
+c4   c5     c4   h41
+c5   c6     c5   h51
+c6   c1     c6   h61
+end
+
+imphd
+c4 c2 c3 h31   c5 c3 c4 h41  c6 c4 c5 h51   c1 c5 c6 h61
+c2 c6 c1 h11   c3 c1 c2 h21
+end
+
+termatom * *
+RESIDUE_END
+
+#  ethanol (GAFF, cardelli JCTC  2015)
+RESIDUE eth         (total charge =0.00)                                                
+atoms                                     
+group                                     
+o3   oh  -0.705679                        
+h3   ho   0.409394                        
+group                                     
+c2   a3   0.412671                        
+h21  h1  -0.042759                        
+h22  h1  -0.042759                        
+group                                     
+c1   b3  -0.239060                        
+h11  h3   0.0693973                       
+h12  h3   0.0693973                       
+h13  h3   0.0693973                       
+end                                       
+bonds                                     
+o3   h3     o3   c2                       
+c1   c2     c2   h21    c2  h22           
+c1   h11    c1   h12    c1  h13           
+end                                       
+                                          
+termatom * *                              
+RESIDUE_END                               
+
+#  ethanol in octanol  (GAFF, cardelli JCTC  2015)
+RESIDUE etho         (total charge =0.00)                                                
+atoms                                     
+group                                     
+o3   oh  -0.663094                      
+h3   ho   0.405196                      
+group                                     
+c2   a3   0.349659                      
+h21  h1  -0.026050                      
+h22  h1  -0.026050                      
+group                                     
+c1   b3  -0.266655                        
+h11  h3   0.059017                     
+h12  h3   0.083988                     
+h13  h3   0.083988                     
+end                                       
+bonds                                     
+o3   h3     o3   c2                       
+c1   c2     c2   h21    c2  h22           
+c1   h11    c1   h12    c1  h13           
+end                                       
+                                          
+termatom * *                              
+RESIDUE_END                               
+
+
+#  octanol (GAFF, cardelli JCTC  2015)
+RESIDUE otl         (total charge =0.00)
+atoms 
+group
+o1   oh  -0.71970
+h1   ho   0.43090
+group         
+c1   a3   0.30750
+h11  h1  -0.03060
+h12  h1  -0.03060
+group         
+c2   a3   0.05480 
+h21  hl   0.01710 
+h22  hl   0.01710 
+group         
+c3   a3  -0.10070
+h31  hl   0.00840
+h32  hl   0.00840
+group         
+c4   a3   0.10800
+h41  hl  -0.03200
+h42  hl  -0.03200
+group         
+c5   a3   0.02340
+h51  hl  -0.01520
+h52  hl  -0.01520
+group      
+c6   a3  -0.02600   
+h61  hl   0.00160   
+h62  hl   0.00160   
+group      
+c7   a3   0.15890 
+h71  hl  -0.02860 
+h72  hl  -0.02860 
+group      
+c8   b3   -0.22460  
+h81  h3    0.04870  
+h82  h3    0.04870 
+h83  h3    0.04870 
+end
+bonds
+o1   h1     o1   c1
+c1   c2     c1   h11    c1  h12
+c2   c3     c2   h21    c2  h22
+c3   c4     c3   h31    c3  h32
+c4   c5     c4   h41    c4  h42
+c5   c6     c5   h51    c5  h52
+c6   c7     c6   h61    c6  h62
+c7   c8     c7   h71    c7  h72
+c8   h81    c8   h82    c8  h83
+end
+
+termatom * *
+RESIDUE_END
+
+#
+# ------ Done with primadorac1.0 --------
+#
+ RESIDUE 1-o
+ atoms
+ group
+   c01    ct         -0.078700
+   h01    hc          0.040050
+   h02    hc          0.040050
+ group
+   c02    ct         -0.078600
+   h03    hc          0.039550
+   h04    hc          0.039550
+ group
+   c03    ct         -0.074600
+   h05    hc          0.041100
+   h06    hc          0.041100
+ group
+   c04    ct         -0.078200
+   h07    hc          0.039950
+   h08    hc          0.039950
+ group
+   c05    ct         -0.118500
+   h09    hc          0.046250
+   h10    hc          0.046250
+ group
+   c06    ct         -0.079800
+   h11    hc          0.038100
+   h12    hc          0.038100
+ group
+   c07    ct          0.127500
+   h13    h1          0.044400
+   h14    h1          0.044400
+ group
+   c08    ct         -0.092600
+   h15    hc          0.032633
+   h16    hc          0.032633
+   h17    hc          0.032633
+ group
+   o09    oh         -0.598700
+   h18    ho          0.395600
+ end
+ bonds
+   o09   c07       o09   h18       c01   c02       c01   c03 
+   c01   h01       c01   h02       c02   c04       c02   h03 
+   c02   h04       c03   c05       c03   h05       c03   h06 
+   c04   c06       c04   h07       c04   h08       c05   c07 
+   c05   h09       c05   h10       c06   c08       c06   h11 
+   c06   h12       c07   h13       c07   h14       c08   h15 
+   c08   h16       c08   h17 
+ end
+ termatom * *
+ RESIDUE_END
+
+
+
+# UNCOMMENT THE FOLLOWING AND TRANSFORM TO ORAC-FORMAT IF YOU NEED MORE  TERMINI
+# CSER 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.27220     3
+#    HA    H1           0.13040     4
+#    CB    CT           0.11230     5
+#   HB1    H1           0.08130     6
+#   HB2    H1           0.08130     7
+#    OG    OH          -0.65140     8
+#    HG    HO           0.44740     9
+#     C    C            0.81130    10
+#   OT1    O2          -0.81320    11
+#   OT2    O2          -0.81320    12
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    OG
+#    OG    HG
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#                        
+# CLEU 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.28470     3
+#    HA    H1           0.13460     4
+#    CB    CT          -0.24690     5
+#   HB1    HC           0.09740     6
+#   HB2    HC           0.09740     7
+#    CG    CT           0.37060     8
+#    HG    HC          -0.03740     9
+#   CD1    CT          -0.41630    10
+#  HD11    HC           0.10380    11
+#  HD12    HC           0.10380    12
+#  HD13    HC           0.10380    13
+#   CD2    CT          -0.41630    14
+#  HD21    HC           0.10380    15
+#  HD22    HC           0.10380    16
+#  HD23    HC           0.10380    17
+#     C    C            0.83260    18
+#   OT1    O2          -0.81990    19
+#   OT2    O2          -0.81990    20
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG    HG
+#    CG   CD1
+#    CG   CD2
+#   CD1  HD11
+#   CD1  HD12
+#   CD1  HD13
+#   CD2  HD21
+#   CD2  HD22
+#   CD2  HD23
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  dihedrals 
+#     C    CA    CB    CG        torsion_LEU_C_CA_CB_CG_mult1
+#     C    CA    CB    CG        torsion_LEU_C_CA_CB_CG_mult2
+#     C    CA    CB    CG        torsion_LEU_C_CA_CB_CG_mult3
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#                        
+# CILE 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.31000     3
+#    HA    H1           0.13750     4
+#    CB    CT           0.03630     5
+#    HB    HC           0.07660     6
+#   CG2    CT          -0.34980     7
+#  HG21    HC           0.10210     8
+#  HG22    HC           0.10210     9
+#  HG23    HC           0.10210    10
+#   CG1    CT          -0.03230    11
+#  HG11    HC           0.03210    12
+#  HG12    HC           0.03210    13
+#    CD    CT          -0.06990    14
+#   HD1    HC           0.01960    15
+#   HD2    HC           0.01960    16
+#   HD3    HC           0.01960    17
+#     C    C            0.83430    18
+#   OT1    O2          -0.81900    19
+#   OT2    O2          -0.81900    20
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB    HB
+#    CB   CG2
+#    CB   CG1
+#   CG2  HG21
+#   CG2  HG22
+#   CG2  HG23
+#   CG1  HG11
+#   CG1  HG12
+#   CG1    CD
+#    CD   HD1
+#    CD   HD2
+#    CD   HD3
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  dihedrals 
+#     N    CA    CB   CG2        torsion_ILE_N_CA_CB_CG2_mult1
+#     B    CA    CB   CG2        torsion_ILE_N_CA_CB_CG2_mult2
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#                        
+                       
+# CASN 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.20800     3
+#    HA    H1           0.13580     4
+#    CB    CT          -0.22990     5
+#   HB1    HC           0.10230     6
+#   HB2    HC           0.10230     7
+#    CG    C            0.71530     8
+#   OD1    O           -0.60100     9
+#   ND2    N           -0.90840    10
+#  HD21    H            0.41500    11
+#  HD22    H            0.41500    12
+#     C    C            0.80500    13
+#   OT1    O2          -0.81470    14
+#   OT2    O2          -0.81470    15
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   OD1
+#    CG   ND2
+#   ND2  HD21
+#   ND2  HD22
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  dihedrals 
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult1
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult2
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult3
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult4
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult5
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult6
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult1
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult2
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult3
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult4
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult5
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult6
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#    CB   ND2    CG   OD1    
+#    CG  HD21   ND2  HD22    
+#                        
+# CGLN 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.22480     3
+#    HA    H1           0.12320     4
+#    CB    CT          -0.06640     5
+#   HB1    HC           0.04520     6
+#   HB2    HC           0.04520     7
+#    CG    CT          -0.02100     8
+#   HG1    HC           0.02030     9
+#   HG2    HC           0.02030    10
+#    CD    C            0.70930    11
+#   OE1    O           -0.60980    12
+#   NE2    N           -0.95740    13
+#  HE21    H            0.43040    14
+#  HE22    H            0.43040    15
+#     C    C            0.77750    16
+#   OT1    O2          -0.80420    17
+#   OT2    O2          -0.80420    18
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CD
+#    CD   OE1
+#    CD   NE2
+#   NE2  HE21
+#   NE2  HE22
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#    CG   NE2    CD   OE1    
+#    CD  HE21   NE2  HE22    
+#                        
+# CHID 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.17390     3
+#    HA    H1           0.11000     4
+#    CB    CT          -0.10460     5
+#   HB1    HC           0.05650     6
+#   HB2    HC           0.05650     7
+#    CG    CC           0.02930     8
+#   ND1    NA          -0.38920     9
+#   HD1    H            0.37550    10
+#   CE1    CR           0.19250    11
+#   HE1    H5           0.14180    12
+#   NE2    NB          -0.56290    13
+#   CD2    CV           0.10010    14
+#   HD2    H4           0.12410    15
+#     C    C            0.76150    16
+#   OT1    O2          -0.80160    17
+#   OT2    O2          -0.80160    18
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   ND1
+#    CG   CD2
+#   ND1   HD1
+#   ND1   CE1
+#   CE1   HE1
+#   CE1   NE2
+#   NE2   CD2
+#   CD2   HD2
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#    CG   CE1   ND1   HD1    
+#    CG   NE2   CD2   HD2    
+#   ND1   NE2   CE1   HE1    
+#   ND1   CD2    CG    CB    
+#                        
+# CHIE 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.26990     3
+#    HA    H1           0.16500     4
+#    CB    CT          -0.10680     5
+#   HB1    HC           0.06200     6
+#   HB2    HC           0.06200     7
+#    CG    CC           0.27240     8
+#   ND1    NB          -0.55170     9
+#   CE1    CR           0.15580    10
+#   HE1    H5           0.14480    11
+#   NE2    NA          -0.26700    12
+#   HE2    H            0.33190    13
+#   CD2    CW          -0.25880    14
+#   HD2    H4           0.19570    15
+#     C    C            0.79160    16
+#   OT1    O2          -0.80650    17
+#   OT2    O2          -0.80650    18
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   ND1
+#    CG   CD2
+#   ND1   CE1
+#   CE1   HE1
+#   CE1   NE2
+#   NE2   HE2
+#   NE2   CD2
+#   CD2   HD2
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#   CE1   CD2   NE2   HE2    
+#    CG   NE2   CD2   HD2    
+#   ND1   NE2   CE1   HE1    
+#   ND1   CD2    CG    CB    
+#                        
+# CHIP 
+#  atoms 
+#     N    N           -0.34810     1
+#     H    H            0.27640     2
+#    CA    CT          -0.14450     3
+#    HA    H1           0.11150     4
+#    CB    CT          -0.08000     5
+#   HB1    HC           0.08680     6
+#   HB2    HC           0.08680     7
+#    CG    CC           0.02980     8
+#   ND1    NA          -0.15010     9
+#   HD1    H            0.38830    10
+#   CE1    CR          -0.02510    11
+#   HE1    H5           0.26940    12
+#   NE2    NA          -0.16830    13
+#   HE2    H            0.39130    14
+#   CD2    CW          -0.12560    15
+#   HD2    H4           0.23360    16
+#     C    C            0.80320    17
+#   OT1    O2          -0.81770    18
+#   OT2    O2          -0.81770    19
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   ND1
+#    CG   CD2
+#   ND1   HD1
+#   ND1   CE1
+#   CE1   HE1
+#   CE1   NE2
+#   NE2   HE2
+#   NE2   CD2
+#   CD2   HD2
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#    CG   CE1   ND1   HD1    
+#   CE1   CD2   NE2   HE2    
+#    CG   NE2   CD2   HD2    
+#   ND1   NE2   CE1   HE1    
+#   ND1   CD2    CG    CB    
+#                        
+# CTRP 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.20840     3
+#    HA    H1           0.12720     4
+#    CB    CT          -0.07420     5
+#   HB1    HC           0.04970     6
+#   HB2    HC           0.04970     7
+#    CG    C*          -0.07960     8
+#   CD1    CW          -0.18080     9
+#   HD1    H4           0.20430    10
+#   NE1    NA          -0.33160    11
+#   HE1    H            0.34130    12
+#   CE2    CN           0.12220    13
+#   CZ2    CA          -0.25940    14
+#   HZ2    HA           0.15670    15
+#   CH2    CA          -0.10200    16
+#   HH2    HA           0.14010    17
+#   CZ3    CA          -0.22870    18
+#   HZ3    HA           0.15070    19
+#   CE3    CA          -0.18370    20
+#   HE3    HA           0.14910    21
+#   CD2    CB           0.10780    22
+#     C    C            0.76580    23
+#   OT1    O2          -0.80110    24
+#   OT2    O2          -0.80110    25
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   CD1
+#    CG   CD2
+#   CD1   HD1
+#   CD1   NE1
+#   NE1   HE1
+#   NE1   CE2
+#   CE2   CZ2
+#   CE2   CD2
+#   CZ2   HZ2
+#   CZ2   CH2
+#   CH2   HH2
+#   CH2   CZ3
+#   CZ3   HZ3
+#   CZ3   CE3
+#   CE3   HE3
+#   CE3   CD2
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#   CD1   CE2   NE1   HE1    
+#   CE2   CH2   CZ2   HZ2    
+#   CZ2   CZ3   CH2   HH2    
+#   CH2   CE3   CZ3   HZ3    
+#   CZ3   CD2   CE3   HE3    
+#    CG   NE1   CD1   HD1    
+#   CD1    CG    CB   CD2
+#                        
+# CPHE 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.18250     3
+#    HA    H1           0.10980     4
+#    CB    CT          -0.09590     5
+#   HB1    HC           0.04430     6
+#   HB2    HC           0.04430     7
+#    CG    CA           0.05520     8
+#   CD1    CA          -0.13000     9
+#   HD1    HA           0.14080    10
+#   CE1    CA          -0.18470    11
+#   HE1    HA           0.14610    12
+#    CZ    CA          -0.09440    13
+#    HZ    HA           0.12800    14
+#   CE2    CA          -0.18470    15
+#   HE2    HA           0.14610    16
+#   CD2    CA          -0.13000    17
+#   HD2    HA           0.14080    18
+#     C    C            0.76600    19
+#   OT1    O2          -0.80260    20
+#   OT2    O2          -0.80260    21
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   CD1
+#    CG   CD2
+#   CD1   HD1
+#   CD1   CE1
+#   CE1   HE1
+#   CE1    CZ
+#    CZ    HZ
+#    CZ   CE2
+#   CE2   HE2
+#   CE2   CD2
+#   CD2   HD2
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#    CG   CE2   CD2   HD2    
+#    CZ   CD2   CE2   HE2    
+#   CE1   CE2    CZ    HZ    
+#   CD1    CZ   CE1   HE1    
+#    CG   CE1   CD1   HD1    
+#   CD1   CD2    CG    CB    
+#                        
+# CTYR 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.20150     3
+#    HA    H1           0.10920     4
+#    CB    CT          -0.07520     5
+#   HB1    HC           0.04900     6
+#   HB2    HC           0.04900     7
+#    CG    CA           0.02430     8
+#   CD1    CA          -0.19220     9
+#   HD1    HA           0.17800    10
+#   CE1    CA          -0.24580    11
+#   HE1    HA           0.16730    12
+#    CZ    C            0.33950    13
+#    OH    OH          -0.56430    14
+#    HH    HO           0.40170    15
+#   CE2    CA          -0.24580    16
+#   HE2    HA           0.16730    17
+#   CD2    CA          -0.19220    18
+#   HD2    HA           0.17800    19
+#     C    C            0.78170    20
+#   OT1    O2          -0.80700    21
+#   OT2    O2          -0.80700    22
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   CD1
+#    CG   CD2
+#   CD1   HD1
+#   CD1   CE1
+#   CE1   HE1
+#   CE1    CZ
+#    CZ    OH
+#    CZ   CE2
+#    OH    HH
+#   CE2   HE2
+#   CE2   CD2
+#   CD2   HD2
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#    CG   CE2   CD2   HD2    
+#    CZ   CD2   CE2   HE2    
+#   CD1    CZ   CE1   HE1    
+#    CG   CE1   CD1   HD1    
+#   CD1   CD2    CG    CB    
+#   CE1   CE2    CZ    OH    
+#                        
+# CGLU 
+#  atoms 
+#     N    N           -0.51920     1
+#     H    H            0.30550     2
+#    CA    CT          -0.20590     3
+#    HA    H1           0.13990     4
+#    CB    CT           0.00710     5
+#   HB1    HC          -0.00780     6
+#   HB2    HC          -0.00780     7
+#    CG    CT           0.06750     8
+#   HG1    HC          -0.05480     9
+#   HG2    HC          -0.05480    10
+#    CD    C            0.81830    11
+#   OE1    O2          -0.82200    12
+#   OE2    O2          -0.82200    13
+#     C    C            0.74200    14
+#   OT1    O2          -0.79300    15
+#   OT2    O2          -0.79300    16
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CD
+#    CD   OE1
+#    CD   OE2
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#    CG   OE1    CD   OE2    
+#                        
+# CASP 
+#  atoms 
+#     N    N           -0.51920     1
+#     H    H            0.30550     2
+#    CA    CT          -0.18170     3
+#    HA    H1           0.10460     4
+#    CB    CT          -0.06770     5
+#   HB1    HC          -0.02120     6
+#   HB2    HC          -0.02120     7
+#    CG    C            0.88510     8
+#   OD1    O2          -0.81620     9
+#   OD2    O2          -0.81620    10
+#     C    C            0.72560    11
+#   OT1    O2          -0.78870    12
+#   OT2    O2          -0.78870    13
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   OD1
+#    CG   OD2
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  dihedrals 
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult1
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult2
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult3
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult4
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult5
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult6
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult1
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult2
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult3
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult4
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult5
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult6
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult1
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult2
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult3
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult4
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult5
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult6
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#    CB   OD1    CG   OD2    
+#                        
+# CLYS 
+#  atoms 
+#     N    N           -0.34810     1
+#     H    H            0.27640     2
+#    CA    CT          -0.29030     3
+#    HA    H1           0.14380     4
+#    CB    CT          -0.05380     5
+#   HB1    HC           0.04820     6
+#   HB2    HC           0.04820     7
+#    CG    CT           0.02270     8
+#   HG1    HC           0.01340     9
+#   HG2    HC           0.01340    10
+#    CD    CT          -0.03920    11
+#   HD1    HC           0.06110    12
+#   HD2    HC           0.06110    13
+#    CE    CT          -0.01760    14
+#   HE1    HP           0.11210    15
+#   HE2    HP           0.11210    16
+#    NZ    N3          -0.37410    17
+#   HZ1    H            0.33740    18
+#   HZ2    H            0.33740    19
+#   HZ3    H            0.33740    20
+#     C    C            0.84880    21
+#   OT1    O2          -0.82520    22
+#   OT2    O2          -0.82520    23
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CD
+#    CD   HD1
+#    CD   HD2
+#    CD    CE
+#    CE   HE1
+#    CE   HE2
+#    CE    NZ
+#    NZ   HZ1
+#    NZ   HZ2
+#    NZ   HZ3
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#                        
+# CPRO 
+#  atoms 
+#     N    N           -0.28020     1
+#    CD    CT           0.04340     2
+#   HD1    H1           0.03310     3
+#   HD2    H1           0.03310     4
+#    CG    CT           0.04660     5
+#   HG1    HC           0.01720     6
+#   HG2    HC           0.01720     7
+#    CB    CT          -0.05430     8
+#   HB1    HC           0.03810     9
+#   HB2    HC           0.03810    10
+#    CA    CT          -0.13360    11
+#    HA    H1           0.07760    12
+#     C    C            0.66310    13
+#   OT1    O2          -0.76970    14
+#   OT2    O2          -0.76970    15
+#  bonds 
+#     N    CD
+#     N    CA
+#    CD   HD1
+#    CD   HD2
+#    CD    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CB
+#    CB   HB1
+#    CB   HB2
+#    CB    CA
+#    CA    HA
+#    CA     C
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  dihedrals 
+#     CA   CB    CG    CD        torsion_PRO_CA_CB_CG_CD_mult3
+#  impropers 
+#    CA   OT1     C   OT2    
+#    -C    CD     N    CA    
+#                        
+# CCYS 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.16350     3
+#    HA    H1           0.13960     4
+#    CB    CT          -0.19960     5
+#   HB1    H1           0.14370     6
+#   HB2    H1           0.14370     7
+#    SG    SH          -0.31020     8
+#    HG    HS           0.20680     9
+#     C    C            0.74970    10
+#   OT1    O2          -0.79810    11
+#   OT2    O2          -0.79810    12
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    SG
+#    SG    HG
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#                        
+# CCYX 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.13180     3
+#    HA    H1           0.09380     4
+#    CB    CT          -0.19430     5
+#   HB1    H1           0.12280     6
+#   HB2    H1           0.12280     7
+#    SG    S           -0.05290     8
+#     C    C            0.76180     9
+#   OT1    O2          -0.80410    10
+#   OT2    O2          -0.80410    11
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    SG
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#                        
+# CMET 
+#  atoms 
+#     N    N           -0.38210     1
+#     H    H            0.26810     2
+#    CA    CT          -0.25970     3
+#    HA    H1           0.12770     4
+#    CB    CT          -0.02360     5
+#   HB1    HC           0.04800     6
+#   HB2    HC           0.04800     7
+#    CG    CT           0.04920     8
+#   HG1    H1           0.03170     9
+#   HG2    H1           0.03170    10
+#    SD    S           -0.26920    11
+#    CE    CT          -0.03760    12
+#   HE1    H1           0.06250    13
+#   HE2    H1           0.06250    14
+#   HE3    H1           0.06250    15
+#     C    C            0.80130    16
+#   OT1    O2          -0.81050    17
+#   OT2    O2          -0.81050    18
+#  bonds 
+#     N     H
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    SD
+#    SD    CE
+#    CE   HE1
+#    CE   HE2
+#    CE   HE3
+#     C   OT1
+#     C   OT2
+#    -C     N
+#  impropers 
+#    -C    CA     N     H    
+#    CA   OT1     C   OT2    
+#
+
+
+# NLEU 
+#  atoms 
+#     N    N3           0.10100     1
+#    H1    H            0.21480     2
+#    H2    H            0.21480     3
+#    H3    H            0.21480     4
+#    CA    CT           0.01040     5
+#    HA    HP           0.10530     6
+#    CB    CT          -0.02440     7
+#   HB1    HC           0.02560     8
+#   HB2    HC           0.02560     9
+#    CG    CT           0.34210    10
+#    HG    HC          -0.03800    11
+#   CD1    CT          -0.41060    12
+#  HD11    HC           0.09800    13
+#  HD12    HC           0.09800    14
+#  HD13    HC           0.09800    15
+#   CD2    CT          -0.41040    16
+#  HD21    HC           0.09800    17
+#  HD22    HC           0.09800    18
+#  HD23    HC           0.09800    19
+#     C    C            0.61230    20
+#     O    O           -0.57130    21
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG    HG
+#    CG   CD1
+#    CG   CD2
+#   CD1  HD11
+#   CD1  HD12
+#   CD1  HD13
+#   CD2  HD21
+#   CD2  HD22
+#   CD2  HD23
+#     C     O
+#     C    +N
+#  dihedrals 
+#     C    CA    CB    CG        torsion_LEU_C_CA_CB_CG_mult1
+#     C    CA    CB    CG        torsion_LEU_C_CA_CB_CG_mult2
+#     C    CA    CB    CG        torsion_LEU_C_CA_CB_CG_mult3
+#  impropers 
+#    CA    +N     C     O
+#                        
+# NILE 
+#  atoms 
+#     N    N3           0.03110     1
+#    H1    H            0.23290     2
+#    H2    H            0.23290     3
+#    H3    H            0.23290     4
+#    CA    CT           0.02570     5
+#    HA    HP           0.10310     6
+#    CB    CT           0.18850     7
+#    HB    HC           0.02130     8
+#   CG2    CT          -0.37200     9
+#  HG21    HC           0.09470    10
+#  HG22    HC           0.09470    11
+#  HG23    HC           0.09470    12
+#   CG1    CT          -0.03870    13
+#  HG11    HC           0.02010    14
+#  HG12    HC           0.02010    15
+#    CD    CT          -0.09080    16
+#   HD1    HC           0.02260    17
+#   HD2    HC           0.02260    18
+#   HD3    HC           0.02260    19
+#     C    C            0.61230    20
+#     O    O           -0.57130    21
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB    HB
+#    CB   CG2
+#    CB   CG1
+#   CG2  HG21
+#   CG2  HG22
+#   CG2  HG23
+#   CG1  HG11
+#   CG1  HG12
+#   CG1    CD
+#    CD   HD1
+#    CD   HD2
+#    CD   HD3
+#     C     O
+#     C    +N
+#  dihedrals 
+#     N    CA    CB   CG2        torsion_ILE_N_CA_CB_CG2_mult1
+#     B    CA    CB   CG2        torsion_ILE_N_CA_CB_CG2_mult2
+#  impropers 
+#    CA    +N     C     O
+#                        
+# NVAL 
+#  atoms 
+#     N    N3           0.05770     1
+#    H1    H            0.22720     2
+#    H2    H            0.22720     3
+#    H3    H            0.22720     4
+#    CA    CT          -0.00540     5
+#    HA    HP           0.10930     6
+#    CB    CT           0.31960     7
+#    HB    HC          -0.02210     8
+#   CG1    CT          -0.31290     9
+#  HG11    HC           0.07350    10
+#  HG12    HC           0.07350    11
+#  HG13    HC           0.07350    12
+#   CG2    CT          -0.31290    13
+#  HG21    HC           0.07350    14
+#  HG22    HC           0.07350    15
+#  HG23    HC           0.07350    16
+#     C    C            0.61630    17
+#     O    O           -0.57220    18
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB    HB
+#    CB   CG1
+#    CB   CG2
+#   CG1  HG11
+#   CG1  HG12
+#   CG1  HG13
+#   CG2  HG21
+#   CG2  HG22
+#   CG2  HG23
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#                        
+# NASN 
+#  atoms 
+#     N    N3           0.18010     1
+#    H1    H            0.19210     2
+#    H2    H            0.19210     3
+#    H3    H            0.19210     4
+#    CA    CT           0.03680     5
+#    HA    HP           0.12310     6
+#    CB    CT          -0.02830     7
+#   HB1    HC           0.05150     8
+#   HB2    HC           0.05150     9
+#    CG    C            0.58330    10
+#   OD1    O           -0.57440    11
+#   ND2    N           -0.86340    12
+#  HD21    H            0.40970    13
+#  HD22    H            0.40970    14
+#     C    C            0.61630    15
+#     O    O           -0.57220    16
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   OD1
+#    CG   ND2
+#   ND2  HD21
+#   ND2  HD22
+#     C     O
+#     C    +N
+#  dihedrals 
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult1
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult2
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult3
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult4
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult5
+#     C    CA    CB    CG        torsion_ASN_C_CA_CB_CG_mult6
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult1
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult2
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult3
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult4
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult5
+#    CA    CB    CG   ND2        torsion_ASN_CA_CB_CG_ND2_mult6
+#  impropers 
+#    CA    +N     C     O
+#    CB   ND2    CG   OD1
+#    CG  HD21   ND2  HD22
+#                        
+# NGLN 
+#  atoms 
+#     N    N3           0.14930     1
+#    H1    H            0.19960     2
+#    H2    H            0.19960     3
+#    H3    H            0.19960     4
+#    CA    CT           0.05360     5
+#    HA    HP           0.10150     6
+#    CB    CT           0.06510     7
+#   HB1    HC           0.00500     8
+#   HB2    HC           0.00500     9
+#    CG    CT          -0.09030    10
+#   HG1    HC           0.03310    11
+#   HG2    HC           0.03310    12
+#    CD    C            0.73540    13
+#   OE1    O           -0.61330    14
+#   NE2    N           -1.00310    15
+#  HE21    H            0.44290    16
+#  HE22    H            0.44290    17
+#     C    C            0.61230    18
+#     O    O           -0.57130    19
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CD
+#    CD   OE1
+#    CD   NE2
+#   NE2  HE21
+#   NE2  HE22
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#    CG   NE2    CD   OE1
+#    CD  HE21   NE2  HE22
+#                        
+# NARG 
+#  atoms 
+#     N    N3           0.13050     1
+#    H1    H            0.20830     2
+#    H2    H            0.20830     3
+#    H3    H            0.20830     4
+#    CA    CT          -0.02230     5
+#    HA    HP           0.12420     6
+#    CB    CT           0.01180     7
+#   HB1    HC           0.02260     8
+#   HB2    HC           0.02260     9
+#    CG    CT           0.02360    10
+#   HG1    HC           0.03090    11
+#   HG2    HC           0.03090    12
+#    CD    CT           0.09350    13
+#   HD1    H1           0.05270    14
+#   HD2    H1           0.05270    15
+#    NE    N2          -0.56500    16
+#    HE    H            0.35920    17
+#    CZ    CA           0.82810    18
+#   NH1    N2          -0.86930    19
+#  HH11    H            0.44940    20
+#  HH12    H            0.44940    21
+#   NH2    N2          -0.86930    22
+#  HH21    H            0.44940    23
+#  HH22    H            0.44940    24
+#     C    C            0.72140    25
+#     O    O           -0.60130    26
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CD
+#    CD   HD1
+#    CD   HD2
+#    CD    NE
+#    NE    HE
+#    NE    CZ
+#    CZ   NH1
+#    CZ   NH2
+#   NH1  HH11
+#   NH1  HH12
+#   NH2  HH21
+#   NH2  HH22
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#    NE   NH1    CZ   NH2
+#    CD    CZ    NE    HE
+#    CZ  HH11   NH1  HH12
+#    CZ  HH21   NH2  HH22
+#                        
+# NHID 
+#  atoms 
+#     N    N3           0.15420     1
+#    H1    H            0.19630     2
+#    H2    H            0.19630     3
+#    H3    H            0.19630     4
+#    CA    CT           0.09640     5
+#    HA    HP           0.09580     6
+#    CB    CT           0.02590     7
+#   HB1    HC           0.02090     8
+#   HB2    HC           0.02090     9
+#    CG    CC          -0.03990    10
+#   ND1    NA          -0.38190    11
+#   HD1    H            0.36320    12
+#   CE1    CR           0.21270    13
+#   HE1    H5           0.13850    14
+#   NE2    NB          -0.57110    15
+#   CD2    CV           0.10460    16
+#   HD2    H4           0.12990    17
+#     C    C            0.61230    18
+#     O    O           -0.57130    19
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   ND1
+#    CG   CD2
+#   ND1   HD1
+#   ND1   CE1
+#   CE1   HE1
+#   CE1   NE2
+#   NE2   CD2
+#   CD2   HD2
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#    CG   CE1   ND1   HD1
+#    CG   NE2   CD2   HD2
+#   ND1   NE2   CE1   HE1
+#   ND1   CD2    CG    CB
+#                        
+# NHIE 
+#  atoms 
+#     N    N3           0.14720     1
+#    H1    H            0.20160     2
+#    H2    H            0.20160     3
+#    H3    H            0.20160     4
+#    CA    CT           0.02360     5
+#    HA    HP           0.13800     6
+#    CB    CT           0.04890     7
+#   HB1    HC           0.02230     8
+#   HB2    HC           0.02230     9
+#    CG    CC           0.17400    10
+#   ND1    NB          -0.55790    11
+#   CE1    CR           0.18040    12
+#   HE1    H5           0.13970    13
+#   NE2    NA          -0.27810    14
+#   HE2    H            0.33240    15
+#   CD2    CW          -0.23490    16
+#   HD2    H4           0.19630    17
+#     C    C            0.61230    18
+#     O    O           -0.57130    19
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   ND1
+#    CG   CD2
+#   ND1   CE1
+#   CE1   HE1
+#   CE1   NE2
+#   NE2   HE2
+#   NE2   CD2
+#   CD2   HD2
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#   CE1   CD2   NE2   HE2
+#    CG   NE2   CD2   HD2
+#   ND1   NE2   CE1   HE1
+#   ND1   CD2    CG    CB
+#                        
+# NHIP 
+#  atoms 
+#     N    N3           0.25600     1
+#    H1    H            0.17040     2
+#    H2    H            0.17040     3
+#    H3    H            0.17040     4
+#    CA    CT           0.05810     5
+#    HA    HP           0.10470     6
+#    CB    CT           0.04840     7
+#   HB1    HC           0.05310     8
+#   HB2    HC           0.05310     9
+#    CG    CC          -0.02360    10
+#   ND1    NA          -0.15100    11
+#   HD1    H            0.38210    12
+#   CE1    CR          -0.00110    13
+#   HE1    H5           0.26450    14
+#   NE2    NA          -0.17390    15
+#   HE2    H            0.39210    16
+#   CD2    CW          -0.14330    17
+#   HD2    H4           0.24950    18
+#     C    C            0.72140    19
+#     O    O           -0.60130    20
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   ND1
+#    CG   CD2
+#   ND1   HD1
+#   ND1   CE1
+#   CE1   HE1
+#   CE1   NE2
+#   NE2   HE2
+#   NE2   CD2
+#   CD2   HD2
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#    CG   CE1   ND1   HD1
+#   CE1   CD2   NE2   HE2
+#    CG   NE2   CD2   HD2
+#   ND1   NE2   CE1   HE1
+#   ND1   CD2    CG    CB
+#                        
+# NTRP 
+#  atoms 
+#     N    N3           0.19130     1
+#    H1    H            0.18880     2
+#    H2    H            0.18880     3
+#    H3    H            0.18880     4
+#    CA    CT           0.04210     5
+#    HA    HP           0.11620     6
+#    CB    CT           0.05430     7
+#   HB1    HC           0.02220     8
+#   HB2    HC           0.02220     9
+#    CG    C*          -0.16540    10
+#   CD1    CW          -0.17880    11
+#   HD1    H4           0.21950    12
+#   NE1    NA          -0.34440    13
+#   HE1    H            0.34120    14
+#   CE2    CN           0.15750    15
+#   CZ2    CA          -0.27100    16
+#   HZ2    HA           0.15890    17
+#   CH2    CA          -0.10800    18
+#   HH2    HA           0.14110    19
+#   CZ3    CA          -0.20340    20
+#   HZ3    HA           0.14580    21
+#   CE3    CA          -0.22650    22
+#   HE3    HA           0.16460    23
+#   CD2    CB           0.11320    24
+#     C    C            0.61230    25
+#     O    O           -0.57130    26
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   CD1
+#    CG   CD2
+#   CD1   HD1
+#   CD1   NE1
+#   NE1   HE1
+#   NE1   CE2
+#   CE2   CZ2
+#   CE2   CD2
+#   CZ2   HZ2
+#   CZ2   CH2
+#   CH2   HH2
+#   CH2   CZ3
+#   CZ3   HZ3
+#   CZ3   CE3
+#   CE3   HE3
+#   CE3   CD2
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#   CD1   CE2   NE1   HE1
+#   CE2   CH2   CZ2   HZ2
+#   CZ2   CZ3   CH2   HH2
+#   CH2   CE3   CZ3   HZ3
+#   CZ3   CD2   CE3   HE3
+#    CG   NE1   CD1   HD1
+#   CD1    CG    CB   CD2
+#                        
+# NPHE 
+#  atoms 
+#     N    N3           0.17370     1
+#    H1    H            0.19210     2
+#    H2    H            0.19210     3
+#    H3    H            0.19210     4
+#    CA    CT           0.07330     5
+#    HA    HP           0.10410     6
+#    CB    CT           0.03300     7
+#   HB1    HC           0.01040     8
+#   HB2    HC           0.01040     9
+#    CG    CA           0.00310    10
+#   CD1    CA          -0.13920    11
+#   HD1    HA           0.13740    12
+#   CE1    CA          -0.16020    13
+#   HE1    HA           0.14330    14
+#    CZ    CA          -0.12080    15
+#    HZ    HA           0.13290    16
+#   CE2    CA          -0.16030    17
+#   HE2    HA           0.14330    18
+#   CD2    CA          -0.13910    19
+#   HD2    HA           0.13740    20
+#     C    C            0.61230    21
+#     O    O           -0.57130    22
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   CD1
+#    CG   CD2
+#   CD1   HD1
+#   CD1   CE1
+#   CE1   HE1
+#   CE1    CZ
+#    CZ    HZ
+#    CZ   CE2
+#   CE2   HE2
+#   CE2   CD2
+#   CD2   HD2
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#    CG   CE2   CD2   HD2
+#    CZ   CD2   CE2   HE2
+#   CE1   CE2    CZ    HZ
+#   CD1    CZ   CE1   HE1
+#    CG   CE1   CD1   HD1
+#   CD1   CD2    CG    CB
+#                        
+# NTYR 
+#  atoms 
+#     N    N3           0.19400     1
+#    H1    H            0.18730     2
+#    H2    H            0.18730     3
+#    H3    H            0.18730     4
+#    CA    CT           0.05700     5
+#    HA    HP           0.09830     6
+#    CB    CT           0.06590     7
+#   HB1    HC           0.01020     8
+#   HB2    HC           0.01020     9
+#    CG    CA          -0.02050    10
+#   CD1    CA          -0.20020    11
+#   HD1    HA           0.17200    12
+#   CE1    CA          -0.22390    13
+#   HE1    HA           0.16500    14
+#    CZ    C            0.31390    15
+#    OH    OH          -0.55780    16
+#    HH    HO           0.40010    17
+#   CE2    CA          -0.22390    18
+#   HE2    HA           0.16500    19
+#   CD2    CA          -0.20020    20
+#   HD2    HA           0.17200    21
+#     C    C            0.61230    22
+#     O    O           -0.57130    23
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   CD1
+#    CG   CD2
+#   CD1   HD1
+#   CD1   CE1
+#   CE1   HE1
+#   CE1    CZ
+#    CZ    OH
+#    CZ   CE2
+#    OH    HH
+#   CE2   HE2
+#   CE2   CD2
+#   CD2   HD2
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#    CG   CE2   CD2   HD2
+#    CZ   CD2   CE2   HE2
+#   CD1    CZ   CE1   HE1
+#    CG   CE1   CD1   HD1
+#   CD1   CD2    CG    CB
+#   CE1   CE2    CZ    OH
+#                        
+#                        
+# NGLU 
+#  atoms 
+#     N    N3           0.00170     1
+#    H1    H            0.23910     2
+#    H2    H            0.23910     3
+#    H3    H            0.23910     4
+#    CA    CT           0.05880     5
+#    HA    HP           0.12020     6
+#    CB    CT           0.09090     7
+#   HB1    HC          -0.02320     8
+#   HB2    HC          -0.02320     9
+#    CG    CT          -0.02360    10
+#   HG1    HC          -0.03150    11
+#   HG2    HC          -0.03150    12
+#    CD    C            0.80870    13
+#   OE1    O2          -0.81890    14
+#   OE2    O2          -0.81890    15
+#     C    C            0.56210    16
+#     O    O           -0.58890    17
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CD
+#    CD   OE1
+#    CD   OE2
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#    CG   OE1    CD   OE2
+#                        
+# NASP 
+#  atoms 
+#     N    N3           0.07820     1
+#    H1    H            0.22000     2
+#    H2    H            0.22000     3
+#    H3    H            0.22000     4
+#    CA    CT           0.02920     5
+#    HA    HP           0.11410     6
+#    CB    CT          -0.02350     7
+#   HB1    HC          -0.01690     8
+#   HB2    HC          -0.01690     9
+#    CG    C            0.81940    10
+#   OD1    O2          -0.80840    11
+#   OD2    O2          -0.80840    12
+#     C    C            0.56210    13
+#     O    O           -0.58890    14
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   OD1
+#    CG   OD2
+#     C     O
+#     C    +N
+#  dihedrals 
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult1
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult2
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult3
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult4
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult5
+#     N    CA    CB    CG        torsion_ASP_N_CA_CB_CG_mult6
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult1
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult2
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult3
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult4
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult5
+#    CA    CB    CG   OD1        torsion_ASP_CA_CB_CG_OD_mult6
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult1
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult2
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult3
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult4
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult5
+#    CA    CB    CG   OD2        torsion_ASP_CA_CB_CG_OD_mult6
+#  impropers 
+#    CA    +N     C     O
+#    CB   OD1    CG   OD2
+#                        
+# NLYS 
+#  atoms 
+#     N    N3           0.09660     1
+#    H1    H            0.21650     2
+#    H2    H            0.21650     3
+#    H3    H            0.21650     4
+#    CA    CT          -0.00150     5
+#    HA    HP           0.11800     6
+#    CB    CT           0.02120     7
+#   HB1    HC           0.02830     8
+#   HB2    HC           0.02830     9
+#    CG    CT          -0.00480    10
+#   HG1    HC           0.01210    11
+#   HG2    HC           0.01210    12
+#    CD    CT          -0.06080    13
+#   HD1    HC           0.06330    14
+#   HD2    HC           0.06330    15
+#    CE    CT          -0.01810    16
+#   HE1    HP           0.11710    17
+#   HE2    HP           0.11710    18
+#    NZ    N3          -0.37640    19
+#   HZ1    H            0.33820    20
+#   HZ2    H            0.33820    21
+#   HZ3    H            0.33820    22
+#     C    C            0.72140    23
+#     O    O           -0.60130    24
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    CG
+#    CG   HG1
+#    CG   HG2
+#    CG    CD
+#    CD   HD1
+#    CD   HD2
+#    CD    CE
+#    CE   HE1
+#    CE   HE2
+#    CE    NZ
+#    NZ   HZ1
+#    NZ   HZ2
+#    NZ   HZ3
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#                        
+# NCYS 
+#  atoms 
+#     N    N3           0.13250     1
+#    H1    H            0.20230     2
+#    H2    H            0.20230     3
+#    H3    H            0.20230     4
+#    CA    CT           0.09270     5
+#    HA    HP           0.14110     6
+#    CB    CT          -0.11950     7
+#   HB1    H1           0.11880     8
+#   HB2    H1           0.11880     9
+#    SG    SH          -0.32980    10
+#    HG    HS           0.19750    11
+#     C    C            0.61230    12
+#     O    O           -0.57130    13
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB1
+#    CB   HB2
+#    CB    SG
+#    SG    HG
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#                        
+# NCYX 
+#  atoms 
+#     N    N3           0.20690     1
+#    H1    H            0.18150     2
+#    H2    H            0.18150     3
+#    H3    H            0.18150     4
+#    CA    CT           0.10550     5
+#    HA    HP           0.09220     6
+#    CB    CT          -0.02770     7
+#   HB1    H1           0.06800     8
+#   HB2    H1           0.06800     9
+#    SG    S           -0.09840    10
+#     C    C            0.61230    11
+#     O    O           -0.57130    12
+#  bonds 
+#     N    H1
+#     N    H2
+#     N    H3
+#     N    CA
+#    CA    HA
+#    CA    CB
+#    CA     C
+#    CB   HB2
+#    CB   HB1
+#    CB    SG
+#     C     O
+#     C    +N
+#  impropers 
+#    CA    +N     C     O
+#                        
+RESIDUE  tip3f ( Total Charge =   0.0 )
+atoms
+group
+o      owf     -0.83400
+h1     hwf      0.41700
+h2     hwf      0.41700
+end
+
+bonds
+o   h1     o   h2  
+end
+
+termatom * *
+RESIDUE_END
+
+# MARINA NEW ZINC BINDING RESIDUES
+RESIDUE cyz  (-1 charge)  
+atoms 
+group
+     n    n           -0.41570 
+     h    h            0.27190 
+group
+    ca    ct          -0.15350 
+    ha    h1           0.07310 
+group
+    cb    ct           0.09460 
+   hb1    h1           0.05140 
+   hb2    h1           0.05140 
+group
+    sg    sz          -1.00260 
+group
+     c    c            0.59730 
+     o    o           -0.56790 
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    sg     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+
+RESIDUE  hdz 
+atoms 
+group
+     n    n           -0.41570   
+     h    h            0.27190   
+group
+    ca    ct           0.36670   
+    ha    h1          -0.04520   
+group
+    cb    ct          -0.26500   
+   hb1    hc           0.09110   
+   hb2    hc           0.09110   
+group
+    cg    cc           0.08800   
+   nd1    na          -0.08020   
+   hd1    h            0.22530   
+group
+   ce1    cr           0.22300   
+   he1    h5           0.14640   
+group
+   ne2    nz          -1.01850   
+   cd2    cv           0.18380   
+   hd2    h4           0.10790   
+group
+     c    c            0.59730   
+     o    o           -0.56790   
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   nd1
+    cg   cd2   nd1   hd1   nd1   ce1
+   ce1   he1   ce1   ne2   ne2   cd2
+   cd2   hd2     c     o 
+end 
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   ce1   nd1   hd1
+    cg   ne2   cd2   hd2
+   nd1   ne2   ce1   he1
+   nd1   cd2    cg    cb
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+
+RESIDUE hez 
+atoms 
+group
+     n    n           -0.41570  
+     h    h            0.27190  
+group
+    ca    ct           0.36920  
+    ha    h1           0.00010  
+group
+    cb    ct          -0.14090  
+   hb1    hc           0.04750  
+   hb2    hc           0.04750  
+group
+    cg    cc           0.52290  
+   nd1    nz          -1.20080  
+   ce1    cr           0.28080  
+   he1    h5           0.12280  
+group
+   ne2    na          -0.05660  
+   he2    h            0.23360  
+group
+   cd2    cw          -0.21730  
+   hd2    h4           0.10560  
+group
+     c    c            0.59730  
+     o    o           -0.56790  
+end 
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb2
+    cb   hb1    cb    cg    cg   nd1
+    cg   cd2   nd1   ce1   ce1   he1
+   ce1   ne2   ne2   he2   ne2   cd2
+   cd2   hd2     c     o     
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+   ce1   cd2   ne2   he2
+    cg   ne2   cd2   hd2
+   nd1   ne2   ce1   he1
+   nd1   cd2    cg    cb
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+RESIDUE glz 
+atoms 
+group
+     n    n           -0.51630  
+     h    h            0.29360  
+group
+    ca    ct           0.13500  
+    ha    h1           0.05660  
+group
+    cb    ct          -0.03250  
+   hb1    hc          -0.01720  
+   hb2    hc           0.01620  
+group
+    cg    ct           0.27660  
+   hg1    hc          -0.05540  
+   hg2    hc          -0.05430  
+group
+    cd    c            0.69260  
+   oe1    o2          -0.68700  
+   oe2    oz          -1.06260  
+group
+     c    c            0.53660  
+     o    o           -0.58190  
+end
+bonds 
+     n     h
+     n    ca
+    ca    ha
+    ca    cb
+    ca     c
+    cb   hb1
+    cb   hb2
+    cb    cg
+    cg   hg1
+    cg   hg2
+    cg    cd
+    cd   oe1
+    cd   oe2
+     c     o
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cg   oe1    cd   oe2
+end 
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+RESIDUE asz  (ildn corrected)
+atoms 
+group
+     n    n           -0.51630 
+     h    h            0.29360 
+group
+    ca    ct           0.04223 
+    ha    h1           0.07316 
+group
+    cb    ct           0.15492 
+   hb1    hc           0.02727 
+   hb2    hc          -0.03768 
+group
+    cg    coa          0.73879 
+   od1    oa          -0.61871 
+   od2    oz          -1.11198 
+group
+     c    c            0.53660 
+     o    o           -0.58190 
+end
+bonds 
+     n     h     n    ca    ca    ha
+    ca    cb    ca     c    cb   hb1
+    cb   hb2    cb    cg    cg   od1
+    cg   od2     c     o     
+end
+imphd
+    -c    ca     n     h
+    ca    +n     c     o
+    cb   od1    cg   od2
+end
+termatom n c
+backbone n ca c
+RESIDUE_END 
+
+
+RESIDUE zn 
+atoms
+group
+zn    zn   2.0
+end
+termatom * *
+RESIDUE_END

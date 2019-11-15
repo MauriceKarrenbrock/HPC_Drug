@@ -8,16 +8,17 @@
 #'cif' is for PDBx/mmCIF (default)
 #'pdb' for standard PDB file (not implemented)
 
-protein = 2rfh
+protein = 1df8
 protein_filetype = cif
 
 #the model to take from the mmcif, if omitted model = 0 will be taken (starts from 0)
-#(choosing the model is deprecated)
 #Protein_model = 0
+#the chain to choose from the xray structure (default A)
+#Protein_chain = A
 
 #The ph at which the hydrogens shall be added to the protein
 #default = 7.0
-ph = 1.0
+ph = 7.0
 
 #with wich tool the pdb shall be fixed
 #adding missing atoms, missing hydrogens and substituting
@@ -39,13 +40,21 @@ local = no
 #protein mmcif file
 
 #if ligand_in_protein = no ligand will be given as input
-#ligand = SMILES or path/to/PDB
-#the ligand can be given as a pdb file (I suggest to use absolute path) or as a SMILES
+#ligand = path/to/PDB
+#the ligand shall be given as a pdb file (I suggest to use absolute path)
 
 ligand_in_protein = yes
 #ligand = ligand.pdb
 
 #The program with wich elaborate the ligand (optimization and potential)
-#default primadorac
+#default primadorac (amber force field)
 
 ligand_elaboration_program = primadorac
+ligand_elaboration_program_path = ~/ORAC/trunk/tools/primadorac/primadorac.bash
+
+
+#The molecular dynamics MD program
+#of choice and the path to the executable
+
+MD_program = orac
+MD_program_path = ~/ORAC/trunk/src/orac

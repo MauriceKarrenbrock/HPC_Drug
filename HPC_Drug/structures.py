@@ -11,9 +11,10 @@ class Protein(Structure):
     def __init__(self, protein_id = None, filename = None,
                 structure = None, substitutions_dict = None,
                 sulf_bonds = None, seqres = None,
-                file_type = 'cif', model = None):
+                file_type = 'cif', model = None, chain = None):
         self.protein_id = protein_id
         self.model = model
+        self.chain = chain
         self.file_type = file_type
         self.filename = filename
 
@@ -28,26 +29,46 @@ class Protein(Structure):
         self.sulf_bonds = sulf_bonds
         self.seqres = seqres
     
-    def write_PDB(self, filename = None):
+    def write_PDB(self, filename = None, struct_type = 'prody'):
         import file_manipulation as fm
 
         if filename == None:
             filename = self.protein_id + '_protein.pbd'
 
-        w = fm.ProteinCruncer('pdb')
-        w.write_PDB(self.structure, filename)
+        if struct_type == 'prody':
+
+            w = fm.ProteinCruncer('pdb')
+            w.write_PDB(self.structure, filename)
+
+        elif struct_type == 'biopython':
+            import Bio.PDB 
+
+            p = Bio.PDB.PDBIO()
+            p.set_structure(self.structure)
+            p.save(filename)
+
+        return filename
 
 
 class Ligand(Structure):
     """The general Ligand class"""
 
-    def __init__(self, ligand_resname = None, filename = None, structure = None, file_type = 'pdb'):
+    def __init__(self,
+                ligand_resname = None,
+                filename = None,
+                structure = None,
+                file_type = 'pdb',
+                topology_file = None,
+                param_file = None):
         self.ligand_resname = ligand_resname
         self.file_type = file_type
 
         self.filename = filename
 
         self.structure = structure
+
+        self.topology_file = topology_file
+        self.param_file = param_file
     
     def write_PDB(self, filename):
         import file_manipulation as fm

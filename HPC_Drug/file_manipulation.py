@@ -1,5 +1,7 @@
 # Contains the classes for file manipulation like PDB & mmCIF
 
+import pipeline_functions
+
 def download_protein_structure(protein_id, file_type = 'cif', pdir = None):
     """The function downloads a PDB or a mmCIF from wwwPDB in a selected directory
     the default directory is the working directory
@@ -62,29 +64,35 @@ class PDBCruncer(FileCruncer):
 
         return parser
         
-    def get_protein(self, protein_id = None, filename = None, Protein_model = None, structure = None):
+    def get_protein(self,
+                    protein_id = None,
+                    filename = None,
+                    structure = None):
         import structures
         import prody
 
         if structure == None:
-            parser = self.parse(protein_id, filename, Protein_model)
+            parser = self.parse(protein_id, filename)
         else:
             parser = structure
 
-        protein_structure = parser.select('protein or ion')
+        try:
+            protein_structure = parser.select('protein or ion')
+        except:
+            protein_structure = parser.select('protein')
 
         return protein_structure
 
     def get_ligand(self, protein_id = None, filename = None,
-                ligand_name = None, Protein_model = None,
+                ligand_name = None,
                 structure = None):
-        """Creates a PDB with all the not water HETATM
+        """Creates a PDB the organic ligand (if any)
         with ProDy"""
         import structures
         import prody
 
         if structure == None:
-            parser = self.parse(protein_id, filename, Protein_model)
+            parser = self.parse(protein_id, filename)
         else:
             parser = structure
 
@@ -137,23 +145,28 @@ class MMCIFCruncer(FileCruncer):
 
         p = PDBCruncer()
 
-        protein = p.get_protein(protein_id, filename, Protein_model, parser)
+        protein = p.get_protein(protein_id, filename, parser)
 
         return protein
 
-    def get_ligand(self, protein_id = None, filename = None, ligand_name = None, Protein_model = None, structure = None):
+    def get_ligand(self,
+                protein_id = None,
+                filename = None,
+                ligand_name = None,
+                structure = None):
+
         """Creates a PDB with all the not water HETATM
         with ProDy"""
         import structures
         import prody
         if structure == None:
-            parser = self.parse(protein_id, filename, Protein_model)
+            parser = self.parse(protein_id, filename)
         else:
             parser = structure
 
         p = PDBCruncer()
 
-        ligand = p.get_ligand(protein_id, filename, Protein_model, parser)
+        ligand = p.get_ligand(protein_id, filename, parser)
 
         return ligand
     
@@ -243,7 +256,7 @@ class SubstitutionParser(FileCruncer):
     def __init__(self):
         pass
     
-    def parse_substitutions_PDB(self, file_name):
+    def parse_substitutions_PDB(self, file_name, protein_chain):
 
         """Checks the necessary substitutions to the residue names
         needed for the correct placing of the hydrogen atoms
@@ -257,77 +270,72 @@ class SubstitutionParser(FileCruncer):
         """
 
         import Bio.PDB.MMCIF2Dict
+        import important_lists
         
         ligand = []
         substitutions = {}
         sulf_bonds = []
 
-        metals = ('AL', 'BA', 'CA', 'CD', 'CL', 'CO',
-                'CS', 'CU', 'CU1', 'CUA', 'HG', 'IN', 'IOD', 'K',
-                'MG', 'MN3', 'NA', 'PB', 'PT', 'RB', 'TB', 'TL',
-                'WO4', 'YB', 'ZN', 'CAL', 'CES',
-                'CLA', 'POT', 'SOD', 'ZN2')
-
-        #hist_resnames = ('HIS', 'HIE', 'HID', 'HSD', 'HSE')
-        #cist_resnames = ('CYS',' CYM', 'CYZ', 'CYSH')
+        metals = important_lists.metals
 
         cif_dict = Bio.PDB.MMCIF2Dict.MMCIF2Dict(file_name)
 
-        #record the ligands resname
-        if type(cif_dict['_struct_site.details']) == list:
-            for i in cif_dict['_struct_site.details']:
+        #trasforms all the not iterable values of the dictionary in
+        #iterable tuples
+        for key in cif_dict.keys():
+            cif_dict[key] = pipeline_functions.get_iterable(cif_dict[key])
 
-                n = i.split()
+        #record the ligands resname
+        for i in cif_dict['_struct_site.details']:
+            n = i.split()
+            #chooses the right chain only
+            if n[-2].strip() == protein_chain:
                 n = n[-3]
                 n = n.strip()
 
                 if n not in metals:
-                    ligand.append(n)
-        
-        #this is an exception for when i don't have a list to iterate on
-        elif type(cif_dict['_struct_site.details']) == str:
-            
-            n = cif_dict['_struct_site.details']
-            n = n.split()
-            n = n[-3]
-            n = n.strip()
+                    ligand.append(n)           
+    
 
-            if n not in metals:
-                    ligand.append(n)            
-        
-
-        #first I check if I have a list or a single value
-        #for a single value there is an exception below
         #I check for residues binding metals and disulfide bonds
         #In the end I get a dictionary that has as key the residue number
         #and as vaue a tuple with (resname, binding atom, metal) for metal binding residues
         #and a tuple with ('CYS', 'SG', 'disulf') for the disulfide bonds.
         #Separately I create a list composed of tuples containing the resnumbers
-        #of the 2 CYS that bound thought disulfide bond
-        if type(cif_dict['_struct_conn.conn_type_id']) == list:
+        #of the 2 CYS that bound through disulfide bond
+        if '_struct_conn.conn_type_id' in cif_dict.keys():
             for i, bound_type in enumerate(cif_dict['_struct_conn.conn_type_id']):
 
                 if bound_type == 'metalc':
 
-                    if cif_dict['_struct_conn.ptnr1_label_comp_id'][i] in metals:
-                        metal_index = '1'
-                        res_index = '2'
-                    elif cif_dict['_struct_conn.ptnr2_label_comp_id'][i] in metals:
-                        metal_index = '2'
-                        res_index = '1'
-                    else:
-                        raise ValueError('Invalid mmcif header, cannot parse\n\
-                                        _struct_conn.ptnr1_label_comp_id = ',
-                                        cif_dict['_struct_conn.ptnr1_label_comp_id'][i],'\n',
-                                        '_struct_conn.ptnr2_label_comp_id = ',
-                                        cif_dict['_struct_conn.ptnr2_label_comp_id'][i])
+                    if cif_dict['_struct_conn.ptnr1_label_comp_id'][i]\
+                        in metals\
+                        or cif_dict['_struct_conn.ptnr2_label_comp_id'][i]\
+                        in metals:
 
-                    substitutions[cif_dict[f'_struct_conn.ptnr{res_index}_auth_seq_id'][i]] =\
-                    self.metal_bound_res_parsing(
+                        if cif_dict['_struct_conn.ptnr1_label_comp_id'][i] in metals:
+                            metal_index = '1'
+                            res_index = '2'
+                        elif cif_dict['_struct_conn.ptnr2_label_comp_id'][i] in metals:
+                            metal_index = '2'
+                            res_index = '1'
+
+                        substitutions[cif_dict[f'_struct_conn.ptnr{res_index}_auth_seq_id'][i]] =\
+                        self.metal_bound_res_parsing(
                         res_auth_seq_id = cif_dict[f'_struct_conn.ptnr{res_index}_auth_seq_id'][i],
                         res_label_atom_id = cif_dict[f'_struct_conn.ptnr{res_index}_label_atom_id'][i],
                         res_label_comp_id = cif_dict[f'_struct_conn.ptnr{res_index}_label_comp_id'][i],
-                        metal_label_comp_id = cif_dict[f'_struct_conn.ptnr{metal_index}_label_comp_id'][i])    
+                        metal_label_comp_id = cif_dict[f'_struct_conn.ptnr{metal_index}_label_comp_id'][i]) 
+                    
+                    else:
+                        string = f"Not implemented metal bound, going on pretending nothing happened\n\
+                        More info:\n\
+                        _struct_conn.ptnr1_label_comp_id = \
+                        {cif_dict['_struct_conn.ptnr1_label_comp_id'][i]}\n\
+                        _struct_conn.ptnr2_label_comp_id = \
+                        {cif_dict['_struct_conn.ptnr2_label_comp_id'][i]}" 
+
+                        print(string)  
 
                 elif bound_type == 'disulf':
 
@@ -339,45 +347,7 @@ class SubstitutionParser(FileCruncer):
 
                 else:
                     pass
-        
-        #This is an exception for when i don't have a list but a single value
-        elif type(cif_dict['_struct_conn.conn_type_id']) == str:
-            if cif_dict['_struct_conn.conn_type_id'] == 'metalc':
-                if cif_dict['_struct_conn.ptnr1_label_comp_id'] in metals:
-                    metal_index = '1'
-                    res_index = '2'
-                elif cif_dict['_struct_conn.ptnr2_label_comp_id'] in metals:
-                    metal_index = '2'
-                    res_index = '1'
-                else:
-                    raise ValueError('Invalid mmcif header, cannot parse\n\
-                                    _struct_conn.ptnr1_label_comp_id = ',
-                                    cif_dict['_struct_conn.ptnr1_label_comp_id'],'\n',
-                                    '_struct_conn.ptnr2_label_comp_id = ',
-                                    cif_dict['_struct_conn.ptnr2_label_comp_id'])
-
-                substitutions[cif_dict[f'_struct_conn.ptnr{res_index}_auth_seq_id'][i]] =\
-                self.metal_bound_res_parsing(
-                    res_auth_seq_id = cif_dict[f'_struct_conn.ptnr{res_index}_auth_seq_id'],
-                    res_label_atom_id = cif_dict[f'_struct_conn.ptnr{res_index}_label_atom_id'],
-                    res_label_comp_id = cif_dict[f'_struct_conn.ptnr{res_index}_label_comp_id'],
-                    metal_label_comp_id = cif_dict[f'_struct_conn.ptnr{metal_index}_label_comp_id']
-                )    
-
-            elif cif_dict['_struct_conn.conn_type_id'] == 'disulf':
-                sulf_bond_tmp = (cif_dict['_struct_conn.ptnr1_label_seq_id'],
-                                cif_dict['_struct_conn.ptnr2_label_seq_id'])
-                
-                sulf_bonds.append(sulf_bond_tmp)
-                    
-                substitutions[sulf_bond_tmp[0]] = ('CYS', 'SG', 'disulf')
-                substitutions[sulf_bond_tmp[1]] = ('CYS', 'SG', 'disulf')
-
-            else:
-                pass
-
-
-        
+    
         return substitutions, sulf_bonds, ligand
 
     def metal_bound_res_parsing(self,
@@ -426,9 +396,18 @@ class SubstitutionParser(FileCruncer):
         return output_filename
 
 
-def mmcif2pdb_custom(protein_id = None, input_filename = None, protein_model = None, output_filename = None):
+def mmcif2pdb_custom(protein_id = None,
+                    input_filename = None,
+                    protein_model = 0,
+                    protein_chain = 'A',
+                    output_filename = None):
     """Reads a mmcif and converts it to a pdb
-    using biopython"""
+    using biopython
+    selects only a chosen model and chain
+    and eliminates disordered atoms chosing only one conformation
+    
+    protein_chain must be a string
+    protein_model must be an integer"""
 
     import Bio.PDB
     import os
@@ -438,17 +417,40 @@ def mmcif2pdb_custom(protein_id = None, input_filename = None, protein_model = N
     elif not os.path.exists(input_filename):
         raise ValueError(f"{input_filename} not found")
 
+    #Bring None arguments to default
     if protein_model == None:
         protein_model = 0
+    
+    if protein_chain == None:
+        protein_chain = 'A'
 
     if output_filename == None:
         output_filename = protein_id + '.pdb'
+
+    # This part eliminates any disordered atom part,
+    #Only keeps one possible position
+    #because copied atoms don't inherit disordered_get_list in Biopython
+    def get_unpacked_list(self):
+        """
+        Returns all atoms from the residue,
+        in case of disordered, keep only first alt loc and remove the alt-loc tag
+        """
+        atom_list = self.get_list()
+        undisordered_atom_list = []
+        for atom in atom_list:
+            if atom.is_disordered():
+                atom.altloc=" "
+                undisordered_atom_list.append(atom)
+            else:
+                undisordered_atom_list.append(atom)
+        return undisordered_atom_list
+    Bio.PDB.Residue.Residue.get_unpacked_list = get_unpacked_list
 
     p = Bio.PDB.MMCIFParser()
     struct = p.get_structure(protein_id, input_filename)
 
     s = Bio.PDB.PDBIO()
-    s.set_structure(struct[protein_model])
+    s.set_structure(struct[protein_model][protein_chain])
     s.save(output_filename)
 
     if not os.path.exists(output_filename):

@@ -1,0 +1,791 @@
+# amber99sb-ildnp (source is from www.gromacs.org, file amber99sb-ildnp.tgz)
+BOND
+   c   c      310.00     1.525 
+   c  os      450.00     1.323 
+   c  h4      367.00     1.080 
+   c  h5      367.00     1.080 
+  ca  oh      450.00     1.364 
+  cm  os      480.00     1.240 
+  cl  ct      232.00     1.766 
+  br  ct      159.00     1.944 
+   i  ct      148.00     2.166 
+   f  ca      386.00     1.359 
+  cl  ca      193.00     1.727 
+   i  ca      171.00     2.075 
+  br  ca      172.00     1.890 
+#  ow  hw      553.00     0.957 
+#  hw  hw      553.00     1.514 
+  osp  hsp    824.57     1.000
+  hsp  hsp    824.57     1.633
+  owf  hwf    223.00     0.957 
+  owo  hwo    223.00     0.9789
+  hwo  hwo      225.00   1.59852
+# reduced parameter for MTS integration with no constraints
+  ow  hw      223.00     0.957 
+  hw  hw      225.00     1.514 
+   c  ca      469.00     1.409 
+   c  cb      447.00     1.419 
+   c  cm      410.00     1.444 
+   c  ct      317.00     1.522 
+   c  n*      424.00     1.383 
+   c  na      418.00     1.388 
+   c  nc      457.00     1.358 
+   c   o      570.00     1.229 
+   c  o2      656.00     1.250 
+   c  oz      656.00     1.250 
+   c  oh      450.00     1.364 
+  ca  ca      469.00     1.400 
+  ca  cb      469.00     1.404 
+  ca  cm      427.00     1.433 
+  ca  ct      317.00     1.510 
+  ca  ha      367.00     1.080 
+  ca  h4      367.00     1.080 
+  ca  n2      481.00     1.340 
+  ca  na      427.00     1.381 
+  ca  nc      483.00     1.339 
+  cb  cb      520.00     1.370 
+  cb  n*      436.00     1.374 
+  cb  nb      414.00     1.391 
+  cb  nz      414.00     1.391 
+  cb  nc      461.00     1.354 
+  ck  h5      367.00     1.080 
+  ck  n*      440.00     1.371 
+  ck  nb      529.00     1.304 
+  cm  cm      549.00     1.350 
+  cm  ct      317.00     1.510 
+  cm  ha      367.00     1.080 
+  cm  h4      367.00     1.080 
+  cm  h5      367.00     1.080 
+  cm  n*      448.00     1.365 
+  cq  h5      367.00     1.080 
+  cq  nc      502.00     1.324 
+  ct  ct      310.00     1.526 
+  ct  hc      340.00     1.090 
+  ct  h1      340.00     1.090 
+  ct  h2      340.00     1.090 
+  ct  h3      340.00     1.090 
+  ct  hp      340.00     1.090 
+  ct  n*      337.00     1.475 
+  ct  n2      337.00     1.463 
+  ct  oh      320.00     1.410 
+  ct  os      320.00     1.410 
+   h  n2      434.00     1.010 
+   h  n*      434.00     1.010 
+   h  na      434.00     1.010 
+  ho  oh      553.00     0.960 
+  ho  os      553.00     0.960 
+  o2   p      525.00     1.480 
+  oh   p      230.00     1.610 
+  os   p      230.00     1.610 
+  c*  hc      367.00     1.080 
+   c   n      490.00     1.335 
+  c*  cb      388.00     1.459 
+  c*  ct      317.00     1.495 
+  c*  cw      546.00     1.352 
+  ca  cn      469.00     1.400 
+  cb  cn      447.00     1.419 
+  cc  ct      317.00     1.504 
+  cc  cv      512.00     1.375 
+  cc  cw      518.00     1.371 
+  cc  na      422.00     1.385 
+  cc  nb      410.00     1.394 
+  cc  nz      410.00     1.394 
+  cn  na      428.00     1.380 
+  cr  h5      367.00     1.080 
+  cr  na      477.00     1.343 
+  cr  nb      488.00     1.335 
+  cr  nz      488.00     1.335 
+  ct   n      337.00     1.449 
+  ct  n3      367.00     1.471 
+  ct   s      227.00     1.810 
+  ct  sh      237.00     1.810 
+  ct  sz      237.00     1.810 
+  cv  h4      367.00     1.080 
+  cv  nb      410.00     1.394 
+  cv  nz      410.00     1.394 
+  cw  h4      367.00     1.080 
+  cw  na      427.00     1.381 
+   h   n      434.00     1.010 
+   h  n3      434.00     1.010 
+  hs  sh      274.00     1.336 
+   s   s      166.00     2.038 
+  ct   f      367.00     1.380 
+# extra bonds for ildn corrections
+coa  ct      317.00      1.522 
+cos  ct      317.00      1.522 
+coa  oa      656.00      1.250 
+coa  oz      656.00      1.250 
+coa   o      570.00         1.229 
+cos   o      570.00         1.229 
+cos   nda    490.00         1.335 
+ctp   n      337.00         1.449 
+ctp   n3     337.00         1.449 
+ctp  ct      310.00         1.526 
+ctl  ct      310.00         1.526 
+cti  ct      310.00         1.526 
+ctl  hc      340.00         1.090 
+cti  hc      340.00         1.090 
+ctp  h1      340.00         1.090 
+ctp  hp      340.00        1.090 
+coa  nda    490.00         1.335  
+h   nda      434.00         1.010 
+END
+BENDINGS
+  hsp   osp   hsp   91.54    109.47
+  hwf   owf   hwf   100.000    104.52
+   hw   ow   hw   100.000    104.52
+    c    c    o    80.000    120.00
+    c    c   oh    80.000    120.00
+   ct    c   ct    63.000    117.00
+   ct    c   os    80.000    115.00
+    o    c   os    80.000    125.00
+   h4    c    c    50.000    120.00
+   h4    c   cm    50.000    115.00
+   h4    c   ct    50.000    115.00
+   h4    c    o    50.000    120.00
+   h4    c   oh    50.000    120.00
+   h5    c    n    50.000    120.00
+   h5    c    o    50.000    119.00
+   h5    c   oh    50.000    107.00
+   h5    c   os    50.000    107.00
+   ca   ca   oh    70.000    120.00
+   ca   oh   ho    50.000    113.00
+    f   ca   ca    70.000    121.00
+   cl   ca   ca    70.000    118.80
+   br   ca   ca    70.000    118.80
+    i   ca   ca    70.000    118.80
+   cm   cm   os    80.000    125.00
+   h4   cm   os    50.000    113.00
+   ha   cm   ha    35.000    120.00
+   ha   cm   ct    50.000    120.00
+   h1   ct   cm    50.000    109.50
+   hc   ct   cm    50.000    109.50
+    c   ct   os    60.000    109.50
+   cm   ct   ct    63.000    111.00
+   cm   ct   os    50.000    109.50
+   ct   ct   ca    63.000    114.00
+   os   ct   os    60.000    101.00
+    f   ct   ct    50.000    109.00
+    f   ct   h2    50.000    109.50
+   cl   ct   ct    50.000    108.50
+   cl   ct   h1    50.000    108.50
+   br   ct   ct    50.000    108.00
+   br   ct   h1    50.000    106.50
+    i   ct   ct    50.000    106.00
+   cb    c   na    70.000    111.30
+   cb    c    o    80.000    128.80
+   cm    c   na    70.000    114.10
+   cm    c    o    80.000    125.30
+   ct    c    o    80.000    120.40
+   ct    c   o2    70.000    117.00
+   ct    c   oz    70.000    117.00
+   ct    c   oh    80.000    110.00
+   n*    c   na    70.000    115.40
+   n*    c   nc    70.000    118.60
+   n*    c    o    80.000    120.90
+   na    c    o    80.000    120.60
+   nc    c    o    80.000    122.50
+   ct    c    n    70.000    116.60
+    n    c    o    80.000    122.90
+    o    c    o    80.000    126.00
+   o2    c   o2    80.000    126.00
+   oz    c   o2    80.000    126.00
+    o    c   oh    80.000    120.00
+   ca    c   ca    63.000    120.00
+   ca    c   oh    70.000    120.00
+    c   ca   ca    63.000    120.00
+   ca   ca   ca    63.000    120.00
+   ca   ca   cb    63.000    120.00
+   ca   ca   ct    70.000    120.00
+   ca   ca   ha    50.000    120.00
+   ca   ca   h4    50.000    120.00
+   cb   ca   ha    50.000    120.00
+   cb   ca   h4    50.000    120.00
+   cb   ca   n2    70.000    123.50
+   cb   ca   nc    70.000    117.30
+   cm   ca   n2    70.000    120.10
+   cm   ca   nc    70.000    121.50
+   n2   ca   na    70.000    116.00
+   n2   ca   nc    70.000    119.30
+   na   ca   nc    70.000    123.30
+    c   ca   ha    50.000    120.00
+   n2   ca   n2    70.000    120.00
+   cn   ca   ha    50.000    120.00
+   ca   ca   cn    63.000    120.00
+    c   cb   cb    63.000    119.20
+    c   cb   nb    70.000    130.00
+   ca   cb   cb    63.000    117.30
+   ca   cb   nb    70.000    132.40
+   cb   cb   n*    70.000    106.20
+   cb   cb   nb    70.000    110.40
+   cb   cb   nc    70.000    127.70
+   n*   cb   nc    70.000    126.20
+   c*   cb   ca    63.000    134.90
+   c*   cb   cn    63.000    108.80
+   ca   cb   cn    63.000    116.20
+   h5   ck   n*    50.000    123.05
+   h5   ck   nb    50.000    123.05
+   n*   ck   nb    70.000    113.90
+    c   cm   cm    63.000    120.70
+    c   cm   ct    70.000    119.70
+    c   cm   ha    50.000    119.70
+    c   cm   h4    50.000    119.70
+   ca   cm   cm    63.000    117.00
+   ca   cm   ha    50.000    123.30
+   ca   cm   h4    50.000    123.30
+   cm   cm   ct    70.000    119.70
+   cm   cm   ha    50.000    119.70
+   cm   cm   h4    50.000    119.70
+   cm   cm   n*    70.000    121.20
+   h4   cm   n*    50.000    119.10
+   h5   cq   nc    50.000    115.45
+   nc   cq   nc    70.000    129.10
+   cm   ct   hc    50.000    109.50
+   ct   ct   ct    40.000    109.50
+   ct   ct   hc    50.000    109.50
+   ct   ct   h1    50.000    109.50
+   ct   ct   h2    50.000    109.50
+   ct   ct   hp    50.000    109.50
+   ct   ct   n*    50.000    109.50
+   ct   ct   oh    50.000    109.50
+   ct   ct   os    50.000    109.50
+   hc   ct   hc    35.000    109.50
+   h1   ct   h1    35.000    109.50
+   hp   ct   hp    35.000    109.50
+   h2   ct   n*    50.000    109.50
+   h1   ct   n*    50.000    109.50
+   h1   ct   oh    50.000    109.50
+   h1   ct   os    50.000    109.50
+   h2   ct   os    50.000    109.50
+   n*   ct   os    50.000    109.50
+   h1   ct    n    50.000    109.50
+    c   ct   h1    50.000    109.50
+    c   ct   hp    50.000    109.50
+   h1   ct    s    50.000    109.50
+   h1   ct   sh    50.000    109.50
+   h1   ct   sz    50.000    109.50
+   ct   ct    s    50.000    114.70
+   ct   ct   sh    50.000    108.60
+   ct   ct   sz    50.000    108.60
+   h2   ct   h2    35.000    109.50
+   h1   ct   n2    50.000    109.50
+   hp   ct   n3    50.000    109.50
+   ca   ct   ct    63.000    114.00
+    c   ct   hc    50.000    109.50
+    c   ct    n    63.000    110.10
+   ct   ct   n2    80.000    111.20
+   ct   ct    n    80.000    109.70
+    c   ct   ct    63.000    111.10
+   ca   ct   hc    50.000    109.50
+   ct   ct   n3    80.000    111.20
+   cc   ct   ct    63.000    113.10
+   cc   ct   hc    50.000    109.50
+    c   ct   n3    80.000    111.20
+   c*   ct   ct    63.000    115.60
+   c*   ct   hc    50.000    109.50
+   ct   cc   na    70.000    120.00
+   ct   cc   cv    70.000    120.00
+   ct   cc   nb    70.000    120.00
+   ct   cc   nz    70.000    120.00
+   cv   cc   na    70.000    120.00
+   cw   cc   na    70.000    120.00
+   cw   cc   nb    70.000    120.00
+   cw   cc   nz    70.000    120.00
+   ct   cc   cw    70.000    120.00
+   h5   cr   na    50.000    120.00
+   h5   cr   nb    50.000    120.00
+   h5   cr   nz    50.000    120.00
+   na   cr   na    70.000    120.00
+   na   cr   nb    70.000    120.00
+   na   cr   nz    70.000    120.00
+   cc   cv   h4    50.000    120.00
+   cc   cv   nb    70.000    120.00
+   h4   cv   nb    50.000    120.00
+   cc   cv   nz    70.000    120.00
+   h4   cv   nz    50.000    120.00
+   cc   cw   h4    50.000    120.00
+   cc   cw   na    70.000    120.00
+   h4   cw   na    50.000    120.00
+   c*   cw   h4    50.000    120.00
+   c*   cw   na    70.000    108.70
+   ct   c*   cw    70.000    125.00
+   cb   c*   ct    70.000    128.60
+   cb   c*   cw    63.000    106.40
+   ca   cn   na    70.000    132.80
+   cb   cn   na    70.000    104.40
+   ca   cn   cb    63.000    122.70
+    c    n   ct    50.000    121.90
+    c    n    h    50.000    120.00
+   ct    n    h    50.000    118.04
+   ct    n   ct    50.000    118.00
+    h    n    h    35.000    120.00
+    c   n*   cm    70.000    121.60
+    c   n*   ct    70.000    117.60
+    c   n*    h    50.000    119.20
+   cb   n*   ck    70.000    105.40
+   cb   n*   ct    70.000    125.80
+   cb   n*    h    50.000    125.80
+   ck   n*   ct    70.000    128.80
+   ck   n*    h    50.000    128.80
+   cm   n*   ct    70.000    121.20
+   cm   n*    h    50.000    121.20
+   ca   n2    h    50.000    120.00
+    h   n2    h    35.000    120.00
+   ct   n2    h    50.000    118.40
+   ca   n2   ct    50.000    123.20
+   ct   n3    h    50.000    109.50
+   ct   n3   ct    50.000    109.50
+    h   n3    h    35.000    109.50
+    c   na    c    70.000    126.40
+    c   na   ca    70.000    125.20
+    c   na    h    50.000    116.80
+   ca   na    h    50.000    118.00
+   cc   na   cr    70.000    120.00
+   cc   na    h    50.000    120.00
+   cr   na   cw    70.000    120.00
+   cr   na    h    50.000    120.00
+   cw   na    h    50.000    120.00
+   cn   na   cw    70.000    111.60
+   cn   na    h    50.000    123.10
+   cb   nb   ck    70.000    103.80
+   cc   nb   cr    70.000    117.00
+   cr   nb   cv    70.000    117.00
+   cc   nz   cr    70.000    117.00
+   cr   nz   cv    70.000    117.00
+    c   nc   ca    70.000    120.50
+   ca   nc   cb    70.000    112.20
+   ca   nc   cq    70.000    118.60
+   cb   nc   cq    70.000    111.00
+    c   oh   ho    50.000    113.00
+   ct   oh   ho    55.000    108.50
+   ho   oh    p    45.000    108.50
+   ct   os   ct    60.000    109.50
+   ct   os    p   100.000    120.50
+    p   os    p   100.000    120.50
+   o2    p   oh    45.000    108.23
+   o2    p   o2   140.000    119.90
+   o2    p   os   100.000    108.23
+   oh    p   os    45.000    102.60
+   os    p   os    45.000    102.60
+   ct    s   ct    62.000     98.90
+   ct    s    s    68.000    103.70
+   ct   sh   hs    43.000     96.00
+   hs   sh   hs    35.000     92.07
+    f   ct    f    77.000    109.10
+    f   ct   h1    50.000    109.50
+    n    c    n    70.000    120.00
+# extra bends for ildn corrections
+coa    ct   ct      63.00     111.10
+cos    ct   ct      63.00     111.10
+ct     coa  oa      70.000    117.00
+ct     coa  oz      70.000    117.00
+ct     cos  o       70.000    117.00
+ct    cos   nda    70.000    116.60
+cos   ct   hc    50.000    109.50
+cos    nda    h    50.000    120.00
+hc     ct   coa     50.000    109.50
+oa    coa   oa      80.000    126.00
+oz    coa   oa      80.000    126.00
+c    n    ctp       50.000    121.90
+n    ctp  h1        50.000    109.50
+n    ctp  ct        80.000    109.70
+ctp  n    ct        50.000    118.00
+ctp  n    c         50.00   121.90
+ctp  ct   hc        50.00   109.50
+ctp  ct   ct        40.00   109.50
+h1   ctp  h1        35.00   109.50
+h1   ctp  ct        50.00   109.50
+ct   coa  o         80.00   120.40
+ct   coa  nda       70.00   116.60
+coa  nda  h         50.00   120.00 
+o    coa  nda       80.00   122.90
+o    cos  nda       80.00   122.90
+h    nda  h         35.00   120.00
+ct   ct   ctl       40.00   109.50
+ct   ctl   ct       40.00   109.50
+ct   ctl  hc        50.00   109.50
+ctl   ct  hc        50.00   109.50
+ctl  ct  ct        40.00   109.50
+ct   ct   cti       40.00   109.50
+ct   cti   ct       40.00   109.50
+ct   cti  hc        50.00   109.50
+cti   ct  hc        50.00   109.50
+hc   cti   hc       35.000    109.50
+ctp   n3    h    50.000    109.50
+ct   ctp   n3    80.000    111.20
+hp   ctp   hp    35.000    109.50
+ct   ctp   hp     50.000    109.50
+ctp   n3   ct    50.000    109.50
+hp   ctp   n3    50.000    109.50
+ct      cd      cd          64.700   115.970
+ct      cd      nc          66.400   121.960
+ct      os      ca          62.400   117.600
+h1      ct      cd          47.000   111.620
+cd      cd      nc          71.100   112.560
+cd      cd      ha          46.600   123.740
+cd      nc      nc          71.400   109.510
+cd      cd      cd          67.900   110.700
+ha      cd      nc          51.400   118.880
+cc      cc      cc          67.900   110.700
+cc      cc      os          68.400   120.430
+cc      cc      ha          46.600   123.740
+ct      ct      f           66.200   109.410
+ct      nc      nc          66.900   126.210
+ct      nc      cd          67.600   109.510
+hc      ct      nc          46.000   110.120
+ca      ca      os          69.800   119.200
+ca      nb      ca          68.600   115.860
+ha      ca      nb          48.500   120.010
+cc      cc      f           68.000   126.000
+ct      ct      n3          66.200   110.380
+hc      ct      n3          49.400   109.800
+h1      ct      n3          49.400   109.920
+ca      ca      cc          66.000   120.100
+nc      ct      ct          65.800   112.590
+cd      ct      os          67.800   111.280
+nb      ca      os          69.800   119.200
+nb      ca      ca          69.200   122.630
+nb      ca      nb          71.200   125.840
+ca      s2      cc          68.700    89.500
+s2      ca      nb          67.900   121.200
+s2      ca      ca          67.900   114.800
+s2      cc      cc          67.900   118.000
+cc      cc      ca          67.700   111.040
+cc      os      cc          66.500   109.170
+ca      cc      ca          46.200   126.000
+os      cc      f           68.000   126.000
+ca      ca      clx         58.400   119.900
+os      ct      c           68.000   109.820
+END 
+TORSION PROPER
+   ct   ct   os   ct     0.383    3       0.0
+   ct   ct   os   ct     0.100    2     180.0
+    c    n   ct    c     0.270    2       0.0
+    c    n   ct    c     0.420    3       0.0
+    n   ct    c    n     0.450    1     180.0
+    n   ct    c    n     1.580    2     180.0
+    n   ct    c    n     0.550    3     180.0
+   ct   ct    n    c     2.000    1       0.0
+   ct   ct    n    c     2.000    2       0.0
+   ct   ct    n    c     0.400    3       0.0
+   ct   ct    c    n     0.200    1       0.0
+   ct   ct    c    n     0.200    2       0.0
+   ct   ct    c    n     0.400    3       0.0
+    h    n    c    o     2.500    2     180.0
+    h    n    c    o     2.000    1       0.0
+   ct    s    s   ct     3.500    2       0.0
+   ct    s    s   ct     0.600    3       0.0
+   os   ct   ct   os     0.144    3       0.0
+   os   ct   ct   os     1.175    2       0.0
+   os   ct   ct   oh     0.144    3       0.0
+   os   ct   ct   oh     1.175    2       0.0
+   oh   ct   ct   oh     0.144    3       0.0
+   oh   ct   ct   oh     1.175    2       0.0
+   oh    p   os   ct     0.250    3       0.0
+   oh    p   os   ct     1.200    2       0.0
+   os    p   os   ct     0.250    3       0.0
+   os    p   os   ct     1.200    2       0.0
+   os   ct   n*   ck     2.500    1       0.0
+   os   ct   n*   cm     2.500    1       0.0
+   h1   ct    c    o     0.800    1       0.0
+   h1   ct    c    o     0.080    3     180.0
+   hc   ct    c    o     0.800    1       0.0
+   hc   ct    c    o     0.080    3     180.0
+   hc   ct   ct   hc     0.150    3       0.0
+   hc   ct   ct   ct     0.160    3       0.0
+   hc   ct   cm   cm     0.380    3     180.0
+   hc   ct   cm   cm     1.150    1       0.0
+   ho   oh   ct   ct     0.160    3       0.0
+   ho   oh   ct   ct     0.250    1       0.0
+   ho   oh    c    o     2.300    2     180.0
+   ho   oh    c    o     1.900    1       0.0
+   cm   cm    c    o     2.175    2     180.0
+   cm   cm    c    o     0.300    3       0.0
+   ct   cm   cm   ct     6.650    2     180.0
+   ct   cm   cm   ct     1.900    1     180.0
+   ct   ct   ct   ct     0.180    3       0.0
+   ct   ct   ct   ct     0.250    2     180.0
+   ct   ct   ct   ct     0.200    1     180.0
+   ct   ct   os    c     0.383    3       0.0
+   ct   ct   os    c     0.800    1     180.0
+   ct   os   ct   os     0.100    3       0.0
+   ct   os   ct   os     0.850    2     180.0
+   ct   os   ct   os     1.350    1     180.0
+    o    c   os   ct     2.700    2     180.0
+    o    c   os   ct     1.400    1     180.0
+    f   ct   ct    f     1.200    1     180.0
+   cl   ct   ct   cl     0.450    1     180.0
+   br   ct   ct   br     0.000   2       0.0
+   h1   ct   ct   os     0.250    1       0.0
+   h1   ct   ct   oh     0.250    1       0.0
+   h1   ct   ct    f     0.190    1       0.0
+   h1   ct   ct   cl     0.250    1       0.0
+   h1   ct   ct   br     0.550    1       0.0
+   hc   ct   ct   os     0.250    1       0.0
+   hc   ct   ct   oh     0.250    1       0.0
+   hc   ct   ct    f     0.190    1       0.0
+   hc   ct   ct   cl     0.250    1       0.0
+   hc   ct   ct   br     0.550    1       0.0
+   ct   os   ct   n*     0.383    3       0.0
+   ct   os   ct   n*     0.650    2       0.0
+    x    c    c    x     3.625    2     180.0
+    x    c    o    x     2.800    2     180.0
+    x    c   os    x     2.700    2     180.0
+    x   ca   oh    x     0.900    2     180.0
+    x   cm   os    x     1.050    2     180.0
+    x    c   ca    x     3.625    2     180.0
+    x    c   cb    x     3.000    2     180.0
+    x    c   cm    x     2.175    2     180.0
+    x    c   n*    x     1.450    2     180.0
+    x    c   na    x     1.350    2     180.0
+    x    c   nc    x     4.000    2     180.0
+    x    c   oh    x     2.300    2     180.0
+    x    c   ct    x     0.000   2       0.0
+    x    coa ct    x     0.000   2       0.0
+    x   ca   ca    x     3.625    2     180.0
+    x   ca   cb    x     3.500    2     180.0
+    x   ca   cm    x     2.550    2     180.0
+    x   ca   ct    x     0.000   2       0.0
+    x   ca   n2    x     2.400    2     180.0
+    x   ca   na    x     1.500    2     180.0
+    x   ca   nc    x     4.800    2     180.0
+    x   cb   cb    x     5.450    2     180.0
+    x   cb   n*    x     1.650    2     180.0
+    x   cb   nb    x     2.550    2     180.0
+    x   cb   nz    x     2.550    2     180.0
+    x   cb   nc    x     4.150    2     180.0
+    x   ck   n*    x     1.700    2     180.0
+    x   ck   nb    x    10.000    2     180.0
+    x   cm   cm    x     6.650    2     180.0
+    x   cm   ct    x     0.000   2       0.0
+    x   cm   n*    x     1.850    2     180.0
+    x   cq   nc    x     6.800    2     180.0
+    x   ct   ct    x     0.156    3       0.0
+    x   ct    n    x     0.000   2       0.0
+    x   ct   n*    x     0.000   2       0.0
+    x   ct   n2    x     0.000   2       0.0
+    x   ct   oh    x     0.167    3       0.0
+    x   ct   os    x     0.383    3       0.0
+    x   oh    p    x     0.250    3       0.0
+    x   os    p    x     0.250    3       0.0
+    x    c    n    x     2.500    2     180.0
+    x   ct   n3    x     0.156    3       0.0
+    x   ct    s    x     0.333    3       0.0
+    x   ct   sh    x     0.250    3       0.0
+    x   c*   cb    x     1.675    2     180.0
+    x   c*   ct    x     0.000   2       0.0
+    x   c*   cw    x     6.525    2     180.0
+    x   ca   cn    x     3.625    2     180.0
+    x   cb   cn    x     3.000    2     180.0
+    x   cc   ct    x     0.000   2       0.0
+    x   cc   cv    x     5.150    2     180.0
+    x   cc   cw    x     5.375    2     180.0
+    x   cc   na    x     1.400    2     180.0
+    x   cc   nb    x     2.400    2     180.0
+    x   cc   nz    x     2.400    2     180.0
+    x   cn   na    x     1.525    2     180.0
+    x   cr   na    x     2.325    2     180.0
+    x   cr   nb    x     5.000    2     180.0
+    x   cv   nb    x     2.400    2     180.0
+    x   cr   nz    x     5.000    2     180.0
+    x   cv   nz    x     2.400    2     180.0
+    x   cw   na    x     1.500    2     180.0
+#   ildn correction( Proteins 2010, 78,1950) aimed at REPLACING existing values
+#   These are amber99sb standard
+      x   ctp   ct    x     0.156    3       0.0
+      x   ctl   ct    x     0.156    3       0.0
+      x   cti   ct    x     0.156    3       0.0
+      x   ctp    n   x     0.000   2       0.0
+      x   ctl    n   x     0.000   2       0.0
+      x   cti    n   x     0.000   2       0.0
+      x    coa  ct    x     0.000   2       0.0
+      x    cos  ct    x     0.000   2       0.0
+      x    coa nda    x     2.500    2     180.0
+      x    cos nda    x     2.500    2     180.0
+      x   ctp   n3    x     0.156    3       0.0
+#   isoleucine
+ n ct ct cti      0.195    1       0.0
+ n ct ct cti     -0.846    2       0.0
+#   leucine
+ c ct ct ctl     0.571    1       0.0
+ c ct ct ctl    -0.358    2       0.0
+ c ct ct ctl     0.135    3       0.0
+# aspartate 
+ n ct ct  coa   -2.635    1       0.0
+ n ct ct  coa   -1.190    2       0.0
+ n ct ct  coa   -0.007    3       0.0
+ n ct ct  coa    0.423    4       0.0
+ n ct ct  coa    0.232    5       0.0
+ n ct ct  coa   -0.213    6       0.0
+ ct ct coa oa    0.000    1       0.0
+ ct ct coa oa   -0.443    2       0.0
+ ct ct coa oa    0.000    3       0.0
+ ct ct coa oa   -0.138    4       0.0
+ ct ct coa oa    0.000    5       0.0
+ ct ct coa oa   -0.013    6       0.0
+# asparagine
+c ct ct cos      0.571    1       0.0
+c ct ct cos     -0.596    2       0.0
+c ct ct cos      0.118    3       0.0
+c ct ct cos     -0.417    4       0.0
+c ct ct cos      0.104    5       0.0
+c ct ct cos     -0.101    6       0.0
+ct ct cos nda    -1.046    1       0.0
+ct ct cos nda    -0.181    2       0.0
+ct ct cos nda    -0.035    3       0.0
+ct ct cos nda     0.100    4       0.0
+ct ct cos nda     0.130    5       0.0
+ct ct cos nda    -0.106    6       0.0
+#proline (non ildn) 
+ct ct ct ctp   1.039    3       0.0
+END 
+TORSION IMPROPER
+   ca   ca   ca   oh     1.100    2     180.0    cosine
+   h5    o    c   oh     1.100    2     180.0    cosine
+   h5    o    c   os     1.100    2     180.0    cosine
+   cm   ct   cm   ha     1.100    2     180.0    cosine
+   ca   ca   ca   br     1.100    2     180.0    cosine
+   cm   h4    c    o     1.100    2     180.0    cosine
+    c   ct    n    h     1.100    2     180.0    cosine
+    c   ct    n    o     1.100    2     180.0    cosine
+   cb   ck   n*   ct     1.000    2     180.0    cosine
+   ck   cb   n*   ct     1.000    2     180.0    cosine
+    c   cm   n*   ct     1.000    2     180.0    cosine
+   ct   n*    c   cm     1.000    2     180.0    cosine
+   cm    c   cm   ct     1.100    2     180.0    cosine
+   ct    o    c   oh    10.500    2     180.0    cosine
+   na   cv   cc   ct     1.100    2     180.0    cosine
+   nb   cw   cc   ct     1.100    2     180.0    cosine
+   na   cw   cc   ct     1.100    2     180.0    cosine
+   cw   cb   c*   ct     1.100    2     180.0    cosine
+   ca   ca   ca   ct     1.100    2     180.0    cosine
+    c   cm   cm   ct     1.100    2     180.0    cosine
+   nc   cm   ca   n2     1.100    2     180.0    cosine
+   cb   nc   ca   n2     1.100    2     180.0    cosine
+   na   nc   ca   n2     1.100    2     180.0    cosine
+   ca   ca    c   oh     1.100    2     180.0    cosine
+   ct   cv   cc   na     1.100    2     180.0    cosine
+   ct   cw   cc   nb     1.100    2     180.0    cosine
+   ct   cw   cc   na     1.100    2     180.0    cosine
+   cb   ct   c*   cw     1.100    2     180.0    cosine
+   cm   n2   ca   nc     1.100    2     180.0    cosine
+   cb   n2   ca   nc     1.100    2     180.0    cosine
+   n2   na   ca   nc     1.100    2     180.0    cosine
+    n    n    c    o    10.500    2     180.0    cosine
+    x   o2    c   o2    10.500    2     180.0    cosine
+    x   o2    c   oz    10.500    2     180.0    cosine
+    x   oz    c   o2    10.500    2     180.0    cosine
+    x   n2   ca   n2    10.500    2     180.0    cosine
+    x   ct    n   ct     1.000    2     180.0    cosine
+    x    x    c    o    10.500    2     180.0    cosine
+    x    x    n    h     1.000    2     180.0    cosine
+    x    x   n2    h     1.000    2     180.0    cosine
+    x    x   na    h     1.000    2     180.0     cosine
+    x    x   ca   ha     1.100    2     180.0     cosine
+    x    x   cw   h4     1.100    2     180.0     cosine
+    x    x   cr   h5     1.100    2     180.0     cosine
+    x    x   cv   h4     1.100    2     180.0     cosine
+    x    x   cq   h5     1.100    2     180.0     cosine
+    x    x   ck   h5     1.100    2     180.0     cosine
+    x    x   cm   h4     1.100    2     180.0     cosine
+    x    x   cm   ha     1.100    2     180.0     cosine
+    x    x   ca   h4     1.100    2     180.0     cosine
+    x    x   ca   h5     1.100    2     180.0     cosine
+# added for ildn 
+ct   oz   coa  oa    10.5000   2.0  180.0   cosine
+ct   oa   cos  oz    10.5000   2.0  180.0   cosine
+ct   oa   coa  oa    10.5000   2.0  180.0   cosine
+ct   oa   cos  oa    10.5000   2.0  180.0   cosine
+c    ctp  n    ct     1.0000   2.0  180.0   cosine
+ct   nda  coa  o     10.5000   2.0  180.0   cosine
+ct   nda  cos  o     10.5000   2.0  180.0   cosine
+coa  h    nda  h      1.0000   2.0  180.0   cosine 
+cos  h    nda  h      1.0000   2.0  180.0   cosine 
+nz   cw   cc   ct    1.1000   2.0  180.0   cosine 
+END                                             
+NONBONDED MIXRULE                               
+   br     0.000    0.0000  0.0  0.0   79.9000   
+    c     1.908    0.0860  0.0  0.0   12.0100   
+   ca     1.908    0.0860  0.0  0.0   12.0100   
+   cb     1.908    0.0860  0.0  0.0   12.0100   
+   cc     1.908    0.0860  0.0  0.0   12.0100   
+   ck     1.908    0.0860  0.0  0.0   12.0100   
+   cm     1.908    0.0860  0.0  0.0   12.0100   
+   cn     1.908    0.0860  0.0  0.0   12.0100   
+   cq     1.908    0.0860  0.0  0.0   12.0100   
+   cr     1.908    0.0860  0.0  0.0   12.0100   
+   ct     1.908    0.1094  0.0  0.0   12.0100   
+# extra types for ILDN corrections              
+   cti     1.908    0.1094  0.0  0.0   12.0100  
+   ctp     1.908    0.1094  0.0  0.0   12.0100  
+   ctl     1.908    0.1094  0.0  0.0   12.0100  
+   coa     1.908    0.0860  0.0  0.0   12.0100  
+   cos     1.908    0.0860  0.0  0.0   12.0100  
+   oa      1.661    0.2100  0.0  0.0   16.0000  
+   nda     1.824    0.1700  0.0  0.0   14.0100
+#####                                           
+   cv     1.908    0.0860  0.0  0.0   12.0100   
+   cw     1.908    0.0860  0.0  0.0   12.0100   
+   c*     1.908    0.0860  0.0  0.0   12.0100   
+   c0     1.713    0.4598  0.0  0.0   40.0800   
+    f     1.750    0.0610  0.0  0.0   19.0000   
+    h     0.600    0.0157  0.0  0.0    1.0080   
+   hc     1.487    0.0157  0.0  0.0    1.0080   
+   h1     1.387    0.0157  0.0  0.0    1.0080   
+   h2     1.287    0.0157  0.0  0.0    1.0080
+   h3     1.187    0.0157  0.0  0.0    1.0080
+   ha     1.459    0.0150  0.0  0.0    1.0080
+   h4     1.409    0.0150  0.0  0.0    1.0080
+   h5     1.359    0.0150  0.0  0.0    1.0080
+   ho     0.000    0.0000  0.0  0.0    1.0080
+   hs     0.600    0.0157  0.0  0.0    1.0080
+   hw     0.000    0.0000  0.0  0.0    1.0080
+   hp     1.100    0.0157  0.0  0.0    1.0080
+    i     2.350    0.4000  0.0  0.0  126.9000
+   cl     2.470    0.1000  0.0  0.0   35.4500
+   ip    1.868    0.0028  0.0  0.0   22.9900
+   ib     5.000    0.1000  0.0  0.0  131.0000
+   mg     0.793    0.8947  0.0  0.0   24.3050
+    n     1.824    0.1700  0.0  0.0   14.0100
+   na     1.824    0.1700  0.0  0.0   14.0100
+   nb     1.824    0.1700  0.0  0.0   14.0100
+   nz     1.880    0.1700  0.0  0.0   14.0100
+   nc     1.824    0.1700  0.0  0.0   14.0100
+   n2     1.824    0.1700  0.0  0.0   14.0100
+   n3     1.824    0.1700  0.0  0.0   14.0100
+   n*     1.824    0.1700  0.0  0.0   14.0100
+    o     1.661    0.2100  0.0  0.0   16.0000
+   ow     1.768    0.1521  0.0  0.0   16.0000
+   oh     1.721    0.2104  0.0  0.0   16.0000
+   os     1.684    0.1700  0.0  0.0   16.0000
+   o2     1.661    0.2100  0.0  0.0   16.0000
+   oz     1.717    0.2100  0.0  0.0   16.0000
+    p     2.100    0.2000  0.0  0.0   30.9700
+    s     2.000    0.2500  0.0  0.0   32.0600
+   sh     2.000    0.2500  0.0  0.0   32.0600
+   sz     2.056    0.2500  0.0  0.0   32.0600
+   cu     1.908    0.0860  0.0  0.0   63.5500
+   fe     0.000    0.0000  0.0  0.0   55.0000
+    k     2.658    0.0003  0.0  0.0   39.1000
+   rb     2.956    0.0002  0.0  0.0   85.4700
+   cs     3.395    0.0001  0.0  0.0  132.9100
+ow_spc     1.777    0.1555  0.0  0.0   15.9994
+hw_spc     0.000    0.0000  0.0  0.0    1.0080
+osp     1.768    0.1521  0.0  0.0   15.9994
+hsp     0.000    0.0000  0.0  0.0    1.0080
+   li     1.137    0.0183  0.0  0.0    6.9400
+#  amber original is:
+#   zn     1.100    0.0125  0.0  0.0   65.4000 
+#    zn     1.400    0.0125  0.0  0.0   65.4000 pp
+    zn     1.456    0.0125  0.0  0.0   65.4000 
+
+  ca2      1.635    0.0973  0.0  0.0   65.4000  
+  n1          1.8240  0.1700    1.8240  0.1700   14.01 
+  c1          1.9080  0.0860    1.9080  0.0860   12.01 
+  s2          2.0000  0.2500    2.0000  0.2500   32.06 
+ dum   1.0       0.00    1.8240    0.0         1.d20             
+cd         1.90800    0.08600    1.90800    0.04300   12.01000
+clx        1.86000    0.32000    1.86000    0.32000   35.45000
+owf    1.768    0.1521   0.0  0.0   16.0000
+hwf    0.600    0.0157   0.0  0.0    1.0080
+END 
