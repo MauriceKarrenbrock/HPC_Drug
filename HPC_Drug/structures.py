@@ -8,10 +8,17 @@ class Structure(object):
 class Protein(Structure):
     """The general Protein class"""
 
-    def __init__(self, protein_id = None, filename = None,
-                structure = None, substitutions_dict = None,
-                sulf_bonds = None, seqres = None,
-                file_type = 'cif', model = None, chain = None):
+    def __init__(self,
+                protein_id = None,
+                filename = None,
+                structure = None,
+                substitutions_dict = None,
+                sulf_bonds = None,
+                seqres = None,
+                file_type = 'cif',
+                model = None,
+                chain = None):
+                
         self.protein_id = protein_id
         self.model = model
         self.chain = chain

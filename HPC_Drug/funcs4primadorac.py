@@ -22,15 +22,20 @@ def run_primadorac(ligand_list = None, primadorac_path = None, ph = 7.0):
             \nwill keep going pretending nothing happened\nWARNING")
         return None
 
-
+    print("Running primadorac")
     ligand_list = pipeline_functions.get_iterable(ligand_list)
     for i, ligand in enumerate(pipeline_functions.get_iterable(ligand_list)):
                 #calls primadorac in order to get ligand's prm and tpg files
                 #the -gp option means "don't optimize the structure but ad hydrogens for pH 7"
                 #in the future primadorac should be able to add them at different pH too
-                subprocess.run(f'bash {primadorac_path} -gp {ligand.ligand_filename}',
-                            shell = True,
-                            check = True)
+                r = subprocess.run(f'bash {primadorac_path} -gp {ligand.ligand_filename}',
+                                shell = True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                universal_newlines=True)
+
+                print(r.stdout)
+                print(r.stderr)
                 
                 prefix = ligand_list[i].ligand_filename.rsplit('.', 1)[0]
                 prefix = prefix + '-p'

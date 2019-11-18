@@ -51,16 +51,16 @@ class PDBCruncer(FileCruncer):
     def __init__(self):
         pass
 
-    def parse(self, protein_id = None, filename = None, Protein_model = None):
+    def parse(self, protein_id = None, filename = None):
         """Parses a PDB with the ProDy parser"""
         import prody
         
-        k = {'model' : Protein_model}
+        
         if filename == None:
-            parser = prody.parsePDB(protein_id, **k)
+            parser = prody.parsePDB(protein_id)
         else:
             
-            parser = prody.parsePDB(filename, **k)
+            parser = prody.parsePDB(filename)
 
         return parser
         
@@ -200,9 +200,7 @@ class PDBRepair(FileCruncer):
 
         does only work on the protein, not on the ligand
         
-        The resnames of the HIS and CIS residues that bind a metal ion
-        are renamed in order to have the right potential when given to the
-        choosen MD program"""
+        The input file MUST be a PDBx/mmCIF"""
 
         if repairing_method == 'pdbfixer':
             import pdbfixer
@@ -230,22 +228,21 @@ class PDBRepair(FileCruncer):
 
 
     def fix_pdbfixer(self, input_filename, ph = 7.0, add_H = False):
-        """This method is called by add_missing_atoms"""
+        """This method is called by add_missing_atoms
+        Reads an PDBx/mmCIF"""
         
         import pdbfixer
         import simtk.openmm.app
 
-        fixer = pdbfixer.PDBFixer(filename= input_filename)
-        
+        with open(input_filename, 'r') as f:
+            fixer = pdbfixer.PDBFixer(pdbxfile = f)
         fixer.findMissingResidues()
         fixer.findNonstandardResidues()
         fixer.replaceNonstandardResidues()
         #fixer.removeHeterogens(False)
         fixer.findMissingAtoms()
         fixer.addMissingAtoms()
-        if add_H == True:
-            fixer.addMissingHydrogens(ph)
-        
+        #fixer.addMissingHydrogens(8.0)
         #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         return fixer
@@ -396,12 +393,9 @@ class SubstitutionParser(FileCruncer):
         return output_filename
 
 
-def mmcif2pdb_custom(protein_id = None,
-                    input_filename = None,
-                    protein_model = 0,
-                    protein_chain = 'A',
-                    output_filename = None):
-    """Reads a mmcif and converts it to a pdb
+def select_model_chain_custom(Protein = None):
+    """Takes a Protein instance containing the filename of a PDB
+    Returns a Protein instance with an updated pdb file
     using biopython
     selects only a chosen model and chain
     and eliminates disordered atoms chosing only one conformation
@@ -412,20 +406,20 @@ def mmcif2pdb_custom(protein_id = None,
     import Bio.PDB
     import os
 
-    if protein_id == None or input_filename == None:
+    if Protein == None:
+        raise Exception('Protein cannot be None type')
+
+    if Protein.protein_id == None or Protein.filename == None:
         raise ValueError('protein_id and input_filename must be given')
-    elif not os.path.exists(input_filename):
-        raise ValueError(f"{input_filename} not found")
+    elif not os.path.exists(Protein.filename):
+        raise ValueError(f"{Protein.filename} not found")
 
     #Bring None arguments to default
-    if protein_model == None:
-        protein_model = 0
+    if Protein.model == None:
+        Protein.model = 0
     
-    if protein_chain == None:
-        protein_chain = 'A'
-
-    if output_filename == None:
-        output_filename = protein_id + '.pdb'
+    if Protein.chain == None:
+        Protein.chain = 'A'
 
     # This part eliminates any disordered atom part,
     #Only keeps one possible position
@@ -446,14 +440,14 @@ def mmcif2pdb_custom(protein_id = None,
         return undisordered_atom_list
     Bio.PDB.Residue.Residue.get_unpacked_list = get_unpacked_list
 
-    p = Bio.PDB.MMCIFParser()
-    struct = p.get_structure(protein_id, input_filename)
+    p = Bio.PDB.PDBParser()
+    struct = p.get_structure(Protein.protein_id, Protein.filename)
 
     s = Bio.PDB.PDBIO()
-    s.set_structure(struct[protein_model][protein_chain])
-    s.save(output_filename)
+    s.set_structure(struct[Protein.model][Protein.chain])
+    s.save(Protein.filename)
 
-    if not os.path.exists(output_filename):
-        raise Exception(f'Could not save {output_filename} file')
+    if not os.path.exists(Protein.filename):
+        raise Exception(f'Could not save {Protein.filename} file')
 
-    return output_filename
+    return Protein

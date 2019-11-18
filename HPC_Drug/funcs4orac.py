@@ -7,6 +7,7 @@ import pipeline_functions
 import lib
 import importlib_resources
 import subprocess
+import prody
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
     """Takes a protein instance, and returns one
@@ -105,6 +106,44 @@ def custom_zinc_orac_substitutions(input_list):
 
     return resname
 
+def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename = None):
+    """Puts the ligand and the protein together again in a pdb
+    
+    returns a Protein istance with a updated Protein.filename"""
+
+    if Protein == None:
+        raise Exception('Protein cannot be None type')
+
+    if Ligand == None:
+        print("There is no ligand to join, will go on pretending nothing happened")
+        return Protein
+    
+    if output_filename == None:
+        output_filename = f"{Protein.protein_id}_joined.pdb"
+
+    # A very bad way to write first the ligands atoms and then the protein ones
+    #on the selected pdb file
+    #Shall implement something better in the future
+    with open(output_filename, 'w') as joined:
+
+        for ligand in pipeline_functions.get_iterable(Ligand):
+            with open(ligand.ligand_filename, 'r') as lig:
+                for line in lig:
+                    if 'ATOM' in line or 'HETATM' in line:
+   
+                        joined.write(line)
+                
+        with open(Protein.filename, 'r') as prot:
+            for line in prot:
+                if 'ATOM' in line or 'HETATM' in line:
+ 
+                    joined.write(line)
+
+    Protein.filename = output_filename
+
+    return Protein
+
+
 
 class OracInput(object):
     """Generic Orac input template object"""
@@ -124,10 +163,10 @@ class OracInput(object):
 
         #input filename is the cleaned pdb with both protein and ligand
         #but no solvent or trash HETATMS
+        #if not explicitly given it is considered Protein.filename (standard behaviour)
         self.input_filename = input_filename
         if self.input_filename == None:
-            #may call the mixing function in the future
-            raise Exception('need an imput pdb')
+            self.input_filename = self.Protein.filename
         
         self.output_filename = output_filename
 
@@ -136,18 +175,19 @@ class OracInput(object):
         if self.protein_tpg_file == None:
             with importlib_resources.path('lib', 'amber99sb-ildn.tpg') as path:
                 self.protein_tpg_file = path
+            
         
         self.protein_prm_file = protein_prm_file
         #if no path is given searches the standard amber prm inside lib module
         if self.protein_prm_file == None:
             with importlib_resources.path('lib', 'amber99sb-ildn.prm') as path:
-                self.protein_tpg_file = path
+                self.protein_prm_file = path
 
         self.solvent_pdb = solvent_pdb
         #if no path is given searches the standard water.pdb inside lib module
         if self.solvent_pdb == None:
             with importlib_resources.path('lib', 'water.pdb') as path:
-                self.protein_tpg_file = path
+                self.solvent_pdb = path
         
         self.MD_program_path = MD_program_path
         if self.MD_program_path == None:
@@ -245,20 +285,37 @@ class OracInput(object):
 
         with open(filename, 'w') as f:
             for line in template:
-                f.write(line)
+                f.write(line + '\n')
 
         return filename
 
-    def execute(self, template = None, filename = None, pdb_file = None, MD_program_path = None):
+    def execute(self, template = None, filename = None, output_pdb_file = None, MD_program_path = None):
 
         if MD_program_path == None:
             MD_program_path = self.MD_program_path
 
+        if template == None:
+            template = self.template
+
+        if filename == None:
+            filename = self.output_filename
+        
+        if output_pdb_file == None:
+            output_pdb_file = self.Protein.filename.rsplit('.', 1)[0].strip() + '_optimized.pdb'
+
         filename = self.write_template_on_file(template, filename)
 
-        subprocess.run(f'{MD_program_path} {filename}', shell = True, check = True)
+        print("Running Orac")
+        r = subprocess.run([f'{MD_program_path} < {filename}'],
+                        shell = True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        universal_newlines=True)
 
-        return pdb_file  
+        print(r.stdout)
+        print(r.stderr)
+ 
+        return output_pdb_file  
 
 
 
@@ -274,19 +331,19 @@ class OracFirstOptimization(OracInput):
     makes the first optimization"""
 
     def __init__(self,
-                input_filename = None,
                 output_filename = None,
                 Protein = None,
                 Ligand = None,
                 protein_tpg_file = None,
-                protein_prm_file = None):
+                protein_prm_file = None,
+                MD_program_path = None):
         
-        super().__init__(input_filename,
-                        output_filename,
-                        Protein,
-                        Ligand,
-                        protein_tpg_file,
-                        protein_prm_file)
+        super().__init__(output_filename = output_filename,
+                        Protein = Protein,
+                        Ligand = Ligand,
+                        protein_tpg_file = protein_tpg_file,
+                        protein_prm_file = protein_prm_file,
+                        MD_program_path = MD_program_path)
         #checking if I really have a protein and a ligand
         if Protein == None:
             raise ValueError("Portein can't be None type")
@@ -308,7 +365,7 @@ class OracFirstOptimization(OracInput):
             "&SETUP",
             "   CRYSTAL  150.0 150.0 150.0 90.0 90.0 90.0",
 
-            f"   READ_PDB  {self.input_filename}",
+            f"   READ_PDB  {self.Protein.filename}",
 
             "&END",
             "",
@@ -370,11 +427,11 @@ class OracFirstOptimization(OracInput):
             "&END",
             "",
             "#overwriting the input pdb",
-            f"# write final pdb file to {self.input_filename}",
+            f"# write final pdb file to {self.Protein.filename.rsplit('.', 1)[0].strip()}_optimized.pdb",
             "#",
             "&INOUT",
-            f"   ASCII_OUTBOX    20.0 OPEN {self.input_filename}",
-            f"   PLOT FRAGMENT 1.0 OPEN {self.input_filename}.xyz",
+            f"   ASCII_OUTBOX    20.0 OPEN {self.Protein.filename.rsplit('.', 1)[0].strip()}_optimized.pdb",
+            f"   PLOT FRAGMENT 1.0 OPEN {self.Protein.filename.rsplit('.', 1)[0].strip()}_optimized.xyz",
             "&END",
         ]
 
@@ -396,6 +453,7 @@ class OracSolvBoxInput(OracInput):
                 Ligand = None,
                 protein_tpg_file = None,
                 protein_prm_file = None,
+                MD_program_path = None,
                 solvent_pdb = None):
         
         """takes the output_filename of the file on which to write
@@ -405,13 +463,14 @@ class OracSolvBoxInput(OracInput):
         #DA FINIRE!!!!!!!!!!
         #####################
 
-        super().__init__(input_filename,
-                        output_filename,
-                        Protein,
-                        Ligand,
-                        protein_tpg_file,
-                        protein_prm_file,
-                        solvent_pdb)
+        super().__init__(input_filename = input_filename,
+                        output_filename = output_filename,
+                        Protein = Protein,
+                        Ligand = Ligand,
+                        protein_tpg_file = protein_tpg_file,
+                        protein_prm_file = protein_prm_file,
+                        MD_program_path= MD_program_path,
+                        solvent_pdb = solvent_pdb)
         
         if output_filename == None:
             self.output_filename = f'{Protein.protein_id}_orac_solvbox.in'
