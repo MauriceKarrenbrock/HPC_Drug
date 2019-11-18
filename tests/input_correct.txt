@@ -57,4 +57,4 @@ ligand_elaboration_program_path = ~/ORAC/trunk/tools/primadorac/primadorac.bash
 #of choice and the path to the executable
 
 MD_program = orac
-MD_program_path = ~/ORAC/trunk/src/orac
+MD_program_path = ~/ORAC/trunk/src/GNU-FFTW-OMP/orac

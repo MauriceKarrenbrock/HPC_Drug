@@ -19,17 +19,6 @@ def parse(Protein):
         subst_parser.parse_substitutions_PDB(file_name = Protein.filename,
                                             protein_chain = Protein.chain)
     
-    #converting the mmcif file in a pdb
-    #because pdbfixer has some issues with mmcif
-
-    Protein.filename =\
-        file_manipulation.mmcif2pdb_custom(protein_id = Protein.protein_id,
-                                        input_filename = Protein.filename,
-                                        protein_model = Protein.model,
-                                        protein_chain = Protein.chain)
-    
-    Protein.file_type = 'pdb'
-
     return Protein, ligand_resnames
 
 

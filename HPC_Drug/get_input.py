@@ -96,7 +96,7 @@ class ParseInputFromFile(GetFile):
 
     def refine_input(self, input_variables = None):
 
-        """Makes the needed casts from string"""
+        """Makes the needed casts from string, defines some None to default ecc"""
 
         if type(input_variables) != dict:
             raise Exception('Need a dictionary')
@@ -118,6 +118,13 @@ class ParseInputFromFile(GetFile):
         #ph must be a float
         if input_variables['ph'] != None:
             input_variables['ph'] = float(input_variables['ph'])
+        
+        #sets primadorac as the default ligand elaboration program and tries to guess where the executable is
+        if input_variables['ligand_elaboration_program'] == None:
+            input_variables['ligand_elaboration_program'] = 'primadorac'
+        
+        if input_variables['ligand_elaboration_program_path'] == None:
+            input_variables['ligand_elaboration_program_path'] = '~/ORAC/trunk/tools/primadorac/primadorac.bash'
         
         return input_variables
 

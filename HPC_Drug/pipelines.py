@@ -5,6 +5,8 @@ import file_manipulation
 import structures
 import pipeline_functions
 import funcs4primadorac
+import funcs4gromacs
+import funcs4orac
 
 def choose_pipeline(*args, **kwargs):
     """Takes the parsed program input
@@ -120,20 +122,28 @@ class NoLigand_Pipeline(Pipeline):
         
         #adds missing atoms and residues
         #changes non standard residues to standard ones
-        Protein.protein_filename = repairer.add_missing_atoms(Protein.protein_id,
+        #takes a PDBx/mmCIF and returns a PDB
+        Protein.filename = repairer.add_missing_atoms(Protein.protein_id,
                                                             Protein.filename, self.repairing_method,
                                                             None, ph = self.ph, add_H = False)
 
-        #Protein.protein_filename = subst_parser.apply_substitutions(self.protein_id, self.protein_filename, self.protein_filename, substitutions_dict)
+        Protein.file_type = 'pdb'
+
+        #selects only a selected model and chain, and keeps only one conformation for any disordered atom
+        Protein = file_manipulation.select_model_chain_custom(Protein = Protein)
 
         cruncer = file_manipulation.ProteinCruncer(Protein.file_type)
         
         #gets the protein's structure from the pdb
         #The only HETATM remaining are the metal ions
         Protein.structure = cruncer.get_protein(protein_id = Protein.protein_id,
-                                                filename =Protein.filename,
+                                                filename = Protein.filename,
                                                 structure = None)
 
+        #Temporarely save th filename that contains the ligand in order to extract it later
+        tmp_pdb_file = Protein.filename
+
+        #Write Protein only pdb
         Protein.filename = Protein.write_PDB(f"{Protein.protein_id}_protein.pdb")
         
         #extracts the ligands structures (if any) from the pdb
@@ -147,7 +157,7 @@ class NoLigand_Pipeline(Pipeline):
 
                 Ligand[i] = structures.Ligand(resname, None, None, 'pdb')
                 Ligand[i].structure = cruncer.get_ligand(Protein.protein_id,
-                                                        Protein.protein_filename,
+                                                        tmp_pdb_file,
                                                         resname,
                                                         None)
 
@@ -155,7 +165,7 @@ class NoLigand_Pipeline(Pipeline):
 
                 #tries to write the ligand pdb
                 try:
-                    Ligand[i].ligand_filename = Ligand[i].write_PDB(f'{Protein.protein_id}_{resname}_ligand{i}.pdb')
+                    Ligand[i].ligand_filename = Ligand[i].write_PDB(f'{Protein.protein_id}_{resname}_lgand{i}.pdb')
                 except TypeError as err:
                     raise TypeError(f'{err.args}\ncannot make ligand pdb file for {resname}')
                 except Exception as err:
@@ -175,30 +185,34 @@ class NoLigand_Pipeline(Pipeline):
         else:
             raise NotImplementedError(self.ligand_elaboration_program)
 
-        if self.ligand_elaboration_program == None or self.ligand_elaboration_program_path == None:
-            raise Exception('Need a ligand elaboration program and a path')
-        
-        elif self.ligand_elaboration_program == 'primadorac':
-            #DA FARE
-            pass
-        
-        else:
-            raise NotImplementedError(self.ligand_elaboration_program)
 
         if self.MD_program == None or self.MD_program_path == None:
             raise Exception('Need a MD program and a path')
 
         elif self.MD_program == 'gromacs':
-            import funcs4gromacs
 
+            #makes the necessary resname substitutions for the ForceField
             Protein = funcs4gromacs.residue_substitution(Protein, 'standard')
             Protein = pipeline_functions.get_seqres_PDB(Protein)
 
         elif self.MD_program == 'orac':
-            import funcs4orac
 
+            #makes the necessary resname substitutions for the ForceField
             Protein = funcs4orac.residue_substitution(Protein, 'standard')
             Protein = pipeline_functions.get_seqres_PDB(Protein)
+
+            #Creating a joined pdb of protein + ligand
+            Protein = funcs4orac.join_ligand_and_protein_pdb(Protein, Ligand)
+
+            #first structure optimization, with standard tpg and prm (inside lib module)
+            first_opt = funcs4orac.OracFirstOptimization(output_filename = f'first_opt_{Protein.protein_id}.in',
+                                                        Protein = Protein,
+                                                        Ligand = Ligand,
+                                                        protein_tpg_file = None,
+                                                        protein_prm_file = None,
+                                                        MD_program_path = self.MD_program_path)
+
+            Protein.filename = first_opt.execute()
 
         else:
             raise NotImplementedError(self.MD_program)
