@@ -1,13 +1,17 @@
 # Contains the classes for file manipulation like PDB & mmCIF
 
 import pipeline_functions
+import Bio.PDB
+import os
+import prody
+
+
 
 def download_protein_structure(protein_id, file_type = 'cif', pdir = None):
     """The function downloads a PDB or a mmCIF from wwwPDB in a selected directory
     the default directory is the working directory
     it returns the filename (str)"""
-    import Bio.PDB
-    import os
+    
 
     if file_type == 'cif':
         _file_type = 'mmCif'
@@ -53,7 +57,6 @@ class PDBCruncer(FileCruncer):
 
     def parse(self, protein_id = None, filename = None):
         """Parses a PDB with the ProDy parser"""
-        import prody
         
         
         if filename == None:
@@ -68,6 +71,9 @@ class PDBCruncer(FileCruncer):
                     protein_id = None,
                     filename = None,
                     structure = None):
+        
+        """returns a protein ProDy structure"""
+
         import structures
         import prody
 
@@ -274,6 +280,9 @@ class SubstitutionParser(FileCruncer):
         sulf_bonds = []
 
         metals = important_lists.metals
+        
+        #list of trash ligands
+        trash = important_lists.trash
 
         cif_dict = Bio.PDB.MMCIF2Dict.MMCIF2Dict(file_name)
 
@@ -291,7 +300,8 @@ class SubstitutionParser(FileCruncer):
                 n = n.strip()
 
                 if n not in metals:
-                    ligand.append(n)           
+                    if n not in trash:
+                        ligand.append(n)           
     
 
         #I check for residues binding metals and disulfide bonds

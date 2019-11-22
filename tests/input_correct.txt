@@ -8,7 +8,8 @@
 #'cif' is for PDBx/mmCIF (default)
 #'pdb' for standard PDB file (not implemented)
 
-protein = 1df8
+protein = 3m5e
+#1df8
 protein_filetype = cif
 
 #the model to take from the mmcif, if omitted model = 0 will be taken (starts from 0)

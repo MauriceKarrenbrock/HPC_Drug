@@ -180,7 +180,23 @@ class NoLigand_Pipeline(Pipeline):
             Ligand = funcs4primadorac.run_primadorac(ligand_list = Ligand,
                                                     primadorac_path = self.ligand_elaboration_program_path,
                                                     ph = self.ph)
-
+            
+            #As primadorac renames th ligand resnumber as 1
+            #and it could create problems they are renamed as -(i + 1)
+            #with maximum number -9
+            #Not very robust, for sure not the best solution
+            for i, ligand in enumerate(pipeline_functions.get_iterable(Ligand)):
+                with open(ligand.ligand_filename, 'r') as f:
+                    lines = f.readlines()
+                
+                with open(ligand.ligand_filename, 'w') as f:
+                    for line in lines:
+                        line = list(line)
+                        line[24] = '-'
+                        line[25] = f'{(i + 1) % 10}'
+                        line = ''.join(line)
+                        
+                        f.write(line)
 
         else:
             raise NotImplementedError(self.ligand_elaboration_program)
@@ -198,7 +214,7 @@ class NoLigand_Pipeline(Pipeline):
         elif self.MD_program == 'orac':
 
             #makes the necessary resname substitutions for the ForceField
-            Protein = funcs4orac.residue_substitution(Protein, 'standard')
+            Protein = funcs4orac.residue_substitution(Protein, 'custom_zinc')
             Protein = pipeline_functions.get_seqres_PDB(Protein)
 
             #Creating a joined pdb of protein + ligand
@@ -214,6 +230,21 @@ class NoLigand_Pipeline(Pipeline):
 
             Protein.filename = first_opt.execute()
 
+            if Ligand == None:
+                raise TypeError('I could not find organic ligands in the structure\n\
+                                Maybe the ones you where looking for are in the important_lists.trash list\n\
+                                In any case I did some optimizations on your protein, hoping it will come in handy')
+        
+            solv_box = funcs4orac.OracSolvBoxInput(output_filename = f"{Protein.protein_id}_solv_box.in",
+                                                Protein = Protein,
+                                                Ligand = Ligand,
+                                                protein_tpg_file = None,
+                                                protein_prm_file = None,
+                                                MD_program_path = self.MD_program_path,
+                                                solvent_pdb = None)
+            
+            Protein.filename = solv_box.execute()
+        
         else:
             raise NotImplementedError(self.MD_program)
         

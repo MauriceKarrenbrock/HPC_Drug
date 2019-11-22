@@ -8,6 +8,7 @@ import lib
 import importlib_resources
 import subprocess
 import prody
+import orient
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
     """Takes a protein instance, and returns one
@@ -29,7 +30,7 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
     
     else:
         raise NotImplementedError(substitution)
-
+    
     p = Bio.PDB.PDBParser()
     struct = p.get_structure(Protein.protein_id, Protein.filename)
 
@@ -51,7 +52,7 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
                 #give the right name to histidines in order to get the right protonation
                 elif residue.resname in important_lists.hist_resnames:
                     
-                    if ph < 5.0:
+                    if ph < 6.0:
                         residue.resname = 'HIS'
                     
                     else:
@@ -81,6 +82,11 @@ def standard_orac_substitutions(input_list):
             raise NotImplementedError(f"{input_list[1]} is not an implemented atom name for histidine")
 
     elif input_list[0] in important_lists.cyst_resnames:
+        #This isn't the right name to write in the input seqres for Orac
+        #But as Biopython strucures can only contain 3 letter resnames
+        #I am giving this as a temporary name
+        #It will be changed to CYSM in the get seqres function
+        #This part shall be redone better
         resname = 'CYM'
 
     else:
@@ -95,14 +101,14 @@ def custom_zinc_orac_substitutions(input_list):
     
     resname = standard_orac_substitutions(input_list)
 
-    if resname == 'HID' and input_list[2] == 'ZN':
+    if resname == 'HSD' and input_list[2] == 'ZN':
         resname = 'HDZ'
     
-    elif resname == 'HIE' and input_list[2] == 'ZN':
+    elif resname == 'HSE' and input_list[2] == 'ZN':
         resname = 'HEZ'
 
-    elif resname == 'CIM' and input_list[2] == 'ZN':
-        resname = 'CIZ'
+    elif resname == 'CYM' and input_list[2] == 'ZN':
+        resname = 'CYZ'
 
     return resname
 
@@ -217,6 +223,8 @@ class OracInput(object):
 
         if Ligand == None:
             Ligand = self.Ligand
+            if Ligand == None:
+                return ''
 
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
@@ -236,6 +244,8 @@ class OracInput(object):
 
         if Ligand == None:
             Ligand = self.Ligand
+            if Ligand == None:
+                return ''
 
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
@@ -254,6 +264,8 @@ class OracInput(object):
 
         if Ligand == None:
             Ligand = self.Ligand
+            if Ligand == None:
+                return ''
 
         residue_strings = []
 
@@ -285,7 +297,7 @@ class OracInput(object):
 
         with open(filename, 'w') as f:
             for line in template:
-                f.write(line + '\n')
+                f.write(f"{line}\n")
 
         return filename
 
@@ -422,7 +434,7 @@ class OracFirstOptimization(OracInput):
             "#",
             "&RUN",
             "   CONTROL      0",
-            "   TIME         10.0",
+            "   TIME         3.0",
             "   PRINT         5.0",
             "&END",
             "",
@@ -442,9 +454,11 @@ class OracSolvBoxInput(OracInput):
     to insert the protein in a solvent box and make a MD
     simulation to reach aequilibrium at constant pressure"""
 
-    #####################################
-    #DA FINIRE
-    #######################################
+    #deactivating some 
+    #BiopythonWarning
+    import warnings
+    import Bio.PDB.PDBExceptions
+    warnings.simplefilter('ignore', Bio.PDB.PDBExceptions.PDBConstructionWarning)
 
     def __init__(self,
                 input_filename = None,
@@ -458,10 +472,6 @@ class OracSolvBoxInput(OracInput):
         
         """takes the output_filename of the file on which to write
         and the istances of the present proteins and ligands"""
-        
-        #########################
-        #DA FINIRE!!!!!!!!!!
-        #####################
 
         super().__init__(input_filename = input_filename,
                         output_filename = output_filename,
@@ -474,6 +484,8 @@ class OracSolvBoxInput(OracInput):
         
         if output_filename == None:
             self.output_filename = f'{Protein.protein_id}_orac_solvbox.in'
+
+        self.orient = orient.Orient(self.Protein, self.Ligand)
 
         self.template = [
             "#&T NTHREADS    8   CACHELINE   16",
@@ -492,7 +504,9 @@ class OracSolvBoxInput(OracInput):
             "# Set MD cell and read pdb coordinates",
             "#",
             "&SETUP",
-            "   CRYSTAL    82.13    75.25    58.69  !! BOX di simulazione",
+
+            self.write_box(),
+
             "&END",
             "#",
             "# legge i force field",
@@ -527,13 +541,19 @@ class OracSolvBoxInput(OracInput):
             "   END",
             "&END",
             "&SOLUTE  !legge le coordinate PDB del complesso.",
-            f"   COORDINATES {self.input_filename}",
+
+            f"   COORDINATES {self.Protein.filename}",
+
             "&END",
             "&SOLVENT    !! genera solvente su una griglia",
-            "   GENERATE   25  23  18  !! la griglia dipende dal BOX",
+
+            self.write_solvent_grid(),
+
             "    CELL  SC",
             "   INSERT 0.7",
-            "   COORDINATES ../../lib/water.pdb",
+
+            f"   COORDINATES {self.solvent_pdb}",
+
             "&END",
             "&SIMULATION                  ! parametri di simulazione (uguali per tutti)",
             "   MDSIM",
@@ -555,18 +575,19 @@ class OracSolvBoxInput(OracInput):
             "      step nonbond 5  7.8   reciprocal",
             "      step nonbond 1  10.0",
             "      test_times OPEN  G0.tt 20",
-            "      energy_then_die",
+            "      very_cold_start 0.1",
             "  END",
             "&END",
             "&POTENTIAL  !! parametri del potenziale",
-            "   EWALD PME 0.37   64  64  48   4 !! griglia sul reciproco",
-            "   ADD_STR_COM   !! linker COM-COM legando proteina",
-            "       ligand     1      84",
-            "       target    85    5830",
-            "       force   0.15     8.9221    8.9222",
-            "   END",
+
+            self.write_EWALD_PME(),
+
+            self.write_ADD_STR_COM(),
+
             "   UPDATE      60.0   1.8",
-            "   LINKED_CELL   27  25  20",
+
+            self.write_LINKED_CELL(),
+
             "   STRETCHING HEAVY",
             "   QQ-FUDGE  0.83333",
             "   LJ-FUDGE  0.50",
@@ -583,14 +604,115 @@ class OracSolvBoxInput(OracInput):
             "#",
             "# write restart file every 60.0 (approximately)",
             "#",
-            "&INOUT ! files I/O  (uguali per tutti)",
+            "&INOUT ! files I/O",
             "   RESTART",
-            "      write  15000.0  OPEN  md.rst",
+
+            f"      write  15000.0  OPEN  {self.Protein.protein_id}_solventbox.rst",
+
             "   END",
-            "   ASCII   3000.0 OPEN md_1.pdb",
-            "   PLOT STEER_ANALYTIC  500.0  OPEN com.dat",
+
+            f"   ASCII   3000.0 OPEN {self.Protein.protein_id}_solventbox.pdb",
+
+            f"   PLOT STEER_ANALYTIC  500.0  OPEN {self.Protein.protein_id}_solventbox.dat",
+
             "&END"                                              
         ]
+    
+    def write_box(self):
+        """Writes the string about the box size
+        and rotates the strucure in a smart way"""
+
+        self.Protein.structure = self.orient.base_change_structure()
+
+        self.Protein.filename = self.Protein.write_PDB(filename = self.Protein.filename,
+                                                    struct_type = 'biopython')
+        
+        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+
+        string = f"   CRYSTAL    {lx}    {ly}    {lz}  !! BOX di simulazione"
+
+        return string
+
+    def write_solvent_grid(self):
+        """Writes the informations about the solvent grid"""
+
+        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+
+        nx, ny, nz = self.orient.create_solvent_grid(lx, ly, lz)
+
+        string = f"   GENERATE   {nx}  {ny}  {nz}  !! la griglia dipende dal BOX"
+
+        return string
+
+    def write_EWALD_PME(self):
+        """Writes the informations about the grid
+        in the reciprocal reticle"""
+        
+        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+
+        pme_x, pme_y, pme_z = self.orient.create_recipr_solvent_grid(lx, ly, lz)
+
+        string = f"   EWALD PME 0.37   {pme_x}  {pme_y}  {pme_z}   4 !! griglia sul reciproco"
+
+        return string
+
+    def write_ADD_STR_COM(self):
+        """Writes the informations about the bounding between the protein and the ligands"""
+
+        if self.Ligand == None:
+            return ''
+
+        #get the separeted structures of the protein and the ligands
+        self.Protein.structure, ligand_structures = self.orient.separate_protein_ligand()
+
+        #Make sure to save the structures of each ligand
+        #may come in handy
+        self.Ligand = self.orient.Ligand
+        
+        #Get the atom number range of each segment
+        protein_atoms, ligand_atoms = self.orient.atom_numbers()
+
+        string = []
+
+        #get the distance of the centers of mass of the protein and the ligands
+        #and create the string
+        for i, ligand in enumerate(pipeline_functions.get_iterable(ligand_structures)):
+
+            COM_Protein, COM_ligand, distance = self.orient.center_mass_distance(self.Protein.structure, ligand)
+
+            tmp_string = ["   ADD_STR_COM   !! linker COM-COM legando proteina",
+                        f"       ligand     {ligand_atoms[i][1]}      {ligand_atoms[i][0]}",
+                        f"       target    {protein_atoms[1]}      {protein_atoms[0]}",
+                        f"       force   0.15     {distance}    {distance+0.0001}",
+                        "   END"]
+            
+            tmp_string = '\n'.join(tmp_string)
+            string.append(tmp_string)
+
+        if len(string) > 1:
+            string = '\n'.join(string)
+        else:
+            string = string[0]
+        
+        return string
+
+    def write_LINKED_CELL(self):
+        """writes the LINKED CELL string"""
+
+        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+
+        string = f"   LINKED_CELL   {int(lx/3.0)}  {int(ly/3.0)}  {int(lz/3.0)}"
+
+        return string
+
+
+
+
+
+
+
+
+
 
     
 

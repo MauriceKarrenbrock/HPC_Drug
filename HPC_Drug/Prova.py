@@ -96,15 +96,72 @@ f'$water writepdb {protein_id}_water.pdb',
 # import os
 # pip = subprocess.run(f'vmd -dispdev text -e < {os.getcwd()}/psf_stript_py.tcl', shell = True, check = True)
 
+# import pdbfixer
+# import simtk.openmm.app
+# fixer = pdbfixer.PDBFixer(filename='pdb2f3z.ent')
+# fixer.findMissingResidues()
+# fixer.findNonstandardResidues()
+# fixer.replaceNonstandardResidues()
+# fixer.removeHeterogens(False)
+# fixer.findMissingAtoms()
+# fixer.addMissingAtoms()
+# fixer.addMissingHydrogens(7.0)
+# #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
+# simtk.openmm.app.PDBFile.writeFile(fixer.topology, fixer.positions, open('Cazzo.pdb', 'w'))
+
+# import Bio.PDB
+# import Bio.PDB.MMCIF2Dict
+
+# p = Bio.PDB.MMCIFParser()
+# struct = p.get_structure('2rfh', '2rfh.cif')
+
+# cif_dict = Bio.PDB.MMCIF2Dict.MMCIF2Dict('2rfh.cif')
+
+# print(cif_dict['_entity_poly_seq.mon_id'])
+# s = Bio.PDB.PDBIO()
+# s.set_structure(struct)
+# s.save('2rfh_bio.pdb')
+
 import pdbfixer
 import simtk.openmm.app
-fixer = pdbfixer.PDBFixer(filename='pdb2f3z.ent')
+
+input_filename = '1df8.cif'
+output_filename = 'Cazzo.pdb'
+
+with open(input_filename, 'r') as f:
+    fixer = pdbfixer.PDBFixer(pdbxfile = f)
 fixer.findMissingResidues()
 fixer.findNonstandardResidues()
 fixer.replaceNonstandardResidues()
-fixer.removeHeterogens(False)
+#fixer.removeHeterogens(False)
 fixer.findMissingAtoms()
 fixer.addMissingAtoms()
-fixer.addMissingHydrogens(7.0)
+#fixer.addMissingHydrogens(8.0)
 #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
-simtk.openmm.app.PDBFile.writeFile(fixer.topology, fixer.positions, open('Cazzo.pdb', 'w'))
+
+with open(output_filename, 'w') as w:
+    simtk.openmm.app.PDBFile.writeFile(fixer.topology, fixer.positions, open(output_filename, 'w'), keepIds= True)
+
+# import importlib_resources
+# import lib
+# with importlib_resources.path('lib', 'amber99sb-ildn.tpg') as path:
+#     print(path)
+# print(path)
+
+
+# def preprocess_source(self, in_file, additional_args=[]):
+#         import subprocess
+
+#         self._args.extend(self._build_compiler_flags())
+#         self._args.extend(additional_args)
+
+#         result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+
+#         if result.returncode == 0:
+#             return result.stdout
+#         else:
+#             if result.stderr:
+#                 Style.error('Preprocess failed: ')
+#                 print(result.stderr)
+
+#             return '' 
