@@ -77,13 +77,24 @@ class Ligand(Structure):
         self.topology_file = topology_file
         self.param_file = param_file
     
-    def write_PDB(self, filename):
+    def write_PDB(self, filename = None, struct_type = 'prody'):
         import file_manipulation as fm
 
         if filename == None:
-            filename = self.ligand_resname + '_ligand.pbd'
+            filename = self.ligand_resname + '_lgand.pbd'
 
-        w = fm.ProteinCruncer('pdb')
-        w.write_PDB(self.structure, filename)
+        
+        if struct_type == 'prody':
+
+            w = fm.ProteinCruncer('pdb')
+            w.write_PDB(self.structure, filename)
+
+        elif struct_type == 'biopython':
+            import Bio.PDB 
+
+            p = Bio.PDB.PDBIO()
+            p.set_structure(self.structure)
+            p.save(filename)
+
 
         return filename
