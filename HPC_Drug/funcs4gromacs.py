@@ -1,9 +1,9 @@
 #containing functions and classes for the creation of a gromacs input
 
-import structures
+from HPC_Drug import structures
 import Bio.PDB
-import file_manipulation
-import important_lists
+from HPC_Drug import file_manipulation
+from HPC_Drug import important_lists
 
 def residue_substitution(Protein, substitution = 'standard'):
     """Takes a protein instance, and returns one

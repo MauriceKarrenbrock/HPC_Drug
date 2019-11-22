@@ -1,5 +1,5 @@
 # This file contains the classes and functions to create structures
-import file_manipulation
+from HPC_Drug import file_manipulation
 class Structure(object):
     """Raises an Exception for not implemented structure type"""
     def __init__(self):
@@ -37,7 +37,7 @@ class Protein(Structure):
         self.seqres = seqres
     
     def write_PDB(self, filename = None, struct_type = 'prody'):
-        import file_manipulation as fm
+        from HPC_Drug import file_manipulation as fm
 
         if filename == None:
             filename = self.protein_id + '_protein.pbd'
@@ -78,7 +78,7 @@ class Ligand(Structure):
         self.param_file = param_file
     
     def write_PDB(self, filename = None, struct_type = 'prody'):
-        import file_manipulation as fm
+        from HPC_Drug import file_manipulation as fm
 
         if filename == None:
             filename = self.ligand_resname + '_lgand.pbd'

@@ -1,5 +1,5 @@
-import file_manipulation
-import structures
+from HPC_Drug import file_manipulation
+from HPC_Drug import structures
 import collections
 
 def parse(Protein):

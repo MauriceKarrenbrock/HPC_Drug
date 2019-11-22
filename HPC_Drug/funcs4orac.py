@@ -1,14 +1,14 @@
 #contains all the classes and functions needed fot the orac MD program
-import structures
+from HPC_Drug import structures
 import Bio.PDB
-import file_manipulation
-import important_lists
-import pipeline_functions
-import lib
+from HPC_Drug import file_manipulation
+from HPC_Drug import important_lists
+from HPC_Drug import pipeline_functions
+from HPC_Drug import lib
 import importlib_resources
 import subprocess
 import prody
-import orient
+from HPC_Drug import orient
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
     """Takes a protein instance, and returns one
@@ -179,21 +179,21 @@ class OracInput(object):
         self.protein_tpg_file = protein_tpg_file
         #if no path is given searches the standard amber tpg inside lib module
         if self.protein_tpg_file == None:
-            with importlib_resources.path('lib', 'amber99sb-ildn.tpg') as path:
-                self.protein_tpg_file = path
+            with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as path:
+                self.protein_tpg_file = path#.resolve()
             
         
         self.protein_prm_file = protein_prm_file
         #if no path is given searches the standard amber prm inside lib module
         if self.protein_prm_file == None:
-            with importlib_resources.path('lib', 'amber99sb-ildn.prm') as path:
-                self.protein_prm_file = path
+            with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as path:
+                self.protein_prm_file = path#.resolve()
 
         self.solvent_pdb = solvent_pdb
         #if no path is given searches the standard water.pdb inside lib module
         if self.solvent_pdb == None:
-            with importlib_resources.path('lib', 'water.pdb') as path:
-                self.solvent_pdb = path
+            with importlib_resources.path('HPC_Drug.lib', 'water.pdb') as path:
+                self.solvent_pdb = path#.resolve()
         
         self.MD_program_path = MD_program_path
         if self.MD_program_path == None:
@@ -239,8 +239,6 @@ class OracInput(object):
 
     def write_ligand_prm_path(self, Ligand = None):
         """Writes the prm file for any given ligand"""
-
-        import pipeline_functions
 
         if Ligand == None:
             Ligand = self.Ligand

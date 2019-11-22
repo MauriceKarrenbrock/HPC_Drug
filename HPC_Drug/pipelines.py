@@ -1,12 +1,12 @@
 # This file contains the possible pipelines depending from input
 
 import subprocess
-import file_manipulation
-import structures
-import pipeline_functions
-import funcs4primadorac
-import funcs4gromacs
-import funcs4orac
+from HPC_Drug import file_manipulation
+from HPC_Drug import structures
+from HPC_Drug import pipeline_functions
+from HPC_Drug import funcs4primadorac
+from HPC_Drug import funcs4gromacs
+from HPC_Drug import funcs4orac
 
 def choose_pipeline(*args, **kwargs):
     """Takes the parsed program input
@@ -31,7 +31,10 @@ def choose_pipeline(*args, **kwargs):
                                     ph = input_dict['ph'],
                                     repairing_method = input_dict['repairing_method'],
                                     MD_program = input_dict['MD_program'],
-                                    MD_program_path = input_dict['MD_program_path'])
+                                    MD_program_path = input_dict['MD_program_path'],
+                                    protein_prm_file = input_dict['protein_prm_file'],
+                                    protein_tpg_file = input_dict['protein_tpg_file'],
+                                    solvent_pdb = input_dict['solvent_pdb'])
 
         else:
             # ligand is given
@@ -46,27 +49,47 @@ class Pipeline(object):
     
     def __init__(self,
                 protein = None,
-                protein_filetype = None,
+                protein_filetype = 'cif',
                 local = None,
                 filepath = None,
                 ligand = None,
                 ligand_elaboration_program = 'primadorac',
                 ligand_elaboration_program_path = 'primadorac.bash',
-                Protein_model = None,
-                Protein_chain = None,
+                Protein_model = 0,
+                Protein_chain = 'A',
                 ph = 7.0,
                 repairing_method = 'pdbfixer',
                 MD_program = None,
-                MD_program_path = None):
+                MD_program_path = None,
+                protein_prm_file = None,
+                protein_tpg_file = None,
+                solvent_pdb = None):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
+
+        if self.protein_filetype == None:
+            self.protein_filetype = 'cif'
+
         self.local = local
         self.protein_filename = filepath
+
         self.model = Protein_model
+        if self.model == None:
+            self.model = 0
+        elif type(self.model) == str:
+            self.model = int(self.model)
+
         self.chain = Protein_chain
+        if self.chain == None:
+            self.chain = 'A'
+        else:
+            self.chain = self.chain.upper()
 
         self.ph = ph
+        if type(self.ph) == str:
+            self.ph = float(self.ph)
+         
         self.repairing_method = repairing_method
         
         #ligand can be a pdb file or a smiles
@@ -76,6 +99,10 @@ class Pipeline(object):
 
         self.MD_program = MD_program
         self.MD_program_path = MD_program_path
+
+        self.protein_prm_file = protein_prm_file
+        self.protein_tpg_file = protein_tpg_file
+        self.solvent_pdb = solvent_pdb
 
     def download(self):
         return file_manipulation.download_protein_structure(self.protein_id, self.protein_filetype, None)
@@ -175,28 +202,29 @@ class NoLigand_Pipeline(Pipeline):
 
         #use primadorac to get topology and parameter files for any given ligand
         if self.ligand_elaboration_program == 'primadorac':
+            if Ligand != None:
         
-            #runs primadorac and returns the Ligand list updated with the prm, tpg and new pdb files
-            Ligand = funcs4primadorac.run_primadorac(ligand_list = Ligand,
-                                                    primadorac_path = self.ligand_elaboration_program_path,
-                                                    ph = self.ph)
-            
-            #As primadorac renames th ligand resnumber as 1
-            #and it could create problems they are renamed as -(i + 1)
-            #with maximum number -9
-            #Not very robust, for sure not the best solution
-            for i, ligand in enumerate(pipeline_functions.get_iterable(Ligand)):
-                with open(ligand.ligand_filename, 'r') as f:
-                    lines = f.readlines()
+                #runs primadorac and returns the Ligand list updated with the prm, tpg and new pdb files
+                Ligand = funcs4primadorac.run_primadorac(ligand_list = Ligand,
+                                                        primadorac_path = self.ligand_elaboration_program_path,
+                                                        ph = self.ph)
                 
-                with open(ligand.ligand_filename, 'w') as f:
-                    for line in lines:
-                        line = list(line)
-                        line[24] = '-'
-                        line[25] = f'{(i + 1) % 10}'
-                        line = ''.join(line)
-                        
-                        f.write(line)
+                #As primadorac renames th ligand resnumber as 1
+                #and it could create problems they are renamed as -(i + 1)
+                #with maximum number -9
+                #Not very robust, for sure not the best solution
+                for i, ligand in enumerate(pipeline_functions.get_iterable(Ligand)):
+                    with open(ligand.ligand_filename, 'r') as f:
+                        lines = f.readlines()
+                    
+                    with open(ligand.ligand_filename, 'w') as f:
+                        for line in lines:
+                            line = list(line)
+                            line[24] = '-'
+                            line[25] = f'{(i + 1) % 10}'
+                            line = ''.join(line)
+                            
+                            f.write(line)
 
         else:
             raise NotImplementedError(self.ligand_elaboration_program)
@@ -224,9 +252,10 @@ class NoLigand_Pipeline(Pipeline):
             first_opt = funcs4orac.OracFirstOptimization(output_filename = f'first_opt_{Protein.protein_id}.in',
                                                         Protein = Protein,
                                                         Ligand = Ligand,
-                                                        protein_tpg_file = None,
-                                                        protein_prm_file = None,
+                                                        protein_tpg_file = self.protein_tpg_file,
+                                                        protein_prm_file = self.protein_prm_file,
                                                         MD_program_path = self.MD_program_path)
+
 
             Protein.filename = first_opt.execute()
 
@@ -238,10 +267,10 @@ class NoLigand_Pipeline(Pipeline):
             solv_box = funcs4orac.OracSolvBoxInput(output_filename = f"{Protein.protein_id}_solv_box.in",
                                                 Protein = Protein,
                                                 Ligand = Ligand,
-                                                protein_tpg_file = None,
-                                                protein_prm_file = None,
+                                                protein_tpg_file = self.protein_tpg_file,
+                                                protein_prm_file = self.protein_prm_file,
                                                 MD_program_path = self.MD_program_path,
-                                                solvent_pdb = None)
+                                                solvent_pdb = self.solvent_pdb)
             
             Protein.filename = solv_box.execute()
         
