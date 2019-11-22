@@ -1,9 +1,13 @@
 # Contains the classes for file manipulation like PDB & mmCIF
 
-import pipeline_functions
+from HPC_Drug import pipeline_functions
+from HPC_Drug import structures
+from HPC_Drug import important_lists
 import Bio.PDB
 import os
 import prody
+
+
 
 
 
@@ -74,8 +78,6 @@ class PDBCruncer(FileCruncer):
         
         """returns a protein ProDy structure"""
 
-        import structures
-        import prody
 
         if structure == None:
             parser = self.parse(protein_id, filename)
@@ -94,8 +96,6 @@ class PDBCruncer(FileCruncer):
                 structure = None):
         """Creates a PDB the organic ligand (if any)
         with ProDy"""
-        import structures
-        import prody
 
         if structure == None:
             parser = self.parse(protein_id, filename)
@@ -115,7 +115,6 @@ class PDBCruncer(FileCruncer):
         :param pdb_name: base name for the pdb file
         :return: None
         """
-        import prody
         
         prody.writePDB(f"{pdb_name}", structure)
 
@@ -124,14 +123,12 @@ class PDBCruncer(FileCruncer):
 class MMCIFCruncer(FileCruncer):
     """Contains the metods for working on mmCIF
     with th ProDy module"""
-    import prody
 
     def __init__(self):
         pass
 
     def parse(self, protein_id = None, filename = None, Protein_model = None):
         """Parses a PDB with the ProDy parser"""
-        import prody
         
         if filename == None:
             parser = prody.parseCIF(protein_id, model = Protein_model)
@@ -141,8 +138,6 @@ class MMCIFCruncer(FileCruncer):
         return parser
     
     def get_protein(self, protein_id = None, filename = None, Protein_model = None, structure = None):
-        import structures
-        import prody
 
         if structure == None:
             parser = self.parse(protein_id, filename, Protein_model)
@@ -163,8 +158,7 @@ class MMCIFCruncer(FileCruncer):
 
         """Creates a PDB with all the not water HETATM
         with ProDy"""
-        import structures
-        import prody
+
         if structure == None:
             parser = self.parse(protein_id, filename)
         else:
@@ -273,7 +267,7 @@ class SubstitutionParser(FileCruncer):
         """
 
         import Bio.PDB.MMCIF2Dict
-        import important_lists
+
         
         ligand = []
         substitutions = {}

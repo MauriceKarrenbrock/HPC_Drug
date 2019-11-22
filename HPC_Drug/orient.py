@@ -9,10 +9,10 @@ import Bio.PDB.vectors
 from math import sqrt
 from numpy import *
 #import sys
-import important_lists
-import pipeline_functions
-import file_manipulation
-import structures
+from HPC_Drug import important_lists
+from HPC_Drug import pipeline_functions
+from HPC_Drug import file_manipulation
+from HPC_Drug import structures
 
 #deactivating all
 #BiopythonWarning
@@ -169,6 +169,12 @@ class Orient(object):
         
         if rot_matrix == None:
             tmp, tmp_1, rot_matrix = self.calculate_moment_of_intertia_tensor()
+
+        #I want to be sure that the matrix doesn't contain a reflection (det < 0)
+        #because it would messup the chirality
+        #In case there is one i reflect the matrix around the z axis
+        if linalg.det(rot_matrix) < 0:
+            rot_matrix[:,:3] = - rot_matrix[:,:3]
         
         #make the inverse
         rot_matrix = linalg.inv(rot_matrix)

@@ -8,8 +8,8 @@
 #'cif' is for PDBx/mmCIF (default)
 #'pdb' for standard PDB file (not implemented)
 
-protein = 3m5e
-#1df8
+protein = 1df8
+#3m5e
 protein_filetype = cif
 
 #the model to take from the mmcif, if omitted model = 0 will be taken (starts from 0)
@@ -59,3 +59,13 @@ ligand_elaboration_program_path = ~/ORAC/trunk/tools/primadorac/primadorac.bash
 
 MD_program = orac
 MD_program_path = ~/ORAC/trunk/src/GNU-FFTW-OMP/orac
+
+#protein tpg and primadorac
+#if omitted default ones will be used
+#see HPC_Drug/lib/
+protein_prm_file = amber99sb-ildn.prm
+protein_tpg_file = amber99sb-ildn.tpg
+
+#solvent pdb, if omitted default will be used
+#see HPC_Drug/lib/
+solvent_pdb = water.pdb

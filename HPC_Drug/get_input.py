@@ -1,4 +1,5 @@
 # This file contains the classes and functions needed to get the input
+import importlib_resources
 
 class GetInput(object):
     """Generic class to get input"""
@@ -38,7 +39,10 @@ class ParseInputFromFile(GetFile):
                     'ph',
                     'repairing_method',
                     'MD_program',
-                    'MD_program_path')
+                    'MD_program_path',
+                    'protein_prm_file',
+                    'protein_tpg_file',
+                    'solvent_pdb')
 
     def __init__(self, filename):
         super().__init__(filename)
@@ -125,6 +129,19 @@ class ParseInputFromFile(GetFile):
         
         if input_variables['ligand_elaboration_program_path'] == None:
             input_variables['ligand_elaboration_program_path'] = '~/ORAC/trunk/tools/primadorac/primadorac.bash'
+        
+        if input_variables['protein_tpg_file'] == None:
+            with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as path:
+                input_variables['protein_tpg_file'] = path#.resolve()
+        
+        if input_variables['protein_prm_file'] == None:
+            with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as path:
+                input_variables['protein_prm_file'] = path#.resolve()
+
+        if input_variables['solvent_pdb'] == None:
+            with importlib_resources.path('HPC_Drug.lib', 'water.pdb') as path:
+                input_variables['solvent_pdb'] = path#.resolve()
+        
         
         return input_variables
 

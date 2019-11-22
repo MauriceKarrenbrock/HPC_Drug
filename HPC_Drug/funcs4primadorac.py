@@ -1,7 +1,7 @@
 #contains classes and functions for primadorac
 
-import structures
-import pipeline_functions
+from HPC_Drug import structures
+from HPC_Drug import pipeline_functions
 import subprocess
 
 
