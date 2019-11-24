@@ -286,12 +286,48 @@ class Orient(object):
     def separate_protein_ligand(self, Protein = None, Ligand = None):
         """Takes a Protein instance whose filename is the pdbfile with both
         the protein and the ligands together and returns the separated biopython structures"""
+        
+        def update_ligand_resnumbers(Protein = self.Protein, Ligand = self.Ligand):
+            """Updates the ligand resnumbers that may be changed
+            because of previous calculations"""
+
+            if Ligand == None or len(Ligand) == 0:
+                print("I found no ligand, returning None")
+                return None
+
+            ligand_resnames = []
+            for ligand in pipeline_functions.get_iterable(Ligand):
+                if ligand.ligand_resname not in ligand_resnames:
+                    ligand_resnames.append(ligand.ligand_resname)
+
+            c = file_manipulation.SubstitutionParser()
+            ligand_resnames = c.get_ligand_resnum(Protein = Protein,
+                                                ligand_resnames = ligand_resnames,
+                                                chain_model_selection = False)
+            #now ligand resnames is in the form [[ligand_resname, ligand_resnumber], [..., ...], ...]
+
+            #Creating a completely new Ligand list
+            Ligand = []
+
+            for ligand in ligand_resnames:
+                Ligand.append(structures.Ligand(ligand_resname = ligand[0],
+                                                filename = None,
+                                                structure = None,
+                                                file_type = 'pdb',
+                                                topology_file = None,
+                                                param_file = None,
+                                                res_number = ligand[1]))
+
+            return Ligand
+
 
         if Protein == None:
             Protein = self.Protein
 
         if Ligand == None:
             Ligand = self.Ligand
+
+        Ligand = update_ligand_resnumbers(Protein = Protein, Ligand = Ligand)
 
         #Extract the protein with ProDy, write a new pdb
         #and then get the Biopython protein structure
@@ -307,7 +343,11 @@ class Orient(object):
         #doing the same thing for every ligand
         ligand_structures = []
         for i, ligand in enumerate(pipeline_functions.get_iterable(Ligand)):
-            ligand.structure = c.get_ligand(Protein.protein_id, Protein.filename, ligand.ligand_resname)
+            ligand.structure = c.get_ligand(protein_id = Protein.protein_id,
+                                            filename = Protein.filename,
+                                            ligand_name =ligand.ligand_resname,
+                                            ligand_resnumber = ligand.res_number)
+
             ligand.filename = ligand.write_PDB(f"{Protein.protein_id}_lgand{i}.pdb")
             ligand.structure = p.get_structure(Protein.protein_id, ligand.filename)
             ligand_structures.append(ligand.structure)

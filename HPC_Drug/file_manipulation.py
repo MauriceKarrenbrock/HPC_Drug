@@ -4,6 +4,7 @@ from HPC_Drug import pipeline_functions
 from HPC_Drug import structures
 from HPC_Drug import important_lists
 import Bio.PDB
+import Bio.PDB.MMCIF2Dict
 import os
 import prody
 
@@ -91,9 +92,12 @@ class PDBCruncer(FileCruncer):
 
         return protein_structure
 
-    def get_ligand(self, protein_id = None, filename = None,
+    def get_ligand(self,
+                protein_id = None,
+                filename = None,
                 ligand_name = None,
-                structure = None):
+                structure = None,
+                ligand_resnumber = None):
         """Creates a PDB the organic ligand (if any)
         with ProDy"""
 
@@ -102,8 +106,22 @@ class PDBCruncer(FileCruncer):
         else:
             parser = structure
 
-        if ligand_name != None and len(ligand_name) != 0:
+        if ligand_resnumber != None and type(ligand_resnumber) != str:
+            ligand_resnumber = str(ligand_resnumber)
+
+        #if no resnumber is given the selection will be made using the resname
+        #It makes impossible to distinguish between ligands with the same resname
+        if ligand_resnumber == None and ligand_name != None and len(ligand_name) != 0:
             ligand_structure = parser.select('resname ' + ligand_name)
+            print(f"Selected ligand {ligand_name}")
+
+        elif ligand_resnumber != None:
+            ligand_structure = parser.select('resnum ' + ligand_resnumber)
+            print(f"Selected ligand {ligand_name} resnumber: {ligand_resnumber}")
+        
+        else:
+            print("No ligand found will return None")
+            return None
         
         return ligand_structure
 
@@ -265,9 +283,6 @@ class SubstitutionParser(FileCruncer):
 
         and if it's present the resname used for the organic ligand (list)
         """
-
-        import Bio.PDB.MMCIF2Dict
-
         
         ligand = []
         substitutions = {}
@@ -363,6 +378,48 @@ class SubstitutionParser(FileCruncer):
 
         return substitution
 
+    def get_ligand_resnum(self, Protein = None, ligand_resnames = None, chain_model_selection = False):
+        """Given a Protein instance and a list of Ligand_resnames will return 
+        a list containing the ligand resnames and resnumbers
+        in order to distinguish ligands with the same resname: [[resname, resnumber], [.., ...], ...]
+        
+        chain_model_selection :: bool
+        if true will only select Protein.model model and Protein.chain chain
+        from the given structure"""
+        
+        if Protein.filename == None or ligand_resnames == None:
+            raise TypeError('Need a valid mmcif and ligand_resnames, None is not valid')
+
+        if len(ligand_resnames) == 0:
+            print("The list of ligands is empty, going on returning a None item")
+            return None
+
+        if Protein.file_type == 'cif': 
+            p = Bio.PDB.MMCIFParser()
+
+        elif Protein.file_type == 'pdb':
+            p = Bio.PDB.PDBParser()
+
+        else:
+            raise TypeError(f'"{Protein.file_type}" is not a valid type\n only "cif" and "pdb"')
+
+        struct = p.get_structure(Protein.protein_id, Protein.filename)
+
+        if chain_model_selection == True:
+            #Taking only the right chain and model
+            struct = struct[Protein.model][Protein.chain]
+
+        residues = struct.get_residues()
+
+        ligand_list = []
+
+        for residue in residues:
+            if residue.resname in ligand_resnames:
+                ligand_list.append([residue.resname, residue._id[1]])
+
+        return ligand_list
+
+        
 
 
     def apply_substitutions(self, protein_id, input_filename, output_filename, substitutions_dict):

@@ -8,9 +8,9 @@ def parse(Protein):
     the residues binding a metal, the organic ligand resname (if present)
     the sulfidic bonds and the seqres
 
-    takes and resturns a structures.Protein instance and a Ligand one
-    
-    the protein mmcif is converted in a pdb, and Protein.filename is updated"""
+    takes and resturns a structures.Protein instance and a list of
+    ligand resnames and resnumbers [[resname, resnumber], [..., ...], ...]
+    """
 
     #Parsing substitutions, sulf bonds and the resname of the organic ligand
     subst_parser = file_manipulation.SubstitutionParser()
@@ -18,6 +18,10 @@ def parse(Protein):
     Protein.substitutions_dict, Protein.sulf_bonds, ligand_resnames =\
         subst_parser.parse_substitutions_PDB(file_name = Protein.filename,
                                             protein_chain = Protein.chain)
+    
+    ligand_resnames = subst_parser.get_ligand_resnum(Protein = Protein,
+                                                    ligand_resnames = ligand_resnames,
+                                                    chain_model_selection = True)
     
     return Protein, ligand_resnames
 

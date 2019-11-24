@@ -142,7 +142,8 @@ class NoLigand_Pipeline(Pipeline):
         #Parses the mmcif for sulf bonds and organic ligands
         #takes information about the residues binding metals
         #and records seqres
-        #ligand_resnames is a list containing the ligands resnames
+        #ligand_resnames is a list containing the ligands
+        # resnames and resnumbers [[resname, resnumber], [..., ...], ...]
         Protein, ligand_resnames = pipeline_functions.parse(Protein)
         
         repairer = file_manipulation.PDBRepair()
@@ -176,27 +177,38 @@ class NoLigand_Pipeline(Pipeline):
         #extracts the ligands structures (if any) from the pdb
         #creates a ligand structure and writes a pdb
         #for any found organic ligand
-        if len(ligand_resnames) != 0:
+        if ligand_resnames == None:
+            Ligand = None
+        
+        elif len(ligand_resnames) != 0:
             #Ligand from now on is a list of Ligand objects
             Ligand = []
-            for i, resname in enumerate(pipeline_functions.get_iterable(ligand_resnames)):
+
+            #ligand res is: [resname, resnumber]
+            for i, ligand_res in enumerate(pipeline_functions.get_iterable(ligand_resnames)):
                 Ligand.append(None)
 
-                Ligand[i] = structures.Ligand(resname, None, None, 'pdb')
-                Ligand[i].structure = cruncer.get_ligand(Protein.protein_id,
-                                                        tmp_pdb_file,
-                                                        resname,
-                                                        None)
-
-                print(Ligand[i].structure)
+                Ligand[i] = structures.Ligand(ligand_resname = ligand_res[0],
+                                            filename = None,
+                                            structure = None,
+                                            file_type = 'pdb',
+                                            topology_file = None,
+                                            param_file = None,
+                                            res_number= ligand_res[1])
+                                            
+                Ligand[i].structure = cruncer.get_ligand(protein_id = Protein.protein_id,
+                                                        filename = tmp_pdb_file,
+                                                        ligand_name = Ligand[i].ligand_resname,
+                                                        structure = None,
+                                                        ligand_resnumber = Ligand[i].res_number)
 
                 #tries to write the ligand pdb
                 try:
-                    Ligand[i].ligand_filename = Ligand[i].write_PDB(f'{Protein.protein_id}_{resname}_lgand{i}.pdb')
+                    Ligand[i].ligand_filename = Ligand[i].write_PDB(f'{Protein.protein_id}_{Ligand[i].ligand_resname}_lgand{i}.pdb')
                 except TypeError as err:
-                    raise TypeError(f'{err.args}\ncannot make ligand pdb file for {resname}')
+                    raise TypeError(f'{err.args}\ncannot make ligand pdb file for {Ligand[i].ligand_resname}')
                 except Exception as err:
-                    raise Exception(f'{err} {err.args}\ncannot make ligand pdb file for {resname}')
+                    raise Exception(f'{err} {err.args}\ncannot make ligand pdb file for {Ligand[i].ligand_resname}')
         else:
             Ligand = None
 
