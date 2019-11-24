@@ -229,7 +229,7 @@ class OracInput(object):
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
 
-            string = f"   READ_TPG_ASCII {ligand.topology_file}                                !! ligando"
+            string = f"   READ_TPG_ASCII {ligand.topology_file} !! ligand"
 
             tmp.append(string)
 
@@ -248,7 +248,7 @@ class OracInput(object):
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
 
-            string = f"   READ_PRM_ASCII {ligand.param_file}                                !! ligando"
+            string = f"   READ_PRM_ASCII {ligand.param_file}  !! ligand"
 
             tmp.append(string)
 
@@ -274,7 +274,7 @@ class OracInput(object):
 
                     if 'RESIDUE' in line:
                         
-                        string = f"      {line.split()[1].strip()}    !! nome del ligando nel file tpg"
+                        string = f"      {line.split()[1].strip()} !! ligand name in tpg file"
 
                         residue_strings.append(string)
 
@@ -393,12 +393,12 @@ class OracFirstOptimization(OracInput):
             self.write_ligand_prm_path(self.Ligand),
 
             "#TPGCYS",
-            "ADD_TPG  SOLUTE  !! aggiunge cys-cys",
+            "ADD_TPG  SOLUTE  !! adds cys-cys",
 
             self.write_sulf_bond_string(self.Protein),
 
             "END",
-            "   JOIN SOLUTE  !! definisce struttura primaria",
+            "   JOIN SOLUTE  !! primary structure",
             
             self.get_ligand_name_from_tpg(self.Ligand),
 
@@ -493,11 +493,9 @@ class OracSolvBoxInput(OracInput):
             "#  Minimize Crystallographic structure from PDBank",
             "###############################################################",
             "",
-            "!N.B questo e' un commento",
-            "!! due punti esclamativi indicano che  la sezione di",
-            "!! riferimento e' system-dependent",
-            "! Un punto esclamativo indica che la sezione e' uguale per tutti i",
-            "! sistemi",
+            "! this is a comment",
+            "!! two exclamation points: system-dependent section"
+            "! one exclamation point: system indipendent section (same for all inputs),
             "#",
             "# Set MD cell and read pdb coordinates",
             "#",
@@ -507,24 +505,24 @@ class OracSolvBoxInput(OracInput):
 
             "&END",
             "#",
-            "# legge i force field",
+            "# reads the force fields",
             "#",
             "&PARAMETERS",
-            f"   READ_TPG_ASCII {self.protein_tpg_file} ! proteina",
+            f"   READ_TPG_ASCII {self.protein_tpg_file} ! protein",
 
             self.write_ligand_tpg_path(self.Ligand),
 
-            f"   READ_PRM_ASCII {self.protein_prm_file} ! proteina",
+            f"   READ_PRM_ASCII {self.protein_prm_file} ! protein",
 
             self.write_ligand_prm_path(self.Ligand),
 
             "#TPGCYS",
-            "ADD_TPG  SOLUTE  !! aggiunge cys-cys",
+            "ADD_TPG  SOLUTE  !! adds cys-cys",
 
             self.write_sulf_bond_string(self.Protein),
 
             "END",
-            "   JOIN SOLUTE  !! definisce struttura primaria",
+            "   JOIN SOLUTE  !! defines primary structure",
             
             self.get_ligand_name_from_tpg(self.Ligand),
 
@@ -538,12 +536,12 @@ class OracSolvBoxInput(OracInput):
             "       tip3",
             "   END",
             "&END",
-            "&SOLUTE  !legge le coordinate PDB del complesso.",
+            "&SOLUTE  !reads complex pdb file",
 
             f"   COORDINATES {self.Protein.filename}",
 
             "&END",
-            "&SOLVENT    !! genera solvente su una griglia",
+            "&SOLVENT    !! generates solvent grid",
 
             self.write_solvent_grid(),
 
@@ -553,7 +551,7 @@ class OracSolvBoxInput(OracInput):
             f"   COORDINATES {self.solvent_pdb}",
 
             "&END",
-            "&SIMULATION                  ! parametri di simulazione (uguali per tutti)",
+            "&SIMULATION  ! simulation parameters (same for all)",
             "   MDSIM",
             "   TEMPERATURE   280.0 20.0",
             "   ISOSTRESS PRESS-EXT 0.1 BARO-MASS 30.0",
@@ -564,7 +562,7 @@ class OracSolvBoxInput(OracInput):
             "      temp_limit 1000.0",
             "   END",
             "&END",
-            "&INTEGRATOR     ! parametri di integrazione  (uguali per tutti)",
+            "&INTEGRATOR     ! integration parameters (same for all)",
             "   TIMESTEP       9.0",
             "   MTS_RESPA",
             "      step intra 2",
@@ -576,7 +574,7 @@ class OracSolvBoxInput(OracInput):
             "      very_cold_start 0.1",
             "  END",
             "&END",
-            "&POTENTIAL  !! parametri del potenziale",
+            "&POTENTIAL  !! potential parameters",
 
             self.write_EWALD_PME(),
 
@@ -590,7 +588,7 @@ class OracSolvBoxInput(OracInput):
             "   QQ-FUDGE  0.83333",
             "   LJ-FUDGE  0.50",
             "&END",
-            "&RUN  ! lunghezza  del run (uguali per tutti)",
+            "&RUN  ! run lenght (same for all)",
             "   CONTROL      0",
             "   PROPERTY     20000.0",
             "   REJECT       20000.0",
@@ -627,7 +625,7 @@ class OracSolvBoxInput(OracInput):
         
         lx, ly, lz = self.orient.create_box(self.Protein.structure)
 
-        string = f"   CRYSTAL    {lx}    {ly}    {lz}  !! BOX di simulazione"
+        string = f"   CRYSTAL    {lx:.2f}    {ly:.2f}    {lz:.2f}  !! simulation BOX"
 
         return string
 
@@ -638,7 +636,7 @@ class OracSolvBoxInput(OracInput):
 
         nx, ny, nz = self.orient.create_solvent_grid(lx, ly, lz)
 
-        string = f"   GENERATE   {nx}  {ny}  {nz}  !! la griglia dipende dal BOX"
+        string = f"   GENERATE   {nx}  {ny}  {nz}  !! the grid depends on the BOX"
 
         return string
 
@@ -650,7 +648,7 @@ class OracSolvBoxInput(OracInput):
 
         pme_x, pme_y, pme_z = self.orient.create_recipr_solvent_grid(lx, ly, lz)
 
-        string = f"   EWALD PME 0.37   {pme_x}  {pme_y}  {pme_z}   4 !! griglia sul reciproco"
+        string = f"   EWALD PME 0.37   {pme_x}  {pme_y}  {pme_z}   4 !! grid on the reciprocal"
 
         return string
 
@@ -678,7 +676,7 @@ class OracSolvBoxInput(OracInput):
 
             COM_Protein, COM_ligand, distance = self.orient.center_mass_distance(self.Protein.structure, ligand)
 
-            tmp_string = ["   ADD_STR_COM   !! linker COM-COM legando proteina",
+            tmp_string = ["   ADD_STR_COM   !! linker COM-COM legand protein",
                         f"       ligand     {ligand_atoms[i][1]}      {ligand_atoms[i][0]}",
                         f"       target    {protein_atoms[1]}      {protein_atoms[0]}",
                         f"       force   0.15     {distance}    {distance+0.0001}",
