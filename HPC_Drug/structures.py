@@ -66,7 +66,8 @@ class Ligand(Structure):
                 structure = None,
                 file_type = 'pdb',
                 topology_file = None,
-                param_file = None):
+                param_file = None,
+                res_number = None):
         self.ligand_resname = ligand_resname
         self.file_type = file_type
 
@@ -76,6 +77,8 @@ class Ligand(Structure):
 
         self.topology_file = topology_file
         self.param_file = param_file
+
+        self.res_number = res_number
     
     def write_PDB(self, filename = None, struct_type = 'prody'):
         from HPC_Drug import file_manipulation as fm
