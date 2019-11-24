@@ -495,7 +495,7 @@ class OracSolvBoxInput(OracInput):
             "",
             "! this is a comment",
             "!! two exclamation points: system-dependent section"
-            "! one exclamation point: system indipendent section (same for all inputs),
+            "! one exclamation point: system indipendent section (same for all inputs)",
             "#",
             "# Set MD cell and read pdb coordinates",
             "#",
