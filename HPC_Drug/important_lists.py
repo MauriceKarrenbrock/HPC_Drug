@@ -3,14 +3,14 @@ metals = ('AL', 'BA', 'CA', 'CD', 'CL', 'CO',
         'MG', 'MN3', 'NA', 'PB', 'PT', 'RB', 'TB', 'TL',
         'WO4', 'YB', 'ZN', 'CAL', 'CES',
         'CLA', 'POT', 'SOD', 'ZN2', 'FE',
-        'FE2', 'MN', 'NI')
+        'FE2', 'MN', 'NI', 'LI')
 
 hist_resnames = ('HIS', 'HIE', 'HID', 'HSD', 'HSE')
-cyst_resnames = ('CYS',' CYM', 'CYZ', 'CYSH')
+cyst_resnames = ('CYS',' CYM', 'CYZ', 'CYSH', 'CYSM')
 
 #contains the trash ligands that may be contained in the protein file
 #and some metals that are not present in the common force fields
-trash = ('EDO', 'PR', 'SO4', 'SF4', 'TRS', 'DMS', 'GLC', 'U')
+trash = ('EDO', 'PR', 'SO4', 'SF4', 'TRS', 'DMS', 'GLC', 'U', 'PO4', 'MBO')
 
 atom_weights = {
       'H'  :   1.00794,

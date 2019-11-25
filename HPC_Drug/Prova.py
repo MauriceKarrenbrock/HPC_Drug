@@ -165,3 +165,5 @@ with open(output_filename, 'w') as w:
 #                 print(result.stderr)
 
 #             return '' 
+
+#Seqres da header : _pdbx_poly_seq_scheme.mon_id
