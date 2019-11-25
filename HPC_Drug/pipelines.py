@@ -141,7 +141,9 @@ class NoLigand_Pipeline(Pipeline):
 
         #Parses the mmcif for sulf bonds and organic ligands
         #takes information about the residues binding metals
-        #and records seqres
+        #
+        #parses the seqres from the mmcif file if possible
+        #
         #ligand_resnames is a list containing the ligands
         # resnames and resnumbers [[resname, resnumber], [..., ...], ...]
         Protein, ligand_resnames = pipeline_functions.parse(Protein)
@@ -150,15 +152,24 @@ class NoLigand_Pipeline(Pipeline):
         
         #adds missing atoms and residues
         #changes non standard residues to standard ones
-        #takes a PDBx/mmCIF and returns a PDB
+        #takes a PDBx/mmCIF and returns a PDBx/mmCIF
         Protein.filename = repairer.add_missing_atoms(Protein.protein_id,
                                                             Protein.filename, self.repairing_method,
                                                             None, ph = self.ph, add_H = False)
-
-        Protein.file_type = 'pdb'
+        
+        ########
+        #WORK IN PROGRESS
+        ############
+        #Define the cys_dict (very useful for later when the resnumbers will be messed up)
+        #cys_dict = {resnum: cysteine_number}
+        # z = file_manipulation.SubstitutionParser()
+        # Protein = z.get_cysteine_dict(Protein = Protein)
+        # z = None
 
         #selects only a selected model and chain, and keeps only one conformation for any disordered atom
+        #returns a PDB file
         Protein = file_manipulation.select_model_chain_custom(Protein = Protein)
+        Protein.file_type = 'pdb'
 
         cruncer = file_manipulation.ProteinCruncer(Protein.file_type)
         
@@ -249,16 +260,22 @@ class NoLigand_Pipeline(Pipeline):
 
             #makes the necessary resname substitutions for the ForceField
             Protein = funcs4gromacs.residue_substitution(Protein, 'standard')
-            Protein = pipeline_functions.get_seqres_PDB(Protein)
 
         elif self.MD_program == 'orac':
 
             #makes the necessary resname substitutions for the ForceField
             Protein = funcs4orac.residue_substitution(Protein, 'custom_zinc')
-            Protein = pipeline_functions.get_seqres_PDB(Protein)
+            
+            #update the seqres with the names needed for Orac
+            Protein = pipeline_functions.custom_orac_seqres_from_PDB(Protein)
 
             #Creating a joined pdb of protein + ligand
             Protein = funcs4orac.join_ligand_and_protein_pdb(Protein, Ligand)
+
+            ########
+            #WORK IN PROGRESS
+            ##########
+            #Protein = pipeline_functions.update_sulf_bonds(Protein = Protein)
 
             #first structure optimization, with standard tpg and prm (inside lib module)
             first_opt = funcs4orac.OracFirstOptimization(output_filename = f'first_opt_{Protein.protein_id}.in',
@@ -285,6 +302,9 @@ class NoLigand_Pipeline(Pipeline):
                                                 solvent_pdb = self.solvent_pdb)
             
             Protein.filename = solv_box.execute()
+
+            if len(Ligand) > 1:
+                raise ValueError(f"Found more than one Ligand {Ligand}")
         
         else:
             raise NotImplementedError(self.MD_program)

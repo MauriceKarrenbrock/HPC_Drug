@@ -209,11 +209,11 @@ class PDBRepair(FileCruncer):
     def add_missing_atoms(self, pdb_id, input_filename,
                         repairing_method = 'pdbfixer',
                         output_filename = None, ph = 7.0, add_H = False):
-        """This function returns a repaired PDB with missing atoms but not hydrogens
+        """This function returns a repaired PDBx/mmCIF with missing atoms but not hydrogens
         chooses the right repairing method with repairing_method (pdbfixer is default)
         The returned PDB is called output_filename
         if output_filename is None (default) the file is saved as
-        {protein_id}_repaired.pdb in the working directory
+        {protein_id}_repaired.cif in the working directory
         returns the output_filename
 
         does only work on the protein, not on the ligand
@@ -228,10 +228,10 @@ class PDBRepair(FileCruncer):
             fixer = self.fix_pdbfixer(input_filename, ph = ph)
 
             if output_filename == None:
-                output_filename = pdb_id + '_repaired.pdb'
+                output_filename = pdb_id + '_repaired.cif'
             
             with open(output_filename, 'w') as f:
-                simtk.openmm.app.PDBFile.writeFile(fixer.topology, fixer.positions, f, keepIds= True)
+                simtk.openmm.app.pdbxfile.PDBxFile.writeFile(fixer.topology, fixer.positions, f, keepIds= True)
             
             output_filename = os.getcwd() + '/' + output_filename
             if not os.path.exists(output_filename):
@@ -419,7 +419,46 @@ class SubstitutionParser(FileCruncer):
 
         return ligand_list
 
+    def get_cysteine_dict(self, Protein = None):
+        """Make a dict of the form {resnumber: cysteine_number}
+        Where Cysteine number is the number that says if it is the first, second ... Cysteine
+        of the seqres
+
+        takes a Protein intance and returns a Protein
+        Protein.filename must be a mmCIF file
+
+        Very usefull whern you need to know which cysteines make disulf bonds
+        but you have to change the resnumbers"""
+
+        if Protein.file_type != "cif":
+            raise TypeError(Protein.file_type)
         
+        #Iterate on the residues in order to check for cysteines
+        cys_dict = {}
+        i = 0
+        with open(Protein.filename, 'r') as f:
+            for line in f:
+                if "ATOM" in line:
+                    if line[0] == "A":
+
+                        if line.split()[5].strip().upper() in important_lists.cyst_resnames:
+                            #i is the cysteine_number and line.split()[8].strip() is the residue number
+                            if not i in cys_dict.keys():
+                                i = i+1
+                                cys_dict[line.split()[8].strip()] = str(i)
+
+        Protein.cys_dict = cys_dict
+
+        print(cys_dict)
+        print(Protein.sulf_bonds)
+        #Checking if everything went the right way
+        if Protein.sulf_bonds != None and len(Protein.sulf_bonds) > 0:
+            for i in Protein.sulf_bonds:
+                for j in i:
+                    if j not in Protein.cys_dict.keys():
+                        raise ValueError("Something didn't work during the creation of the cys_dict")
+
+        return Protein
 
 
     def apply_substitutions(self, protein_id, input_filename, output_filename, substitutions_dict):
@@ -455,7 +494,7 @@ class SubstitutionParser(FileCruncer):
 
 
 def select_model_chain_custom(Protein = None):
-    """Takes a Protein instance containing the filename of a PDB
+    """Takes a Protein instance containing the filename of a PDB or a mmcif
     Returns a Protein instance with an updated pdb file
     using biopython
     selects only a chosen model and chain
@@ -501,7 +540,15 @@ def select_model_chain_custom(Protein = None):
         return undisordered_atom_list
     Bio.PDB.Residue.Residue.get_unpacked_list = get_unpacked_list
 
-    p = Bio.PDB.PDBParser()
+    if Protein.file_type == 'pdb':
+        p = Bio.PDB.PDBParser()
+
+    elif Protein.file_type == 'cif':
+         p = Bio.PDB.MMCIFParser()
+
+    else:
+        raise TypeError(f"Protein.file_type must be of 'cif' or 'pdb' type not {Protein.file_type}")
+   
     struct = p.get_structure(Protein.protein_id, Protein.filename)
 
     s = Bio.PDB.PDBIO()

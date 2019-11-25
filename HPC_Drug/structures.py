@@ -17,7 +17,8 @@ class Protein(Structure):
                 seqres = None,
                 file_type = 'cif',
                 model = None,
-                chain = None):
+                chain = None,
+                cys_dict = None):
                 
         self.protein_id = protein_id
         self.model = model
@@ -35,6 +36,8 @@ class Protein(Structure):
         self.substitutions_dict = substitutions_dict
         self.sulf_bonds = sulf_bonds
         self.seqres = seqres
+
+        self.cys_dict = cys_dict
     
     def write_PDB(self, filename = None, struct_type = 'prody'):
         from HPC_Drug import file_manipulation as fm

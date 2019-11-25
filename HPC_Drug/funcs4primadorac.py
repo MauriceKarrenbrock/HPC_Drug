@@ -36,6 +36,9 @@ def run_primadorac(ligand_list = None, primadorac_path = None, ph = 7.0):
 
                 print(r.stdout)
                 print(r.stderr)
+
+                if r.returncode != 0:
+                    raise Exception(f"Primadorac failure\n{r.stdout}\n{r.stderr}")
                 
                 prefix = ligand_list[i].ligand_filename.rsplit('.', 1)[0]
                 prefix = prefix + '-p'

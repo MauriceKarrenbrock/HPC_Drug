@@ -324,6 +324,9 @@ class OracInput(object):
 
         print(r.stdout)
         print(r.stderr)
+
+        if r.returncode != 0:
+            raise Exception(f"Orac failure\n{r.stdout}\n{r.stderr}")
  
         return output_pdb_file  
 
@@ -428,7 +431,7 @@ class OracFirstOptimization(OracInput):
             "&END",
             "",
             "#",
-            "#  do 20 minimization step and intermediate printout every 5",
+            "#  do 3 minimization step and intermediate printout every 5",
             "#",
             "&RUN",
             "   CONTROL      0",
