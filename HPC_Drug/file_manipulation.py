@@ -19,15 +19,16 @@ def download_protein_structure(protein_id, file_type = 'cif', pdir = None):
     
 
     if file_type == 'cif':
-        _file_type = 'mmCif'
-    else:
-        _file_type = file_type
+        file_type = 'mmCif'
+    
+    elif file_type != 'pdb' and file_type != 'cif':
+        raise ValueError(f"Must be 'pdb' or 'cif' not {file_type}")
     
     if pdir == None:
         pdir = os.getcwd()
 
     pdbl = Bio.PDB.PDBList()
-    filename = pdbl.retrieve_pdb_file(protein_id, False, pdir, file_format = _file_type, overwrite = True)
+    filename = pdbl.retrieve_pdb_file(protein_id, False, pdir, file_format = file_type, overwrite = True)
     
     if not os.path.exists(filename):
         raise FileNotFoundError(f'Was not able to download the protein or to find {filename}')
@@ -50,7 +51,7 @@ def ProteinCruncer(file_type):
     elif file_type == 'cif':
         return MMCIFCruncer()
     else:
-        return FileCruncer()
+        raise NotImplementedError(f"This kind file was not implemented yet: {file_type}, only 'pdb' and 'cif'")
 
 
 class PDBCruncer(FileCruncer):
@@ -284,7 +285,6 @@ class SubstitutionParser(FileCruncer):
         and if it's present the resname used for the organic ligand (list)
         """
         
-        ligand = []
         substitutions = {}
         sulf_bonds = []
 
@@ -300,17 +300,7 @@ class SubstitutionParser(FileCruncer):
         for key in cif_dict.keys():
             cif_dict[key] = pipeline_functions.get_iterable(cif_dict[key])
 
-        #record the ligands resname
-        for i in cif_dict['_struct_site.details']:
-            n = i.split()
-            #chooses the right chain only
-            if n[-2].strip() == protein_chain:
-                n = n[-3]
-                n = n.strip()
-
-                if n not in metals:
-                    if n not in trash:
-                        ligand.append(n)           
+        ligand = self.parse_ligands_from_header(cif_dict = cif_dict, metals = metals, trash = trash, protein_chain = protein_chain)         
     
 
         #I check for residues binding metals and disulfide bonds
@@ -365,6 +355,28 @@ class SubstitutionParser(FileCruncer):
                     pass
     
         return substitutions, sulf_bonds, ligand
+
+    def parse_ligands_from_header(self, cif_dict = None, metals = important_lists.metals, trash = important_lists.trash, protein_chain = 'A'):
+        """Parses the ligands resnames from a mmcif header"""    
+
+        if type(cif_dict) != dict:
+            raise TypeError(f"Need a dictionary, not a {type(cif_dict)}")
+        
+        ligand = []
+
+        #record the ligands resname
+        for i in cif_dict['_struct_site.details']:
+            n = i.split()
+            #chooses the right chain only
+            if n[-2].strip() == protein_chain:
+                n = n[-3]
+                n = n.strip()
+
+                if n not in metals:
+                    if n not in trash:
+                        ligand.append(n)  
+
+        return ligand
 
     def metal_bound_res_parsing(self,
                                 res_auth_seq_id,
