@@ -12,8 +12,10 @@ class GetFile(GetInput):
     """Class to get filename stored
     any extra argument will be stored in self.input or self.dictionary"""
 
-    def __init__(self, filename, *args, **kwargs):
+    def __init__(self, filename = None, *args, **kwargs):
         self.filename = filename
+        if type(self.filename) != str:
+            raise TypeError(f"filename must be a string, not a {type(self.filename)} type")
         super().__init__(args, kwargs)
 
 
@@ -48,7 +50,7 @@ class ParseInputFromFile(GetFile):
         super().__init__(filename)
         self.input_variables = self.read_input()
 
-    def create_input_dict(self):
+    def _create_input_dict(self):
         input_dict = {}
 
         for key in self.possible_keys:
@@ -62,7 +64,7 @@ class ParseInputFromFile(GetFile):
         :param:filename
         the name of the input file or it's absolute path"""
 
-        input_variables = self.create_input_dict()
+        input_variables = self._create_input_dict()
 
         with open(self.filename) as f:
 
@@ -94,16 +96,16 @@ class ParseInputFromFile(GetFile):
                 else:
                     raise ValueError(f"Input must be key = value not like this: '{line}'")
 
-        input_variables = self.refine_input(input_variables)    
+        input_variables = self._refine_input(input_variables)    
         
         return input_variables
 
-    def refine_input(self, input_variables = None):
+    def _refine_input(self, input_variables = None):
 
         """Makes the needed casts from string, defines some None to default ecc"""
 
         if type(input_variables) != dict:
-            raise Exception('Need a dictionary')
+            raise TypeError('Need a dictionary')
 
         # Protein_model must be an integer
         if input_variables['Protein_model'] != None:

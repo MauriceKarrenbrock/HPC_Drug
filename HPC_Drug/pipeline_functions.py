@@ -60,7 +60,8 @@ def custom_orac_seqres_from_PDB(Protein):
             for residue in res_list:
                 
                 #skipping HETATMs
-                if residue._id[0].strip() == '':
+                if residue._id[0].strip() == '' and residue.resname.strip() not in important_lists.metals:
+                    
                     #In the pdb this residues are called CYM because Biopython structures can
                     #only have 3 letters resnames, but Orac's tpg file calls it CYSM
                     #So I am modifying it in the seqres list
