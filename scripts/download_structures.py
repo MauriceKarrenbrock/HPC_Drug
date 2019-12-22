@@ -28,7 +28,7 @@ with open("possible_trash.txt", 'w') as w:
         already_found = []
 
         for residue in residues:
-            if residue._id[0].strip() != '':
+            if residue.id[0].strip() != '':
                 if residue.resname.strip() != ligname:
                     if residue.resname.strip() not in HPC_Drug.important_lists.metals:
                         if residue.resname.strip() not in HPC_Drug.important_lists.trash:
