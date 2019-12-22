@@ -60,7 +60,7 @@ def custom_orac_seqres_from_PDB(Protein):
             for residue in res_list:
                 
                 #skipping HETATMs
-                if residue._id[0].strip() == '' and residue.resname.strip() not in important_lists.metals:
+                if residue.id[0].strip() == '' and residue.resname.strip() not in important_lists.metals:
                     
                     #In the pdb this residues are called CYM because Biopython structures can
                     #only have 3 letters resnames, but Orac's tpg file calls it CYSM
@@ -142,9 +142,9 @@ def update_sulf_bonds(Protein = None):
     for residue in residues:
         if residue.resname in important_lists.cyst_resnames:
             
-            #i = cysteine_number ; residue._id[1] = resnum
+            #i = cysteine_number ; residue.id[1] = resnum
             i = i + 1
-            tmp_cys_dict[str(i)] = str(residue._id[1])
+            tmp_cys_dict[str(i)] = str(residue.id[1])
 
     #Creating the new sulf_bonds
     new_sulf_bonds = []

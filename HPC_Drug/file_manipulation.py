@@ -66,9 +66,17 @@ class PDBCruncer(FileCruncer):
         
         
         if filename == None:
+
+            #check that what I got is a string
+            if type(protein_id) != str:
+                raise TypeError(f"Need a string type, not a {type(protein_id)}")
+
             parser = prody.parsePDB(protein_id)
         else:
-            
+            #check that what I got is a string
+            if type(filename) != str:
+                raise TypeError(f"Need a string type, not a {type(filename)}")
+
             parser = prody.parsePDB(filename)
 
         return parser
@@ -100,10 +108,16 @@ class PDBCruncer(FileCruncer):
                 structure = None,
                 ligand_resnumber = None):
         """Creates a PDB the organic ligand (if any)
-        with ProDy"""
+        with ProDy
+        If structure is given it must be a prody structure"""
 
         if structure == None:
             parser = self.parse(protein_id, filename)
+        
+        elif not isinstance(structure, prody.AtomGroup):
+            
+            raise TypeError(f"Need a Prody structure (prody.AtomGroup)\n not a {type(structure)}")
+
         else:
             parser = structure
 
@@ -118,7 +132,7 @@ class PDBCruncer(FileCruncer):
 
         elif ligand_resnumber != None:
             ligand_structure = parser.select('resnum ' + ligand_resnumber)
-            print(f"Selected ligand {ligand_name} resnumber: {ligand_resnumber}")
+            print(f"Selected ligand resnumber: {ligand_resnumber}")
         
         else:
             print("No ligand found will return None")
@@ -345,7 +359,12 @@ class SubstitutionParser(FileCruncer):
 
                 elif bound_type == 'disulf':
 
-                    sulf_bond_tmp = (cif_dict['_struct_conn.ptnr1_label_seq_id'][i], cif_dict['_struct_conn.ptnr2_label_seq_id'][i])
+                    #if it is present ptnr1_auth_seq_id is the resnumber that remains when transforming it in a pdb
+                    try:
+                        sulf_bond_tmp = (cif_dict['_struct_conn.ptnr1_auth_seq_id'][i], cif_dict['_struct_conn.ptnr2_auth_seq_id'][i])
+                    except:
+                        sulf_bond_tmp = (cif_dict['_struct_conn.ptnr1_label_seq_id'][i], cif_dict['_struct_conn.ptnr2_label_seq_id'][i])
+                    
                     sulf_bonds.append(sulf_bond_tmp)
                     
                     substitutions[sulf_bond_tmp[0]] = ('CYS', 'SG', 'disulf')
@@ -360,7 +379,9 @@ class SubstitutionParser(FileCruncer):
         """Parses the ligands resnames from a mmcif header"""    
 
         if type(cif_dict) != dict:
-            raise TypeError(f"Need a dictionary, not a {type(cif_dict)}")
+            if  not isinstance(cif_dict, Bio.PDB.MMCIF2Dict.MMCIF2Dict):
+                print(not isinstance(cif_dict, Bio.PDB.MMCIF2Dict.MMCIF2Dict))
+                raise TypeError(f"Need a dictionary, not a {type(cif_dict)}")
         
         ligand = []
 
@@ -427,7 +448,7 @@ class SubstitutionParser(FileCruncer):
 
         for residue in residues:
             if residue.resname in ligand_resnames:
-                ligand_list.append([residue.resname, residue._id[1]])
+                ligand_list.append([residue.resname, residue.id[1]])
 
         return ligand_list
 
@@ -491,7 +512,7 @@ class SubstitutionParser(FileCruncer):
             for chain in model:
                 for residue in chain:
                         
-                    id = str(residue._id[1])
+                    id = str(residue.id[1])
                     #id = id.replace("'", "").replace("(", "").replace(")", "")
                     id = id.strip()
             

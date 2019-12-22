@@ -38,6 +38,9 @@ class Orient(object):
         Returns gravitic [default] or geometric center of mass of an Entity.
         Geometric assumes all masses are equal (geometric=True)
         """
+
+        # Copyright (C) 2010, Joao Rodrigues (anaryin@gmail.com)
+        # https://github.com/JoaoRodrigues/biopython/blob/GSOC2010/Bio/Struct/Geometry.py
         
         if entity == None:
             Pp = Bio.PDB.PDBParser()

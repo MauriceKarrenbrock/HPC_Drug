@@ -33,7 +33,7 @@ def residue_substitution(Protein, substitution = 'standard'):
             for residue in chain:
 
                 #search for the right residues
-                res_id = str(residue._id[1])
+                res_id = str(residue.id[1])
 
                 #check if they are bounding a metal and are not a disulfide bond
                 if res_id in Protein.substitutions_dict.keys():

@@ -40,7 +40,7 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
             for residue in chain:
 
                 #search for the right residues
-                res_id = str(residue._id[1])
+                res_id = str(residue.id[1])
 
                 #check if they are bounding a metal and are not a disulfide bond
                 if res_id in Protein.substitutions_dict.keys():
@@ -127,10 +127,16 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
     if output_filename == None:
         output_filename = f"{Protein.protein_id}_joined.pdb"
 
-    # A very bad way to write first the ligands atoms and then the protein ones
+    # A very bad way to write first the protein atoms and then the ligands ones
     #on the selected pdb file
     #Shall implement something better in the future
     with open(output_filename, 'w') as joined:
+                
+        with open(Protein.filename, 'r') as prot:
+            for line in prot:
+                if 'ATOM' in line or 'HETATM' in line:
+ 
+                    joined.write(line)
 
         for ligand in pipeline_functions.get_iterable(Ligand):
             with open(ligand.ligand_filename, 'r') as lig:
@@ -138,12 +144,6 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
                     if 'ATOM' in line or 'HETATM' in line:
    
                         joined.write(line)
-                
-        with open(Protein.filename, 'r') as prot:
-            for line in prot:
-                if 'ATOM' in line or 'HETATM' in line:
- 
-                    joined.write(line)
 
     Protein.filename = output_filename
 
@@ -201,22 +201,64 @@ class OracInput(object):
 
         self.template = None
 
+        #an instance of orient.Orient class
+        self.orient = orient.Orient(self.Protein, self.Ligand)
+
+    def write_box(self):
+        """Writes the string about the box size
+        and rotates the strucure in a smart way"""
+
+        self.Protein.structure = self.orient.base_change_structure()
+
+        self.Protein.filename = self.Protein.write_PDB(filename = self.Protein.filename,
+                                                    struct_type = 'biopython')
+        
+        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+
+        string = f"   CRYSTAL    {lx:.2f}    {ly:.2f}    {lz:.2f}  !! simulation BOX"
+
+        return string
+
     def write_sulf_bond_string(self, Protein = None):
         """Writes the part of the template inherent to the disulf bonds"""
 
         if Protein == None:
             Protein = self.Protein
+
+        cutoff = self._get_protein_resnumber_cutoff(Protein = Protein)
         
         tmp_sulf = []
         
         for bond in Protein.sulf_bonds:
 
-            string = f"   bond 1sg 2sg residue   {bond[0]}  {bond[1]}"
+            #Correcting with the right cutoff
+            bound_1 = int(bond[0].strip()) + cutoff
+            bound_2 = int(bond[0].strip()) + cutoff
+
+            string = f"   bond 1sg 2sg residue   {bound_1}  {bound_2}"
             tmp_sulf.append(string)
         
         string = '\n'.join(tmp_sulf)
 
         return string
+
+    def _get_protein_resnumber_cutoff(self, Protein = None):
+        """Orac starts the residue count from one
+        but pdb files often don't
+        so I get the id of the resnumber of the first residue
+        
+        returns the cutoff to apply to start from one"""
+
+        p = Bio.PDB.PDBParser()
+        s = p.get_structure(Protein.protein_id, Protein.filename)
+        r = s.get_residues()
+
+        for i in r:
+            resnum = i.id[1]
+            break
+        
+        cutoff = 1 - resnum
+        return cutoff
 
     def write_ligand_tpg_path(self, Ligand = None):
         """Writes the tpg file for any given ligand"""
@@ -376,7 +418,8 @@ class OracFirstOptimization(OracInput):
             "# Set MD cell and read pdb coordinates",
             "#",
             "&SETUP",
-            "   CRYSTAL  150.0 150.0 150.0 90.0 90.0 90.0",
+            
+            self.write_box(), #"   CRYSTAL  150.0 150.0 150.0 90.0 90.0 90.0",
 
             f"   READ_PDB  {self.Protein.filename}",
 
@@ -402,10 +445,11 @@ class OracFirstOptimization(OracInput):
 
             "END",
             "   JOIN SOLUTE  !! primary structure",
-            
-            self.get_ligand_name_from_tpg(self.Ligand),
 
             ' '+'\n '.join(Protein.seqres).lower(),
+
+            self.get_ligand_name_from_tpg(self.Ligand),
+
             "   END",
             "&END",
             "",
@@ -486,8 +530,6 @@ class OracSolvBoxInput(OracInput):
         if output_filename == None:
             self.output_filename = f'{Protein.protein_id}_orac_solvbox.in'
 
-        self.orient = orient.Orient(self.Protein, self.Ligand)
-
         self.template = [
             "#&T NTHREADS    8   CACHELINE   16",
             "#&T NT-LEVEL1   2   CACHELINE   16",
@@ -526,10 +568,10 @@ class OracSolvBoxInput(OracInput):
 
             "END",
             "   JOIN SOLUTE  !! defines primary structure",
-            
-            self.get_ligand_name_from_tpg(self.Ligand),
 
             ' '+'\n '.join(Protein.seqres).lower(),
+
+            self.get_ligand_name_from_tpg(self.Ligand),
 
             "   END",
 
@@ -616,21 +658,6 @@ class OracSolvBoxInput(OracInput):
 
             "&END"                                              
         ]
-    
-    def write_box(self):
-        """Writes the string about the box size
-        and rotates the strucure in a smart way"""
-
-        self.Protein.structure = self.orient.base_change_structure()
-
-        self.Protein.filename = self.Protein.write_PDB(filename = self.Protein.filename,
-                                                    struct_type = 'biopython')
-        
-        lx, ly, lz = self.orient.create_box(self.Protein.structure)
-
-        string = f"   CRYSTAL    {lx:.2f}    {ly:.2f}    {lz:.2f}  !! simulation BOX"
-
-        return string
 
     def write_solvent_grid(self):
         """Writes the informations about the solvent grid"""
