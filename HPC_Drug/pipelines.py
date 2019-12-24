@@ -278,7 +278,7 @@ class NoLigand_Pipeline(Pipeline):
             #Protein = pipeline_functions.update_sulf_bonds(Protein = Protein)
 
             #first structure optimization, with standard tpg and prm (inside lib module)
-            first_opt = funcs4orac.OracFirstOptimization(output_filename = f'first_opt_{Protein.protein_id}.in',
+            first_opt = funcs4orac.OracFirstOptimization(output_filename = f'{Protein.protein_id}_first_opt.in',
                                                         Protein = Protein,
                                                         Ligand = Ligand,
                                                         protein_tpg_file = self.protein_tpg_file,
