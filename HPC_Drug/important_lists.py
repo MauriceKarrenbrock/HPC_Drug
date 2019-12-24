@@ -10,7 +10,19 @@ cyst_resnames = ('CYS',' CYM', 'CYZ', 'CYSH', 'CYSM')
 
 #contains the trash ligands that may be contained in the protein file
 #and some metals that are not present in the common force fields
-trash = ('EDO', 'PR', 'SO4', 'SF4', 'TRS', 'DMS', 'GLC', 'U', 'PO4', 'MBO', 'GOL')
+trash = ('EDO', 'U',
+        'PR', 'SO4',
+        'SF4', 'TRS',
+        'DMS', 'GLC',
+        'PO4', 'MBO',
+        'GOL', 'Y',
+        'LYS', 'GLU',
+        'ACY', 'NAG'
+        'ALA', 'PHE',
+        'PEG', 'ACT',
+        'LEU', 'FMT'
+        'BU3', 'TYR',
+        'CYS', 'ASN')
 
 
 #The periodic table with atom weights dictionary 
