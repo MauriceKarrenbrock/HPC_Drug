@@ -134,16 +134,22 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
                 
         with open(Protein.filename, 'r') as prot:
             for line in prot:
-                if 'ATOM' in line or 'HETATM' in line:
+
+                line = line.strip().upper()
+                
+                if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
  
-                    joined.write(line)
+                    joined.write(f"{line}\n")
 
         for ligand in pipeline_functions.get_iterable(Ligand):
             with open(ligand.ligand_filename, 'r') as lig:
                 for line in lig:
-                    if 'ATOM' in line or 'HETATM' in line:
+
+                    line = line.strip()
+
+                    if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
    
-                        joined.write(line)
+                        joined.write(f"{line}\n")
 
     Protein.filename = output_filename
 

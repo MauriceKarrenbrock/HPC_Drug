@@ -270,7 +270,7 @@ class Orient(object):
         return pme
 
     def center_mass_distance(self, structure_1 = None, structure_2 = None):
-        """Calculates the disatance between the center ofmass of two given structure
+        """Calculates the disatance between the center of mass of two given structures
         returns the two centers of mass and their distance"""
 
         if structure_1 == None or structure_2 == None:

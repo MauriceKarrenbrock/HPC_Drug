@@ -38,7 +38,7 @@ class ParseInputFromFile(unittest.TestCase):
     def test_create_input_dict(self):
         
         #dummy filename to make the __init__ function happy
-        filename = "tests/input_correct.txt"
+        filename = "tests/input_correct_4tests.txt"
 
         test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
         dictionary = test_class._create_input_dict()
@@ -50,7 +50,7 @@ class ParseInputFromFile(unittest.TestCase):
     
     def test_refine_input_correct_input(self):
 
-        filename = "tests/input_correct.txt"
+        filename = "tests/input_correct_4tests.txt"
 
         input_dict = {'Protein_model' : '0',
                     'Protein_chain' : None,
@@ -81,7 +81,7 @@ class ParseInputFromFile(unittest.TestCase):
 
     def test_refine_input_wrong_input_type(self):
 
-        filename = "tests/input_correct.txt"
+        filename = "tests/input_correct_4tests.txt"
 
         wrong_input = (77.3, 'a', None)
 
@@ -93,7 +93,7 @@ class ParseInputFromFile(unittest.TestCase):
 
     def test_refine_input_missing_dict_keys(self):
 
-        filename = "tests/input_correct.txt"
+        filename = "tests/input_correct_4tests.txt"
 
         wrong_input_dict = {'Protein_chain' : None,
                             'ph' : '7.0',
@@ -111,7 +111,7 @@ class ParseInputFromFile(unittest.TestCase):
     def test_read_input_with_correct_input(self):
         """Shall be done better, I didn't mock the private methods"""
 
-        filename = "tests/input_correct.txt"
+        filename = "tests/input_correct_4tests.txt"
         test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
 
         dictionary = test_class.read_input()
