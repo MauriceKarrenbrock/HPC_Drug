@@ -83,10 +83,13 @@ def custom_orac_seqres_from_PDB(Protein):
             for tmp in tmp_seqres:
                 Protein.seqres.append(tmp)
 
+        #The residue id of the first residue (it is not always one)
+        cutoff = _get_protein_resnumber_cutoff(Protein = Protein)
+
         for i, resname in enumerate(Protein.seqres):
 
             if resname == 'CYS':
-                if not (str(i+1) in Protein.substitutions_dict.keys()):
+                if not (str(i + cutoff) in Protein.substitutions_dict.keys()):
 
                     Protein.seqres[i] = 'CYSH'
     
@@ -94,6 +97,24 @@ def custom_orac_seqres_from_PDB(Protein):
         Protein.seqres.append(tmp)
     
     return Protein
+
+def _get_protein_resnumber_cutoff(Protein = None):
+    """Orac starts the residue count from one
+    but pdb files often don't
+    so I get the id of the resnumber of the first residue
+    
+    returns the cutoff to apply to start from one"""
+
+    p = Bio.PDB.PDBParser()
+    s = p.get_structure(Protein.protein_id, Protein.filename)
+    r = s.get_residues()
+
+    for i in r:
+        resnum = i.id[1]
+        break
+    
+    cutoff = resnum
+    return cutoff
 
 def get_seqres_mmcif_header(Protein = None, filename = None):
     """Gets the seqres written in the mmCIF header
