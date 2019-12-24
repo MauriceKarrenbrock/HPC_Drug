@@ -417,7 +417,7 @@ class SubstitutionParser(FileCruncer):
         in order to distinguish ligands with the same resname: [[resname, resnumber], [.., ...], ...]
         
         chain_model_selection :: bool
-        if true will only select Protein.model model and Protein.chain chain
+        if True will only select Protein.model model and Protein.chain chain
         from the given structure"""
         
         if Protein.filename == None or ligand_resnames == None:
