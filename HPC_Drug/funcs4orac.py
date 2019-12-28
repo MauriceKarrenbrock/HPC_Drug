@@ -723,6 +723,8 @@ class OracSolvBoxInput(OracInput):
 
         if len(string) > 1:
             string = '\n'.join(string)
+        elif len(string) == 0:
+            string = ''
         else:
             string = string[0]
         
