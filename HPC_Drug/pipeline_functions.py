@@ -59,21 +59,24 @@ def custom_orac_seqres_from_PDB(Protein):
 
             for residue in res_list:
                 
-                #skipping HETATMs
-                if residue.id[0].strip() == '' and residue.resname.strip() not in important_lists.metals:
+                #ignoring all the trash ligands
+                if residue.resname not in important_lists.trash:
+
+                    #skipping HETATMs
+                    if residue.id[0].strip() == '' and residue.resname.strip() not in important_lists.metals:
+                        
+                        #In the pdb this residues are called CYM because Biopython structures can
+                        #only have 3 letters resnames, but Orac's tpg file calls it CYSM
+                        #So I am modifying it in the seqres list
+                        #It's probably not the best way to do it
+                        if residue.resname.strip() == 'CYM':
+                            tmp_seqres.append('CYSM')
+                        else:
+                            tmp_seqres.append(residue.resname.strip())
                     
-                    #In the pdb this residues are called CYM because Biopython structures can
-                    #only have 3 letters resnames, but Orac's tpg file calls it CYSM
-                    #So I am modifying it in the seqres list
-                    #It's probably not the best way to do it
-                    if residue.resname.strip() == 'CYM':
-                        tmp_seqres.append('CYSM')
+                    #putting metal ions and hetatms in a separated list
                     else:
-                        tmp_seqres.append(residue.resname.strip())
-                
-                #putting metal ions and hetatms in a separated list
-                else:
-                    tmp_metals.append(residue.resname.strip())
+                        tmp_metals.append(residue.resname.strip())
 
             
             #rename first and last residue of every chain
