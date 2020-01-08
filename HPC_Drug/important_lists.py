@@ -1,6 +1,13 @@
-#This tuple contains metal ions that are usually inside the amber force fields
-#other metal ions can be found in trash
+#This tuple contains metal ions and some other ions that can be found in pdb structures
 metals = ('AL', 'BA',
+        'CA', 'CD',
+        'CL', 'CO',
+        'CS', 'CU',
+        'CU1', 'CUA',
+        'HG', 'IN',
+        'IOD', 'K',
+        'MG', 'MN3',
+        'NA', 'PB',
         'PT', 'RB',
         'TB', 'TL',
         'WO4', 'YB',
@@ -10,21 +17,18 @@ metals = ('AL', 'BA',
         'ZN2', 'FE',
         'FE2', 'MN',
         'NI', 'LI',
-        'CUA', 'PB',
-        'CS', 'MN3',
-        'IN', 'CU')
+        'NA', 'Y',
+        'U', 'IOD')
 
 hist_resnames = ('HIS', 'HIE', 'HID', 'HSD', 'HSE')
 cyst_resnames = ('CYS',' CYM', 'CYZ', 'CYSH', 'CYSM')
 
 #contains the trash ligands that may be contained in the protein file
-#and some metals that are not present in the common amber force fields
-trash = ('EDO', 'U',
-        'PR', 'SO4',
+trash = ('PR', 'SO4',
         'SF4', 'TRS',
         'DMS', 'GLC',
         'PO4', 'MBO',
-        'GOL', 'Y',
+        'GOL', 'EDO',
         'LYS', 'GLU',
         'ACY', 'NAG'
         'ALA', 'PHE',
@@ -32,13 +36,8 @@ trash = ('EDO', 'U',
         'LEU', 'FMT'
         'BU3', 'TYR',
         'CYS', 'ASN',
-        'MG', 'CA',
-        'HG', 'CL',
-        'NA', 'CD',
-        'K', 'CO',
         'CSO', 'CSD',
-        'IOD', 'HOH',
-        'CU1', 'YB')
+        'HOH')
 
 
 #The periodic table with atom weights dictionary 
