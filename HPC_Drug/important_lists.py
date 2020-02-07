@@ -40,7 +40,9 @@ trash = ('PR', 'SO4',
         'HOH')
 
 
-#The periodic table with atom weights dictionary 
+#The periodic table with atom weights dictionary
+#This is part of CCP4
+#http://www.ccp4.ac.uk/dist/checkout/arcimboldo/src/geometry.py
 atom_weights = {
       'H'  :   1.00794,
       'He' :   4.002602,
