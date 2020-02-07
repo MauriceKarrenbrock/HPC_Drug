@@ -96,6 +96,9 @@ class Orient(object):
         Returns a numpy matrix.
         """
 
+        #This is part of CCP4
+        #http://www.ccp4.ac.uk/dist/checkout/arcimboldo/src/geometry.py
+
         if structure == None:
             Pp = Bio.PDB.PDBParser()
             structure = Pp.get_structure(self.Protein.protein_id, self.Protein.filename)
@@ -160,7 +163,7 @@ class Orient(object):
 
     def base_change_structure(self, structure = None, rot_matrix = None):
         """Changes the base of the coordinates of a given Biopython strucure
-        given the matrix containing the new basisi vectors as columns
+        given the matrix containing the new basis vectors as columns
         The default is to use the 
         base of the autovectors of the moment of inertia matrix of the structure
         
