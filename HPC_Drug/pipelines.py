@@ -105,7 +105,28 @@ class Pipeline(object):
         self.solvent_pdb = solvent_pdb
 
     def download(self):
-        return file_manipulation.download_protein_structure(self.protein_id, self.protein_filetype, None)
+        import os
+
+        """If requested in input will download pdb file
+        If the given local file doesn't exist will download pdb
+        otherwise returns the given path without modifying it"""
+
+        #checks if I got a wrong input
+        if self.local.lower() != 'no' and self.local.lower() != 'yes':
+            raise ValueError(f'local cannot be {self.local} it can only be "yes" "no" or omitted')
+
+        #if local = no or if the given path doesn't exist it will download the file in the given format (mmcif or pdb)
+        if self.local == 'no' or self.local == None or (not os.path.exists(self.protein_filename)):
+            
+            #downloads the pdb or mmcif returning it's name
+            return file_manipulation.download_protein_structure(self.protein_id, self.protein_filetype, None)
+
+        else:
+            #protein filename points to an existing file
+            #nothing is done
+            return self.protein_filename
+
+        
 
 
 class NoLigand_Pipeline(Pipeline):
@@ -119,23 +140,15 @@ class NoLigand_Pipeline(Pipeline):
 
         #If requested in input will download pdb file
         #If the given local file doesn't exist will download pdb
-        if self.local == 'no' or self.local == None or (not os.path.exists(self.protein_filename)):
-            self.protein_filename = self.download()
-            self.protein_pdb = file_manipulation.download_protein_structure(self.protein_id,
-                                                                            self.protein_filetype,
-                                                                            None)
-        elif self.local != 'yes':
-            raise ValueError(f'local cannot be {self.local} it can only be "yes" "no" or omitted')
-        else:
-            #protein filename points to an existing file
-            #nothing is done
-            pass
+        #otherwise returns the given path without modifying it
+        self.protein_filename = self.download()
         
 
         #Declaring protein instance
         Protein = structures.Protein(protein_id = self.protein_id,
                                     filename = self.protein_filename,
-                                    model = self.model, chain = self.chain)
+                                    model = self.model,
+                                    chain = self.chain)
         
 
 
@@ -267,7 +280,7 @@ class NoLigand_Pipeline(Pipeline):
             Protein = funcs4orac.residue_substitution(Protein, 'custom_zinc')
             
             #update the seqres with the names needed for Orac
-            Protein = pipeline_functions.custom_orac_seqres_from_PDB(Protein)
+            Protein = funcs4orac.custom_orac_seqres_from_PDB(Protein)
 
             #Creating a joined pdb of protein + ligand
             Protein = funcs4orac.join_ligand_and_protein_pdb(Protein, Ligand)
