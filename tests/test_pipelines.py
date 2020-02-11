@@ -40,7 +40,7 @@ class test_Pipeline(unittest.TestCase):
         # make a dummy __init__() function
         with unittest.mock.patch.object(HPC_Drug.pipelines.Pipeline(), "__init__", lambda x: None):
             with unittest.mock.patch("os.path.exists", lambda x: False):
-                with unittest.mock.patch("HPC_Drug.file_manipulation.download_protein_structure", lambda x, y, z: 'hello') as f:
+                with unittest.mock.patch("HPC_Drug.file_manipulation.download_protein_structure", lambda x, y, z: 'hello'):
 
                     p = HPC_Drug.pipelines.Pipeline()
                     

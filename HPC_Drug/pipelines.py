@@ -228,7 +228,7 @@ class NoLigand_Pipeline(Pipeline):
 
                 #tries to write the ligand pdb
                 try:
-                    Ligand[i].ligand_filename = Ligand[i].write_PDB(f'{Protein.protein_id}_{Ligand[i].ligand_resname}_lgand{i}.pdb')
+                    Ligand[i].ligand_filename = Ligand[i].write_PDB(f'{Ligand[i].ligand_resname}_{Protein.protein_id}_lgand{i}.pdb')
                 except TypeError as err:
                     raise TypeError(f'{err.args}\ncannot make ligand pdb file for {Ligand[i].ligand_resname}')
                 except Exception as err:

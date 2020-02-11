@@ -18,7 +18,9 @@ class Protein(Structure):
                 file_type = 'cif',
                 model = None,
                 chain = None,
-                cys_dict = None):
+                cys_dict = None,
+                gro_file = None,
+                top_file = None):
                 
         self.protein_id = protein_id
         self.model = model
@@ -38,6 +40,9 @@ class Protein(Structure):
         self.seqres = seqres
 
         self.cys_dict = cys_dict
+
+        self.gro_file = gro_file
+        self.top_file = top_file
     
     def write_PDB(self, filename = None, struct_type = 'prody'):
         from HPC_Drug import file_manipulation as fm
@@ -70,7 +75,8 @@ class Ligand(Structure):
                 file_type = 'pdb',
                 topology_file = None,
                 param_file = None,
-                res_number = None):
+                res_number = None,
+                itp_file = None):
         self.ligand_resname = ligand_resname
         self.file_type = file_type
 
@@ -82,6 +88,8 @@ class Ligand(Structure):
         self.param_file = param_file
 
         self.res_number = res_number
+
+        self.itp_file = itp_file
     
     def write_PDB(self, filename = None, struct_type = 'prody'):
         from HPC_Drug import file_manipulation as fm
