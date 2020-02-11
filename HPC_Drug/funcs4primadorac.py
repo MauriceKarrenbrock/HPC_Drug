@@ -2,7 +2,9 @@
 
 from HPC_Drug import structures
 from HPC_Drug import pipeline_functions
+
 import subprocess
+import os
 
 
 def run_primadorac(ligand_list = None, primadorac_path = None, ph = 7.0):
@@ -46,5 +48,48 @@ def run_primadorac(ligand_list = None, primadorac_path = None, ph = 7.0):
                 ligand_list[i].ligand_filename = prefix + '.pdb'
                 ligand_list[i].topology_file = prefix + '.tpg'
                 ligand_list[i].param_file = prefix + '.prm'
+                ligand_list[i].itp_file = prefix + '.itp'
+
+                #some old versions of primadorac do mess up the itp names
+                if not os.path.exists(ligand_list[i].itp_file):
+                    ligand_list[i].itp_file = rename_itp(ligand_resname = ligand_list[i].ligand_resname)
+
+                #primadorac calls all ligands LIG inside the itp
+                #this functions renames it to the right name
+                ligand_list[i].itp_file = set_right_ligand_resname_in_itp(
+                                                    ligand_resname = ligand_list[i].ligand_resname,
+                                                    itp_file = ligand_list[i].itp_file)
 
     return ligand_list
+
+
+def rename_itp(ligand_resname):
+    """Renames the given itp file to ligand_resname.itp
+    returns the new_name string"""
+
+    new_name = f'{ligand_resname}.itp'
+
+    if os.path.exists('file.itp'):
+
+        os.rename('file.itp', new_name)
+    
+    elif os.path.exists('file.itp None'):
+        
+        os.rename('file.itp None', new_name)
+
+    return new_name
+
+def set_right_ligand_resname_in_itp(ligand_resname, itp_file):
+    """primadorac itp call any lignd LIG i change it to the ligand_resname"""
+
+    with open(itp_file, 'r') as f:
+        text = f.readlines()
+
+    with open(itp_file, 'w') as f:
+
+        for line in text:
+
+            line = line.replace('LIG', ligand_resname)
+            f.write(f'{line}\n')
+
+    return itp_file

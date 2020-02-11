@@ -21,7 +21,7 @@ metals = ('AL', 'BA',
         'U', 'IOD')
 
 hist_resnames = ('HIS', 'HIE', 'HID', 'HSD', 'HSE')
-cyst_resnames = ('CYS',' CYM', 'CYZ', 'CYSH', 'CYSM')
+cyst_resnames = ('CYS',' CYM', 'CYZ', 'CYSH', 'CYSM', 'CYX')
 
 #contains the trash ligands that may be contained in the protein file
 trash = ('PR', 'SO4',

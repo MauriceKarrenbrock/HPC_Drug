@@ -248,7 +248,7 @@ class OracInput(object):
                 protein_tpg_file = None,
                 protein_prm_file = None,
                 solvent_pdb = None,
-                MD_program_path = None):
+                MD_program_path = 'orac'):
         
         self.Protein = Protein
         self.Ligand = Ligand
@@ -791,6 +791,10 @@ class OracSolvBoxInput(OracInput):
         for i, ligand in enumerate(pipeline_functions.get_iterable(ligand_structures)):
 
             COM_Protein, COM_ligand, distance = self.orient.center_mass_distance(self.Protein.structure, ligand)
+            
+            #These are useless
+            COM_Protein = None
+            COM_ligand = None
 
             tmp_string = ["   ADD_STR_COM   !! linker COM-COM legand protein",
                         f"       ligand     {ligand_atoms[i][1]}      {ligand_atoms[i][0]}",
