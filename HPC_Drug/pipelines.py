@@ -274,6 +274,57 @@ class NoLigand_Pipeline(Pipeline):
             #makes the necessary resname substitutions for the ForceField
             Protein = funcs4gromacs.residue_substitution(Protein, 'standard')
 
+            #Make the protein's gro and top file
+            gro_top_maker = funcs4gromacs.GromacsMakeProteinGroTop(output_filename = "choices.txt",
+                                                    Protein = Protein,
+                                                    Ligand = Ligand,
+                                                    protein_tpg_file = self.protein_tpg_file,
+                                                    solvent_model = self.solvent_pdb,
+                                                    MD_program_path = self.MD_program_path)
+            
+            Protein = gro_top_maker.execute()
+
+            #merges the protein and the ligand in a single gro and top file
+            gro_top_merger = funcs4gromacs.GromacsMakeJoinedProteinLigandTopGro(output_filename = f"{Protein.protein_id}_joined.pdb",
+                                                                                Protein = Protein,
+                                                                                Ligand = Ligand,
+                                                                                protein_tpg_file = self.protein_tpg_file,
+                                                                                solvent_model = self.solvent_pdb,
+                                                                                MD_program_path = self.MD_program_path)
+
+            Protein = gro_top_merger.execute()
+
+            #makes a fast geometry optimization
+            first_opt = funcs4gromacs.GromacsFirstOptimization(input_filename = f'{Protein.protein_id}_joined_optimized.gro',
+                                                            output_filename = f"{Protein.protein_id}_first_opt.mdp",
+                                                            Protein = Protein,
+                                                            Ligand = Ligand,
+                                                            protein_tpg_file = self.protein_tpg_file,
+                                                            solvent_model = self.solvent_pdb,
+                                                            MD_program_path = self.MD_program_path)
+
+            Protein.gro_file = first_opt.execute()
+
+            if Ligand == None:
+                raise TypeError('I could not find organic ligands in the structure\n\
+                                Maybe the ones you where looking for are in the important_lists.trash list\n\
+                                In any case I did some optimizations on your protein, hoping it will come in handy')
+
+            elif len(Ligand) > 1:
+                raise ValueError(f"Found more than one Ligand {Ligand}")
+
+            #makes and optimizes a solvent box
+            solv_box = funcs4gromacs.GromacsSolvBoxInput(f"{Protein.protein_id}_solv_box.gro",
+                                        output_filename = f'{Protein.protein_id}_solv_box.mdp',
+                                        Protein = Protein,
+                                        Ligand = Ligand,
+                                        protein_tpg_file = self.protein_tpg_file,
+                                        solvent_model = "amber99sb-ildn.ff/spce.itp",
+                                        MD_program_path = self.MD_program_path,
+                                        box_borders = '1')
+
+            Protein.gro_file = solv_box.execute()
+
         elif self.MD_program == 'orac':
 
             #makes the necessary resname substitutions for the ForceField
@@ -305,6 +356,9 @@ class NoLigand_Pipeline(Pipeline):
                 raise TypeError('I could not find organic ligands in the structure\n\
                                 Maybe the ones you where looking for are in the important_lists.trash list\n\
                                 In any case I did some optimizations on your protein, hoping it will come in handy')
+
+            elif len(Ligand) > 1:
+                raise ValueError(f"Found more than one Ligand {Ligand}")
         
             solv_box = funcs4orac.OracSolvBoxInput(output_filename = f"{Protein.protein_id}_solv_box.in",
                                                 Protein = Protein,
@@ -316,9 +370,7 @@ class NoLigand_Pipeline(Pipeline):
             
             Protein.filename = solv_box.execute()
 
-            if len(Ligand) > 1:
-                raise ValueError(f"Found more than one Ligand {Ligand}")
-        
+            
         else:
             raise NotImplementedError(self.MD_program)
         

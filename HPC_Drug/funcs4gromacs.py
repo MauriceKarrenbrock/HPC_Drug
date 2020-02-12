@@ -6,6 +6,7 @@ from HPC_Drug import structures
 from HPC_Drug import file_manipulation
 from HPC_Drug import important_lists
 from HPC_Drug import funcs4orac
+from HPC_Drug import pipeline_functions
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
     """Takes a protein instance, and returns one
@@ -137,7 +138,6 @@ class GromacsInput(object):
                 Protein = None,
                 Ligand = None,
                 protein_tpg_file = None,
-                ligand_itp = None,
                 solvent_model = None,
                 MD_program_path = 'gmx'):
         
@@ -154,8 +154,6 @@ class GromacsInput(object):
         self.output_filename = output_filename
 
         self.protein_tpg_file = protein_tpg_file
-        
-        self.ligand_itp = ligand_itp
 
         self.solvent_model = solvent_model
         
@@ -215,7 +213,7 @@ class GromacsInput(object):
             filename = self.output_filename
         
         if output_file == None:
-            output_file = self.Protein.filename.rsplit('.', 1)[0].strip() + '_unnamed_output'
+            output_file = self.input_filename
         
         if command_string == None:
             command_string = self.command_string
@@ -240,7 +238,7 @@ class GromacsMakeProteinGroTop(GromacsInput):
                 MD_program_path = None):
 
         super().__init__(self,
-                input_filename = input_filename,
+                #input_filename = input_filename,
                 output_filename = output_filename,
                 Protein = Protein,
                 Ligand = Ligand,
@@ -263,6 +261,9 @@ class GromacsMakeProteinGroTop(GromacsInput):
             Protein = None):
 
         """Takes a protein instance and returns one"""
+
+        if Protein == None:
+            Protein = self.Protein
 
         choices_file = super().execute(template = template,
                         filename = filename,
@@ -300,18 +301,6 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
         if self.output_filename == None:
             self.output_filename = f"{Protein.protein_id}_joined.pdb"
 
-        
-        #Create the protein's gro and top file from it's pdb
-        protein_gro_top = GromacsMakeProteinGroTop(input_filename = self.input_filename,
-                                            output_filename = self.output_filename,
-                                            Protein = self.Protein,
-                                            Ligand = self.Ligand,
-                                            protein_tpg_file = self.protein_tpg_file,
-                                            solvent_model = self.solvent_model,
-                                            MD_program_path = self.MD_program_path)
-
-        Protein = protein_gro_top.execute()
-
         #join the protein and ligand pdb
         Protein = funcs4orac.join_ligand_and_protein_pdb(Protein = self.Protein,
                                                         Ligand = self.Ligand,
@@ -321,6 +310,8 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
         self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.filename} -o {Protein.protein_id}_joined.gro')
 
         Protein.gro_file = f"{Protein.protein_id}_joined.gro"
+
+        Protein.filename = self.output_filename
 
         #edit and rename the top file
         Protein = self._edit_top_file(Protein = Protein, Ligand = Ligand)
@@ -335,11 +326,14 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
         with open(Protein.top_file, 'r') as f:
             top = f.readlines()
 
-        itp_insertion_string = f'#include "{Ligand.itp_file}"'
-        compound_string = f'{Ligand.resname}                 1'
-        with open(f'{Protein.protein_id}_joined.top', 'w') as f:
+        for ligand in pipeline_functions.get_iterable(Ligand):
+            itp_insertion_string = f'#include "{ligand.itp_file}"'
+            compound_string = f'{ligand.resname}              1'
             top.insert(0, itp_insertion_string)
-            top.insert(-1, compound_string)
+            top.insert(-1, compound_string) 
+            
+        with open(f'{Protein.protein_id}_joined.top', 'w') as f:
+            
             for line in top:
                 f.write(f"{line}\n")
 
@@ -357,7 +351,6 @@ class GromacsFirstOptimization(GromacsInput):
                 Protein = None,
                 Ligand = None,
                 protein_tpg_file = None,
-                ligand_itp = None,
                 solvent_model = None,
                 MD_program_path = 'gmx'):
 
@@ -366,18 +359,17 @@ class GromacsFirstOptimization(GromacsInput):
                         Protein = Protein,
                         Ligand = Ligand,
                         protein_tpg_file = protein_tpg_file,
-                        ligand_itp = ligand_itp,
                         solvent_model = solvent_model,
                         MD_program_path = MD_program_path)
 
-        if self.output_filename == None:
-            self.output_filename = f'{self.Protein.protein_id}_joined_optimized.gro'
-
         if self.input_filename == None:
-            self.input_filename = f"{self.Protein.protein_id}_first_opt.mdp"
+            self.input_filename = f'{self.Protein.protein_id}_joined_optimized.gro'
+
+        if self.output_filename == None:
+            self.output_filename = f"{self.Protein.protein_id}_first_opt.mdp"
 
         #creates the .tpr and then optimizes the structure
-        self.command_string = f"{self.MD_program_path} grompp -f {self.input_filename}.mdp -c {Protein.gro_file} -p {Protein.top_file} -o {Protein.protein_id}_joined_optimized.tpr -maxwarn 100 && gmx mdrun -s {Protein.protein_id}_joined_optimized.tpr  -c {self.output_filename}"
+        self.command_string = f"{self.MD_program_path} grompp -f {self.output_filename}.mdp -c {Protein.gro_file} -p {Protein.top_file} -o {Protein.protein_id}_joined_optimized.tpr -maxwarn 100 && gmx mdrun -s {Protein.protein_id}_joined_optimized.tpr  -c {self.input_filename}"
 
         self.template = ["integrator	= steep",
                         "nsteps		= 1000",
@@ -626,7 +618,7 @@ class GromacsSolvBoxInput(GromacsInput):
             filename = self.output_filename
         
         if output_file == None:
-            output_file = self.Protein.filename.rsplit('.', 1)[0].strip() + '_unnamed_output'
+            output_file = self.input_filename
         
         if command_string == None:
             command_string = self.command_string

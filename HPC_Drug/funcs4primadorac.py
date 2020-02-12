@@ -73,9 +73,9 @@ def rename_itp(ligand_resname):
 
         os.rename('file.itp', new_name)
     
-    elif os.path.exists('file.itp None'):
+    elif os.path.exists('file.itp none'):
         
-        os.rename('file.itp None', new_name)
+        os.rename('file.itp none', new_name)
 
     return new_name
 
