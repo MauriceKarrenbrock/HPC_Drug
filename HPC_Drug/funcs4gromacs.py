@@ -307,7 +307,7 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
                                                         output_filename = self.output_filename)
         
         #make a new joined gro file
-        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.filename} -o {Protein.protein_id}_joined.gro')
+        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.gro_file} -o {Protein.filename} && {MD_program_path} editconf -f {Protein.filename} -o {Protein.protein_id}_joined.gro')
 
         Protein.gro_file = f"{Protein.protein_id}_joined.gro"
 
@@ -326,11 +326,17 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
         with open(Protein.top_file, 'r') as f:
             top = f.readlines()
 
+        itp_insertion_string = ''
         for ligand in pipeline_functions.get_iterable(Ligand):
-            itp_insertion_string = f'#include "{ligand.itp_file}"'
+            itp_insertion_string = itp_insertion_string + f'#include "{ligand.itp_file}"\n'
             compound_string = f'{ligand.ligand_resname}              1'
             top.insert(0, itp_insertion_string)
-            top.insert(-1, compound_string) 
+            top.append(compound_string)
+
+        for line in top:
+            if '[ moleculetype ]' in line:
+                line = itp_insertion_string + line
+                break
             
         with open(f'{Protein.protein_id}_joined.top', 'w') as f:
             
@@ -372,18 +378,6 @@ class GromacsFirstOptimization(GromacsInput):
         self.command_string = f"{self.MD_program_path} grompp -f {self.output_filename} -c {Protein.gro_file} -p {Protein.top_file} -o {Protein.protein_id}_joined_optimized.tpr -maxwarn 100 && gmx mdrun -s {Protein.protein_id}_joined_optimized.tpr  -c {self.input_filename}"
 
         self.template = ["integrator	= steep",
-                        "nsteps		= 1000",
-                        "emtol		= 100",
-                        "emstep		= 0.01",
-                        "nstxout 	= 1",
-                        "nstenergy	= 1",
-                        "rlist		= 1.0",
-                        "coulombtype	= pme",
-                        "vdw-type	= cut-off",
-                        "rvdw		= 1.0",
-                        "rcoulomb	= 1.0",
-                        "constraints	= none",
-                        "integrator	= steep",
                         "nsteps		= 1000",
                         "emtol		= 100",
                         "emstep		= 0.01",

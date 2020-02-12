@@ -56,7 +56,7 @@ def run_primadorac(ligand_list = None, primadorac_path = None, ph = 7.0):
 
                 #primadorac calls all ligands LIG inside the itp
                 #this functions renames it to the right name
-                ligand_list[i].itp_file = set_right_ligand_resname_in_itp(
+                ligand_list[i].itp_file = edit_itp(
                                                     ligand_resname = ligand_list[i].ligand_resname,
                                                     itp_file = ligand_list[i].itp_file)
 
@@ -79,17 +79,18 @@ def rename_itp(ligand_resname):
 
     return new_name
 
-def set_right_ligand_resname_in_itp(ligand_resname, itp_file):
+def edit_itp(ligand_resname, itp_file):
     """primadorac itp call any lignd LIG i change it to the ligand_resname"""
 
     with open(itp_file, 'r') as f:
         text = f.readlines()
 
     with open(itp_file, 'w') as f:
-
+        del text[0:9]
         for line in text:
 
             line = line.replace('LIG', ligand_resname)
+            line = line.replace('name-p', ligand_resname)
             f.write(f'{line}\n')
 
     return itp_file
