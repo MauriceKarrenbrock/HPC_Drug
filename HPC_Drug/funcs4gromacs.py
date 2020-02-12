@@ -300,15 +300,18 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
 
         if self.output_filename == None:
             self.output_filename = f"{Protein.protein_id}_joined.pdb"
+        
+        #make pdb for the protein from the gro file (in order to get the hidrogens)
+        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.gro_file} -o {Protein.filename}')
 
         #join the protein and ligand pdb
         Protein = funcs4orac.join_ligand_and_protein_pdb(Protein = self.Protein,
                                                         Ligand = self.Ligand,
                                                         output_filename = self.output_filename)
-        
-        #make a new joined gro file
-        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.gro_file} -o {Protein.filename} && {MD_program_path} editconf -f {Protein.filename} -o {Protein.protein_id}_joined.gro')
 
+        #Create the joined gro file
+        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.filename} -o {Protein.protein_id}_joined.gro')
+                                                        
         Protein.gro_file = f"{Protein.protein_id}_joined.gro"
 
         Protein.filename = self.output_filename
@@ -335,7 +338,7 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
 
         for line in top:
             if '[ moleculetype ]' in line:
-                line = itp_insertion_string + line
+                line = itp_insertion_string + '\n' + line
                 break
             
         with open(f'{Protein.protein_id}_joined.top', 'w') as f:
@@ -591,8 +594,12 @@ class GromacsSolvBoxInput(GromacsInput):
 
         itp_insertion_string = f'#include "{water_itp}"'
 
+        for line in top:
+            if '[ moleculetype ]' in line:
+                line = itp_insertion_string + '\n' + line
+                break
+
         with open(Protein.top_file, 'w') as f:
-            top.insert(0, itp_insertion_string)
             for line in top:
                 f.write(f"{line}\n")
 
