@@ -369,7 +369,7 @@ class GromacsFirstOptimization(GromacsInput):
             self.output_filename = f"{self.Protein.protein_id}_first_opt.mdp"
 
         #creates the .tpr and then optimizes the structure
-        self.command_string = f"{self.MD_program_path} grompp -f {self.output_filename}.mdp -c {Protein.gro_file} -p {Protein.top_file} -o {Protein.protein_id}_joined_optimized.tpr -maxwarn 100 && gmx mdrun -s {Protein.protein_id}_joined_optimized.tpr  -c {self.input_filename}"
+        self.command_string = f"{self.MD_program_path} grompp -f {self.output_filename} -c {Protein.gro_file} -p {Protein.top_file} -o {Protein.protein_id}_joined_optimized.tpr -maxwarn 100 && gmx mdrun -s {Protein.protein_id}_joined_optimized.tpr  -c {self.input_filename}"
 
         self.template = ["integrator	= steep",
                         "nsteps		= 1000",
