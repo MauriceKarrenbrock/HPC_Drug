@@ -47,6 +47,13 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
                         #make substitutions with the selected function
                         residue.resname = substitute(Protein.substitutions_dict[res_id])
 
+                    #if a cysteine is in a disulfide bond it is called CYX
+                    elif residue.resname in important_lists.cyst_resnames:
+                        residue.resname = _disulf_cysteine_gromacs_substitutions(
+                                                    input_list = Protein.substitutions_dict[res_id],
+                                                    resname = residue.resname
+                                                    )
+
                 #give the right name to histidines in order to get the right protonation
                 elif residue.resname in important_lists.hist_resnames:
                     
@@ -56,12 +63,6 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
                     else:
                         residue.resname = 'HID'
 
-                #if a cysteine is in a disulfide bond it is called CYX
-                elif residue.resname in important_lists.cyst_resnames:
-                    residue.resname = _disulf_cysteine_gromacs_substitutions(
-                                                    input_list = Protein.substitutions_dict[res_id],
-                                                    resname = residue.resname
-                                                    )
 
     Protein.structure = struct
     Protein.filename = Protein.write_PDB(Protein.filename, 'biopython')
@@ -310,7 +311,7 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
                                                         output_filename = self.output_filename)
 
         #Create the joined gro file
-        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.filename} -o {Protein.protein_id}_joined.gro')
+        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.filename} -d 1 -bt triclinic -angles 90 90 90 -o {Protein.protein_id}_joined.gro')
                                                         
         Protein.gro_file = f"{Protein.protein_id}_joined.gro"
 
@@ -385,7 +386,7 @@ class GromacsFirstOptimization(GromacsInput):
                         "emstep		= 0.01",
                         "nstxout 	= 1",
                         "nstenergy	= 1",
-                        "rlist		= 1.0",
+                        "rlist		= 1",
                         "coulombtype	= pme",
                         "vdw-type	= cut-off",
                         "rvdw		= 1.0",
@@ -403,7 +404,6 @@ class GromacsSolvBoxInput(GromacsInput):
                 Protein = None,
                 Ligand = None,
                 protein_tpg_file = None,
-                ligand_itp = None,
                 solvent_model = "amber99sb-ildn.ff/spce.itp",
                 MD_program_path = 'gmx',
                 box_borders = '1'):
@@ -413,7 +413,6 @@ class GromacsSolvBoxInput(GromacsInput):
                         Protein = Protein,
                         Ligand = Ligand,
                         protein_tpg_file = protein_tpg_file,
-                        ligand_itp = ligand_itp,
                         solvent_model = solvent_model,
                         MD_program_path = MD_program_path)
 
@@ -428,8 +427,8 @@ class GromacsSolvBoxInput(GromacsInput):
         #creates the .tpr and then optimizes the structure it is actually a list of strings
         self.command_string = [
             f"{self.MD_program_path} editconf -f {self.Protein.gro_file} -d {self.box_borders} -bt triclinic -angles 90 90 90 -o {self.input_filename}",
-            f"{self.MD_program_path} solvate -cp {self.input_filename} -p {self.Protein.top_file}",
-            f"{self.MD_program_path} grompp -f {self.output_filename} -c {self.Protein.gro_file} -p {self.Protein.top_file} -maxwarn 100 -o {self.Protein.protein_id}_solv_box.tpr",
+            f"{self.MD_program_path} solvate -cp {self.input_filename} -p {self.Protein.top_file} -o {self.input_filename}",
+            f"{self.MD_program_path} grompp -f {self.output_filename} -c {self.input_filename} -p {self.Protein.top_file} -maxwarn 100 -o {self.Protein.protein_id}_solv_box.tpr",
             f"{self.MD_program_path} mdrun -s {self.Protein.protein_id}_solv_box.tpr  -c {self.input_filename}"
                        ]
 
@@ -493,7 +492,7 @@ class GromacsSolvBoxInput(GromacsInput):
                         "; Allowed energy drift due to the Verlet buffer in kJ/mol/ps per atom,",
                         "; a value of -1 means: use rlist",
                         "; nblist cut-off",
-                        "rlist                    = 1.0",
+                        "rlist                    = 1",
                         "; long-range cut-off for switched potentials",
                         "rlistlong                = -1",
                         "",
@@ -626,6 +625,7 @@ class GromacsSolvBoxInput(GromacsInput):
 
         filename = self.write_template_on_file(template, filename)
 
+        self.Protein = self._edit_top_file(Protein = self.Protein, water_itp = self.solvent_model)
         for string in command_string:
             self.interact_with_gromacs(string = string)
  
