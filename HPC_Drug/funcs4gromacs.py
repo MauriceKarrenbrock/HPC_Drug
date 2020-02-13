@@ -333,7 +333,6 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
         for ligand in pipeline_functions.get_iterable(Ligand):
             itp_insertion_string = itp_insertion_string + f'#include "{ligand.itp_file}"\n'
             compound_string = f'{ligand.ligand_resname}              1'
-            top.insert(0, itp_insertion_string)
             top.append(compound_string)
 
         for line in top:
