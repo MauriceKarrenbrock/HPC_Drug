@@ -335,9 +335,9 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
             compound_string = f'{ligand.ligand_resname}              1'
             top.append(compound_string)
 
-        for line in top:
-            if '[ moleculetype ]' in line:
-                line = itp_insertion_string + '\n' + line
+        for i in range(len(top)):
+            if '[ moleculetype ]' in top[i]:
+                top[i] = itp_insertion_string + '\n' + top[i]
                 break
             
         with open(f'{Protein.protein_id}_joined.top', 'w') as f:
@@ -593,10 +593,11 @@ class GromacsSolvBoxInput(GromacsInput):
 
         itp_insertion_string = f'#include "{water_itp}"'
 
-        for line in top:
-            if '[ moleculetype ]' in line:
-                line = itp_insertion_string + '\n' + line
+        for i in range(len(top)):
+            if '[ moleculetype ]' in top[i]:
+                top[i] = itp_insertion_string + '\n' + top[i]
                 break
+
 
         with open(Protein.top_file, 'w') as f:
             for line in top:
