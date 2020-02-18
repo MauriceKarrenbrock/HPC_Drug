@@ -3,6 +3,9 @@
 from HPC_Drug import pipeline_functions
 from HPC_Drug import structures
 from HPC_Drug import important_lists
+from HPC_Drug import orient
+
+
 import Bio.PDB
 import Bio.PDB.MMCIF2Dict
 import os
@@ -421,7 +424,7 @@ class SubstitutionParser(FileCruncer):
         from the given structure"""
         
         if Protein.filename == None or ligand_resnames == None:
-            raise TypeError('Need a valid mmcif and ligand_resnames, None is not valid')
+            raise TypeError('Need a valid file and ligand_resnames, None is not valid')
 
         if len(ligand_resnames) == 0:
             print("The list of ligands is empty, going on returning a None item")
@@ -460,7 +463,7 @@ class SubstitutionParser(FileCruncer):
         takes a Protein intance and returns a Protein
         Protein.filename must be a mmCIF file
 
-        Very usefull whern you need to know which cysteines make disulf bonds
+        Very usefull when you need to know which cysteines make disulf bonds
         but you have to change the resnumbers"""
 
         if Protein.file_type != "cif":
@@ -592,3 +595,219 @@ def select_model_chain_custom(Protein = None):
         raise Exception(f'Could not save {Protein.filename} file')
 
     return Protein
+
+
+def get_metal_binding_residues_with_no_header(protein_id = None, pdb_file = None, mmcif_file = None, cutoff = 3.0, substitutions_dict = {}, protein_chain = 'A', protein_model = 0):
+    """This function iterates through the structure many times in order
+    to return the metal binding residues through a substitution dictionary
+
+    {residue_id : [residue_name, binding_atom, binding_metal]}
+
+    it can be used both for pdb files and mmcif files (give the path to the files as a string
+    to pdb_file or mmcif_file)
+
+    cutoff :: double the maximum distance that a residue's center of mass and a metal ion
+    can have to be considered binding default 3.0 angstrom
+
+    if you already have a substitution dictionary and you want to update it give it as input
+    as substitutions_dict
+
+    protein_chain :: string default 'A'
+
+    this function is slow and error prone
+    and should only be used if there is no mmCIF with a good header"""
+
+    if pdb_file == None and mmcif_file == None:
+        raise ValueError("I need a pdb_file or a mmcif_file filename cannot both be None type")
+
+    elif pdb_file != None and mmcif_file != None:
+        raise ValueError(f"You can only pass a pdb_file or a mmcif_file not both\npdb_file = {pdb_file} mmcif_file = {mmcif_file}")
+
+    elif pdb_file != None:
+
+        if protein_id == None:
+            protein_id = pdb_file[0:3] # Get from filename
+
+        p = Bio.PDB.PDBParser()
+        structure = p.get_structure(protein_id, pdb_file)
+
+    elif mmcif_file != None:
+
+        if protein_id == None:
+            protein_id = mmcif_file[0:3] # Get from filename
+
+        p = Bio.PDB.MMCIFParser()
+        structure = p.get_structure(protein_id, mmcif_file)
+    
+    orient_object = orient.Orient()
+
+    #select the right model
+    model = structure[protein_model]
+    # select only the right chain
+    chain = model[protein_chain.strip().upper()]
+    for residue in chain:
+        
+        if residue.resname.upper() in important_lists.metals:
+            atom = residue.get_atoms()
+            
+            #I get a second copy of all the residues in the chain
+            all_residues = chain.get_residues()
+            #and iterate though them
+            for other_residue in all_residues:
+                #I avoid scanning the metal against it's self and against trash residues
+                if other_residue not in important_lists.metals or other_residue not in important_lists.trash:
+                    COM_1, COM_2, distance = orient_object.center_mass_distance(structure_1 = residue, structure_2 = other_residue)
+
+                    if distance <= cutoff:
+
+                        #I add the other residue _id to the dictionary keys and give a value (the binding atom is still missing)
+                        substitutions_dict[other_residue.id[1]] = [other_residue.resname.upper(), None, residue.resname.upper()]
+
+                        #check for the nearest atom of the binding residue
+                        other_atoms = other_residue.get_atoms()
+                        
+                        TMP_atom_dist = [1.E20, 'DUMMY']
+                        for other_atom in other_atoms:
+
+                            d = (atom.coord[0] - other_atom.coord[0])**2. + (atom.coord[1] - other_atom.coord[1])**2. + (atom.coord[2] - other_atom.coord[2])**2.
+                            d = d ** (0.5)
+
+                            if d < TMP_atom_dist[0]:
+                                try:
+                                    TMP_atom_dist = [d, other_atom.name[0].upper()]
+                                except:
+                                    TMP_atom_dist = [d, other_atom.element.upper()]
+
+                        #finally add the atom name to the dictionary
+                        substitutions_dict[other_residue.id[1]][1] = TMP_atom_dist[1]
+
+    return substitutions_dict
+
+
+def get_disulf_bonds_with_no_header(protein_id = None, pdb_file = None, mmcif_file = None, cutoff = 3.0, substitutions_dict = {}, sulf_bonds = [], protein_chain = 'A' , protein_model = 0):
+    """This function iterates through the structure many times in order
+    to return the disulf bonds through a substitution dictionary and a list of the binded couples
+
+    {residue_id : [residue_name, binding_atom, binding_metal]}
+    and
+    [(cys_id, cys_id), (cys_id, ...), ...]
+
+    return substitutions_dict, sulf_bonds
+
+    it can be used both for pdb files and mmcif files (give the path to the files as a string
+    to pdb_file or mmcif_file)
+
+    cutoff :: double the maximum distance that two CYS S atoms
+    can have to be considered binding default 3.0 angstrom
+
+    if you already have a substitution dictionary and you want to update it give it as input
+    as substitutions_dict
+
+    protein_chain :: string default 'A'
+
+    this function is slow and error prone
+    and should only be used if there is no mmCIF with a good header"""
+
+    if pdb_file == None and mmcif_file == None:
+        raise ValueError("I need a pdb_file or a mmcif_file filename cannot both be None type")
+
+    elif pdb_file != None and mmcif_file != None:
+        raise ValueError(f"You can only pass a pdb_file or a mmcif_file not both\npdb_file = {pdb_file} mmcif_file = {mmcif_file}")
+
+    elif pdb_file != None:
+
+        if protein_id == None:
+            protein_id = pdb_file[0:3] # Get from filename
+
+        p = Bio.PDB.PDBParser()
+        structure = p.get_structure(protein_id, pdb_file)
+
+    elif mmcif_file != None:
+
+        if protein_id == None:
+            protein_id = mmcif_file[0:3] # Get from filename
+
+        p = Bio.PDB.MMCIFParser()
+        structure = p.get_structure(protein_id, mmcif_file)
+
+    #select the right model
+    model = structure[protein_model]
+    # select only the right chain
+    chain = model[protein_chain.strip().upper()]
+    for residue in chain:
+        
+        if residue.resname.upper() in important_lists.cyst_resnames:
+
+            #I get a second copy of all the residues in the chain
+            all_residues = chain.get_residues()
+            #and iterate though them
+            for other_residue in all_residues:
+                
+                if other_residue.resname.upper() in important_lists.cyst_resnames:
+                    #I avoid scanning CYS against its self and agaisnt the already scanned ones
+                    if other_residue.id[1] > residue.id[1]:
+
+                        distance = (residue['SG'].coord[0] - other_residue['SG'].coord[0])**2. + (residue['SG'].coord[1] - other_residue['SG'].coord[1])**2. + (residue['SG'].coord[2] - other_residue['SG'].coord[2])**2.
+                        distance = distance ** (0.5)
+
+                        if distance <= cutoff:
+
+                            substitutions_dict[residue.id[1]] = ['CYS', 'SG', 'disulf']
+                            substitutions_dict[other_residue.id[1]] = ['CYS', 'SG', 'disulf']
+
+                            sulf_bonds.append((residue.id[1], other_residue.id[1]))
+
+    return substitutions_dict, sulf_bonds
+
+def get_organic_ligands_with_no_header(protein_id = None, pdb_file = None, mmcif_file = None, protein_chain = 'A', protein_model = 0):
+    """This function iterates through the structure to get the organic ligand
+    returning a list of lists containing
+    [[resname, resnumber], [resname, resnumber], ...]
+
+    it can be used both for pdb files and mmcif files (give the path to the files as a string
+    to pdb_file or mmcif_file)
+
+    protein_chain :: string default 'A'
+
+    this function is slow and error prone
+    and should only be used if there is no mmCIF with a good header"""
+
+    if pdb_file == None and mmcif_file == None:
+        raise ValueError("I need a pdb_file or a mmcif_file filename cannot both be None type")
+
+    elif pdb_file != None and mmcif_file != None:
+        raise ValueError(f"You can only pass a pdb_file or a mmcif_file not both\npdb_file = {pdb_file} mmcif_file = {mmcif_file}")
+
+    elif pdb_file != None:
+
+        if protein_id == None:
+            protein_id = pdb_file[0:3] # Get from filename
+
+        p = Bio.PDB.PDBParser()
+        structure = p.get_structure(protein_id, pdb_file)
+
+    elif mmcif_file != None:
+
+        if protein_id == None:
+            protein_id = mmcif_file[0:3] # Get from filename
+
+        p = Bio.PDB.MMCIFParser()
+        structure = p.get_structure(protein_id, mmcif_file)
+
+    ligand_list = []
+
+    #select the right model
+    model = structure[protein_model]
+    # select only the right chain
+    chain = model[protein_chain.strip().upper()]
+
+    for residue in chain:
+
+        #it's an hetero atom
+        if residue.id[0] != '':
+
+            if residue.resname.upper() not in important_lists.metals and residue.resname.upper() not in important_lists.trash:
+
+                ligand_list.append([residue.resname.upper(), residue.id[1]])
+
+    return ligand_list
