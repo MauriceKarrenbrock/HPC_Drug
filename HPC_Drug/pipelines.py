@@ -148,7 +148,7 @@ class NoLigand_Pipeline(Pipeline):
         Protein = structures.Protein(protein_id = self.protein_id,
                                     filename = self.protein_filename,
                                     model = self.model,
-                                    chain = self.chain
+                                    chain = self.chain,
                                     file_type = self.protein_filetype)
         
 
