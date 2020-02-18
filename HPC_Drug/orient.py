@@ -283,7 +283,7 @@ class Orient(object):
         COM_1 = self.center_of_mass(structure_1)
         COM_2 = self.center_of_mass(structure_2)
 
-        distance = (COM_1.coord[0] - COM_2.coord[0])**2. + (COM_1.coord[1] - COM_2.coord[1])**2.
+        distance = (COM_1.coord[0] - COM_2.coord[0])**2. + (COM_1.coord[1] - COM_2.coord[1])**2. + (COM_1.coord[2] - COM_2.coord[2])**2.
         distance = distance ** (0.5)
 
         #Return the centers of mass coordinates and the distance between them
