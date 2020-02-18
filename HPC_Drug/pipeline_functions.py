@@ -5,7 +5,7 @@ import Bio.PDB
 import Bio.PDB.MMCIF2Dict
 import collections
 
-def parse(Protein):
+def parse_mmcif(Protein):
     """Parses the PDBx/mmCIF file
     returns a protein containing informations about
     the residues binding a metal, the organic ligand resname (if present)
