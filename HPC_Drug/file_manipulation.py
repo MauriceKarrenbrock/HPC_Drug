@@ -225,8 +225,11 @@ class PDBRepair(FileCruncer):
         pass
     
     def add_missing_atoms(self, pdb_id, input_filename,
+                        file_type = 'cif',
                         repairing_method = 'pdbfixer',
-                        output_filename = None, ph = 7.0, add_H = False):
+                        output_filename = None,
+                        ph = 7.0,
+                        add_H = False):
         """This function returns a repaired PDBx/mmCIF with missing atoms but not hydrogens
         chooses the right repairing method with repairing_method (pdbfixer is default)
         The returned PDB is called output_filename
@@ -246,7 +249,7 @@ class PDBRepair(FileCruncer):
             fixer = self.fix_pdbfixer(input_filename, ph = ph)
 
             if output_filename == None:
-                output_filename = pdb_id + '_repaired.cif'
+                output_filename = f'{pdb_id}_repaired.{file_type}'
             
             with open(output_filename, 'w') as f:
                 simtk.openmm.app.pdbxfile.PDBxFile.writeFile(fixer.topology, fixer.positions, f, keepIds= True)

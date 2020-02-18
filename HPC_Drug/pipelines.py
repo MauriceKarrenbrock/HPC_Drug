@@ -148,27 +148,55 @@ class NoLigand_Pipeline(Pipeline):
         Protein = structures.Protein(protein_id = self.protein_id,
                                     filename = self.protein_filename,
                                     model = self.model,
-                                    chain = self.chain)
+                                    chain = self.chain
+                                    file_type = self.protein_filetype)
         
 
+        if self.protein_filetype == 'cif':
+            #Parses the mmcif for sulf bonds and organic ligands
+            #takes information about the residues binding metals
+            #
+            #parses the seqres from the mmcif file if possible
+            #
+            #ligand_resnames is a list containing the ligands
+            # resnames and resnumbers [[resname, resnumber], [..., ...], ...]
+            Protein, ligand_resnames = pipeline_functions.parse_mmcif(Protein)
 
-        #Parses the mmcif for sulf bonds and organic ligands
-        #takes information about the residues binding metals
-        #
-        #parses the seqres from the mmcif file if possible
-        #
-        #ligand_resnames is a list containing the ligands
-        # resnames and resnumbers [[resname, resnumber], [..., ...], ...]
-        Protein, ligand_resnames = pipeline_functions.parse(Protein)
+        elif self.protein_filetype == 'pdb':
+
+            Protein.substitutions_dict = file_manipulation.get_metal_binding_residues_with_no_header(protein_id = Protein.protein_id,
+                                                                                                pdb_file = Protein.filename,
+                                                                                                mmcif_file = None,
+                                                                                                substitutions_dict = {},
+                                                                                                protein_chain = Protein.chain,
+                                                                                                protein_model = Protein.model)
+
+            Protein.substitutions_dict, Protein.sulf_bonds = file_manipulation.get_disulf_bonds_with_no_header(protein_id = Protein.protein_id,
+                                                                                                pdb_file = Protein.filename,
+                                                                                                mmcif_file = None,
+                                                                                                substitutions_dict = Protein.substitutions_dict,
+                                                                                                protein_chain = Protein.chain,
+                                                                                                protein_model = Protein.model)
+
+            ligand_resnames = file_manipulation.get_organic_ligands_with_no_header(protein_id = Protein.protein_id,
+                                                                                pdb_file = Protein.filename,
+                                                                                mmcif_file = None,
+                                                                                protein_chain = Protein.chain,
+                                                                                protein_model = Protein.model)
+
         
         repairer = file_manipulation.PDBRepair()
         
         #adds missing atoms and residues
         #changes non standard residues to standard ones
         #takes a PDBx/mmCIF and returns a PDBx/mmCIF
-        Protein.filename = repairer.add_missing_atoms(Protein.protein_id,
-                                                            Protein.filename, self.repairing_method,
-                                                            None, ph = self.ph, add_H = False)
+        Protein.filename = repairer.add_missing_atoms(pdb_id = Protein.protein_id,
+                                                    file_type = Protein.protein_filetype,
+                                                    input_filename = Protein.filename,
+                                                    repairing_method = self.repairing_method,
+                                                    output_filename = None,
+                                                    ph = self.ph,
+                                                    add_H = False)
         
         ########
         #WORK IN PROGRESS
