@@ -246,13 +246,25 @@ class PDBRepair(FileCruncer):
             import simtk.openmm.app
             import os
 
-            fixer = self.fix_pdbfixer(input_filename, ph = ph)
+            fixer = self.fix_pdbfixer(input_filename = input_filename,
+                                    ph = ph,
+                                    add_H = add_H,
+                                    file_type = file_type)
 
             if output_filename == None:
                 output_filename = f'{pdb_id}_repaired.{file_type}'
             
-            with open(output_filename, 'w') as f:
-                simtk.openmm.app.pdbxfile.PDBxFile.writeFile(fixer.topology, fixer.positions, f, keepIds= True)
+            if file_type == 'cif': 
+                with open(output_filename, 'w') as f:
+                    simtk.openmm.app.pdbxfile.PDBxFile.writeFile(fixer.topology, fixer.positions, f, keepIds= True)
+
+            elif file_type == 'pdb':
+
+                with open(output_filename, 'w') as f:
+                    simtk.openmm.app.PDBFile.writeFile(fixer.topology, fixer.positions, f, keepIds = True)
+
+            else:
+                raise ValueError(f"file_type must be cif or pdb not {file_type}")
             
             output_filename = os.getcwd() + '/' + output_filename
             if not os.path.exists(output_filename):
@@ -266,15 +278,26 @@ class PDBRepair(FileCruncer):
             raise NotImplementedError(f'{repairing_method}')
 
 
-    def fix_pdbfixer(self, input_filename, ph = 7.0, add_H = False):
+    def fix_pdbfixer(self, input_filename, ph = 7.0, add_H = False, file_type = 'cif'):
         """This method is called by add_missing_atoms
         Reads an PDBx/mmCIF"""
         
         import pdbfixer
         import simtk.openmm.app
 
-        with open(input_filename, 'r') as f:
-            fixer = pdbfixer.PDBFixer(pdbxfile = f)
+        if file_type == 'cif':
+
+            with open(input_filename, 'r') as f:
+                fixer = pdbfixer.PDBFixer(pdbxfile = f)
+
+        elif file_type == 'pdb':
+
+            with open(input_filename, 'r') as f:
+                fixer = pdbfixer.PDBFixer(pdbfile = f)
+        
+        else:
+            raise ValueError(f"file_type must be cif or pdb not {file_type}")
+
         fixer.findMissingResidues()
         fixer.findNonstandardResidues()
         fixer.replaceNonstandardResidues()
