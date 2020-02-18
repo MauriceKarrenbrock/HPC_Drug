@@ -450,8 +450,8 @@ class SubstitutionParser(FileCruncer):
         ligand_list = []
 
         for residue in residues:
-            if residue.resname in ligand_resnames:
-                ligand_list.append([residue.resname, residue.id[1]])
+            if residue.resname.strip() in ligand_resnames:
+                ligand_list.append([residue.resname.strip(), residue.id[1]])
 
         return ligand_list
 
@@ -597,7 +597,15 @@ def select_model_chain_custom(Protein = None):
     return Protein
 
 
-def get_metal_binding_residues_with_no_header(protein_id = None, pdb_file = None, mmcif_file = None, cutoff = 3.0, substitutions_dict = {}, protein_chain = 'A', protein_model = 0):
+def get_metal_binding_residues_with_no_header(protein_id = None,
+                                            pdb_file = None,
+                                            mmcif_file = None,
+                                            cutoff = 3.0,
+                                            substitutions_dict = {},
+                                            protein_chain = 'A',
+                                            protein_model = 0,
+                                            COM_distance = 10.0):
+
     """This function iterates through the structure many times in order
     to return the metal binding residues through a substitution dictionary
 
@@ -615,7 +623,10 @@ def get_metal_binding_residues_with_no_header(protein_id = None, pdb_file = None
     protein_chain :: string default 'A'
 
     this function is slow and error prone
-    and should only be used if there is no mmCIF with a good header"""
+    and should only be used if there is no mmCIF with a good header
+    
+    It should not be necessary to change COM_distance because it simply is the distance between the center of mass of
+    a residue and the metal that is used to know which atom distances to calculate"""
 
     if pdb_file == None and mmcif_file == None:
         raise ValueError("I need a pdb_file or a mmcif_file filename cannot both be None type")
@@ -647,44 +658,60 @@ def get_metal_binding_residues_with_no_header(protein_id = None, pdb_file = None
     chain = model[protein_chain.strip().upper()]
     for residue in chain:
         
-        if residue.resname.upper() in important_lists.metals:
-            atom = residue.get_atoms()
-            
-            #I get a second copy of all the residues in the chain
-            all_residues = chain.get_residues()
-            #and iterate though them
-            for other_residue in all_residues:
-                #I avoid scanning the metal against it's self and against trash residues
-                if other_residue not in important_lists.metals or other_residue not in important_lists.trash:
-                    COM_1, COM_2, distance = orient_object.center_mass_distance(structure_1 = residue, structure_2 = other_residue)
-
-                    if distance <= cutoff:
-
-                        #I add the other residue _id to the dictionary keys and give a value (the binding atom is still missing)
-                        substitutions_dict[other_residue.id[1]] = [other_residue.resname.upper(), None, residue.resname.upper()]
-
-                        #check for the nearest atom of the binding residue
-                        other_atoms = other_residue.get_atoms()
+        if residue.resname.strip().upper() in important_lists.metals:
+            for atom in residue:
+                    
+                #I get a second copy of all the residues in the chain
+                #Will have to refactor and clean this mess
+                if pdb_file != None:
+                    tmp_struct = p.get_structure(protein_id, pdb_file)
+                else:
+                    tmp_struct = p.get_structure(protein_id, mmcif_file)
+                tmp_struct = tmp_struct[protein_model][protein_chain.strip().upper()]
+                all_residues = tmp_struct.get_residues()
+                #and iterate though them
+                for other_residue in all_residues:
+                    
+                    #I avoid scanning the metal against it's self and against trash residues
+                    if other_residue.resname.strip().upper() not in important_lists.metals:
+                        COM_1, COM_2, distance = orient_object.center_mass_distance(structure_1 = residue, structure_2 = other_residue)
                         
-                        TMP_atom_dist = [1.E20, 'DUMMY']
-                        for other_atom in other_atoms:
+                        if distance <= COM_distance:
+                            
+                            TMP_atom_dist = [1.E+20, 'DUMMY']
+                            #check for the nearest atom of the binding residue
+                            for other_atom in other_residue:
 
-                            d = (atom.coord[0] - other_atom.coord[0])**2. + (atom.coord[1] - other_atom.coord[1])**2. + (atom.coord[2] - other_atom.coord[2])**2.
-                            d = d ** (0.5)
+                                d = (atom.coord[0] - other_atom.coord[0])**2. + (atom.coord[1] - other_atom.coord[1])**2. + (atom.coord[2] - other_atom.coord[2])**2.
+                                d = d ** (0.5)
+                                
+                                if d < TMP_atom_dist[0]:
+                                    try:
+                                        TMP_atom_dist = [d, other_atom.name.upper()]
+                                    except:
+                                        TMP_atom_dist = [d, other_atom.element.upper()]
+                            
+                            #checking if the nearest atom is near enough to be part of a binding residue
+                            if TMP_atom_dist[0] <= cutoff:
+                                #I add the other residue _id to the dictionary keys and give a value
+                                substitutions_dict[str(other_residue.id[1])] = [other_residue.resname.strip().upper(), TMP_atom_dist[1], residue.resname.strip().upper()]
 
-                            if d < TMP_atom_dist[0]:
-                                try:
-                                    TMP_atom_dist = [d, other_atom.name[0].upper()]
-                                except:
-                                    TMP_atom_dist = [d, other_atom.element.upper()]
-
-                        #finally add the atom name to the dictionary
-                        substitutions_dict[other_residue.id[1]][1] = TMP_atom_dist[1]
+        
+    #useless variables
+    COM_1 = None
+    COM_2 = None
 
     return substitutions_dict
 
 
-def get_disulf_bonds_with_no_header(protein_id = None, pdb_file = None, mmcif_file = None, cutoff = 3.0, substitutions_dict = {}, sulf_bonds = [], protein_chain = 'A' , protein_model = 0):
+def get_disulf_bonds_with_no_header(protein_id = None,
+                                    pdb_file = None,
+                                    mmcif_file = None,
+                                    cutoff = 3.0,
+                                    substitutions_dict = {},
+                                    sulf_bonds = [],
+                                    protein_chain = 'A',
+                                    protein_model = 0):
     """This function iterates through the structure many times in order
     to return the disulf bonds through a substitution dictionary and a list of the binded couples
 
@@ -736,14 +763,14 @@ def get_disulf_bonds_with_no_header(protein_id = None, pdb_file = None, mmcif_fi
     chain = model[protein_chain.strip().upper()]
     for residue in chain:
         
-        if residue.resname.upper() in important_lists.cyst_resnames:
+        if residue.resname.strip().upper() in important_lists.cyst_resnames:
 
             #I get a second copy of all the residues in the chain
             all_residues = chain.get_residues()
             #and iterate though them
             for other_residue in all_residues:
                 
-                if other_residue.resname.upper() in important_lists.cyst_resnames:
+                if other_residue.resname.strip().upper() in important_lists.cyst_resnames:
                     #I avoid scanning CYS against its self and agaisnt the already scanned ones
                     if other_residue.id[1] > residue.id[1]:
 
@@ -752,14 +779,18 @@ def get_disulf_bonds_with_no_header(protein_id = None, pdb_file = None, mmcif_fi
 
                         if distance <= cutoff:
 
-                            substitutions_dict[residue.id[1]] = ['CYS', 'SG', 'disulf']
-                            substitutions_dict[other_residue.id[1]] = ['CYS', 'SG', 'disulf']
+                            substitutions_dict[str(residue.id[1])] = ['CYS', 'SG', 'disulf']
+                            substitutions_dict[str(other_residue.id[1])] = ['CYS', 'SG', 'disulf']
 
-                            sulf_bonds.append((residue.id[1], other_residue.id[1]))
+                            sulf_bonds.append((str(residue.id[1]), str(other_residue.id[1])))
 
     return substitutions_dict, sulf_bonds
 
-def get_organic_ligands_with_no_header(protein_id = None, pdb_file = None, mmcif_file = None, protein_chain = 'A', protein_model = 0):
+def get_organic_ligands_with_no_header(protein_id = None,
+                                    pdb_file = None,
+                                    mmcif_file = None,
+                                    protein_chain = 'A',
+                                    protein_model = 0):
     """This function iterates through the structure to get the organic ligand
     returning a list of lists containing
     [[resname, resnumber], [resname, resnumber], ...]
@@ -804,10 +835,10 @@ def get_organic_ligands_with_no_header(protein_id = None, pdb_file = None, mmcif
     for residue in chain:
 
         #it's an hetero atom
-        if residue.id[0] != '':
+        if residue.id[0].strip() != '':
 
-            if residue.resname.upper() not in important_lists.metals and residue.resname.upper() not in important_lists.trash:
+            if residue.resname.strip().upper() not in important_lists.metals and residue.resname.strip().upper() not in important_lists.trash:
 
-                ligand_list.append([residue.resname.upper(), residue.id[1]])
+                ligand_list.append([residue.resname.strip().upper(), str(residue.id[1])])
 
     return ligand_list
