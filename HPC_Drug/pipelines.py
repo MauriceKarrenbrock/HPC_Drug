@@ -191,7 +191,7 @@ class NoLigand_Pipeline(Pipeline):
         #changes non standard residues to standard ones
         #takes a PDBx/mmCIF and returns a PDBx/mmCIF
         Protein.filename = repairer.add_missing_atoms(pdb_id = Protein.protein_id,
-                                                    file_type = Protein.protein_filetype,
+                                                    file_type = Protein.file_type,
                                                     input_filename = Protein.filename,
                                                     repairing_method = self.repairing_method,
                                                     output_filename = None,
