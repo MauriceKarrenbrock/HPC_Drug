@@ -116,3 +116,70 @@ class test_PDBRepair(unittest.TestCase):
 
 class test_SubstitutionParser(unittest.TestCase):
     pass
+
+class test_no_header_functions(unittest.TestCase):
+
+    def test_get_metal_binding_residues_with_no_header(self):
+
+        right_substitution_dict = {
+            '179' : ['HIS', 'ND1', 'ZN'],
+            '176' : ['CYS', 'SG', 'ZN'],
+            '238' : ['CYS', 'SG', 'ZN'],
+            '242' : ['CYS', 'SG', 'ZN']
+        }
+
+        output_dict = file_manipulation.get_metal_binding_residues_with_no_header(protein_id = '5aol',
+                                                                                pdb_file = 'tests/5aol.pdb',
+                                                                                mmcif_file = None,
+                                                                                cutoff = 3.0,
+                                                                                substitutions_dict = {},
+                                                                                protein_chain = 'A',
+                                                                                protein_model = 0,
+                                                                                COM_distance = 7.0)
+
+        self.assertEqual(output_dict, right_substitution_dict)
+
+    
+    def test_get_disulf_bonds_with_no_header(self):
+
+        right_substitution_dict = {
+            '26' : ['CYS', 'SG', 'disulf'],
+            '84' : ['CYS', 'SG', 'disulf'],
+            '40' : ['CYS', 'SG', 'disulf'],
+            '95' : ['CYS', 'SG', 'disulf'],
+            '58' : ['CYS', 'SG', 'disulf'],
+            '110' : ['CYS', 'SG', 'disulf'],
+            '65' : ['CYS', 'SG', 'disulf'],
+            '72' : ['CYS', 'SG', 'disulf']
+        }
+        right_sulf_bond = [('26', '84'), ('40', '95'), ('58', '110'), ('65', '72')]
+
+        output_dict, output_sulf_bond = file_manipulation.get_disulf_bonds_with_no_header(protein_id = '3dxg',
+                                                                                        pdb_file = 'tests/3dxg.pdb',
+                                                                                        mmcif_file = None,
+                                                                                        cutoff = 3.0,
+                                                                                        substitutions_dict = {},
+                                                                                        sulf_bonds = [],
+                                                                                        protein_chain = 'A',
+                                                                                        protein_model = 0)
+
+        self.assertEqual(output_dict, right_substitution_dict)
+        self.assertEqual(output_sulf_bond, right_sulf_bond)
+
+    
+    def test_get_organic_ligands_with_no_header(self):
+
+
+        right_ligand = [['U5P', '125'], ['U5P', '126']]
+
+
+        output_ligand = file_manipulation.get_organic_ligands_with_no_header(protein_id = '3dxg',
+                                                                            pdb_file = 'tests/3dxg.pdb',
+                                                                            mmcif_file = None,
+                                                                            protein_chain = 'A',
+                                                                            protein_model = 0)
+
+        self.assertEqual(output_ligand, right_ligand)
+
+
+        
