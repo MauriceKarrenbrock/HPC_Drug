@@ -210,7 +210,8 @@ class NoLigand_Pipeline(Pipeline):
         #selects only a selected model and chain, and keeps only one conformation for any disordered atom
         #returns a PDB file
         Protein = file_manipulation.select_model_chain_custom(Protein = Protein)
-        Protein.file_type = 'pdb'
+
+        Protein = file_manipulation.mmcif2pdb(Protein = Protein)
 
         cruncer = file_manipulation.ProteinCruncer(Protein.file_type)
         
