@@ -217,7 +217,7 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
 
                 line = line.strip().upper()
                 
-                if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
+                if line[0:4] == 'ATOM' or line[0:6] == 'HETATM' or line[0:3] == 'TER':
  
                     joined.write(f"{line}\n")
 
@@ -227,7 +227,7 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
 
                     line = line.strip()
 
-                    if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
+                    if line[0:4] == 'ATOM' or line[0:6] == 'HETATM' or line[0:3] == 'TER':
    
                         joined.write(f"{line}\n")
 
