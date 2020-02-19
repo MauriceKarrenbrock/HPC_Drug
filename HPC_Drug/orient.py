@@ -382,12 +382,10 @@ class Orient(object):
 
         with open(Protein.filename, 'r') as f:
             for line in f:
-                if "ATOM" in line or "HETATM" in line:
+                if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
 
-                    line = line.split()
-
-                    atom_number.append(line[1].strip())
-                    resname.append(line[3].strip().upper())
+                    atom_number.append(line[4:11].strip())
+                    resname.append(line[17:20].strip().upper())
         
         #getting a list of the resnames of the ligands
         ligand_resnames = []

@@ -10,6 +10,8 @@ import Bio.PDB
 import Bio.PDB.MMCIF2Dict
 import os
 import prody
+import pdbfixer
+import simtk.openmm.app
 
 
 
