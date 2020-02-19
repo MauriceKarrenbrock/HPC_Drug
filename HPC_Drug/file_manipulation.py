@@ -502,14 +502,13 @@ class SubstitutionParser(FileCruncer):
         i = 0
         with open(Protein.filename, 'r') as f:
             for line in f:
-                if "ATOM" in line:
-                    if line[0] == "A":
+                if line[0:4] == 'ATOM':
 
-                        if line.split()[5].strip().upper() in important_lists.cyst_resnames:
-                            #i is the cysteine_number and line.split()[8].strip() is the residue number
-                            if not i in cys_dict.keys():
-                                i = i+1
-                                cys_dict[line.split()[8].strip()] = str(i)
+                    if line.split()[5].strip().upper() in important_lists.cyst_resnames:
+                        #i is the cysteine_number and line.split()[8].strip() is the residue number
+                        if not i in cys_dict.keys():
+                            i = i+1
+                            cys_dict[line.split()[8].strip()] = str(i)
 
         Protein.cys_dict = cys_dict
 
