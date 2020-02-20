@@ -338,7 +338,8 @@ class PDBRepair(FileCruncer):
         #fixer.removeHeterogens(False)
         fixer.findMissingAtoms()
         fixer.addMissingAtoms()
-        #fixer.addMissingHydrogens(8.0)
+        if add_H == True:
+            fixer.addMissingHydrogens(ph)
         #fixer.addSolvent(fixer.topology.getUnitCellDimensions())
 
         return fixer
