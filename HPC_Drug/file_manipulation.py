@@ -41,6 +41,38 @@ def download_protein_structure(protein_id, file_type = 'cif', pdir = None):
     else:
         return filename
 
+def mmcif2pdb(Protein = None):
+    """Takes a Protein instance and returns one
+    if Protein.file_type == 'cif' converts the file in a pdb
+    and updates Protein.file_type and Protein.filename
+    otherwise does nothing"""
+
+    if Protein == None:
+        raise TypeError("I need a PRotein as input, not a None type")
+
+    if Protein.file_type == 'pdb':
+        return Protein
+
+    elif Protein.file_type == 'cif':
+
+        new_name = Protein.filename.rsplit('.', 1)[0] + 'pdb'
+
+        p = Bio.PDB.MMCIFParser()
+
+        struct = p.get_structure(Protein.protein_id, Protein.filename)
+
+        s = Bio.PDB.MMCIFIO()
+        s.set_structure(struct)
+        s.save(new_name)
+
+        Protein.filename = new_name
+        Protein.file_type = 'pdb'
+
+        return Protein
+
+    else:
+        raise ValueError(f"Protein.file_type must be 'pdb' or 'cif' not {Protein.file_type}")
+
 
 class FileCruncer(object):
     """Generic file cruncer class"""
