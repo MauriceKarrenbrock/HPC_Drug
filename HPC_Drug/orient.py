@@ -426,3 +426,95 @@ class Orient(object):
             ligand_atoms.append([M_l, m_l])
 
         return protein_atoms, ligand_atoms
+
+    def get_hot_residues_for_rem(self, Protein = None, Ligand = None, cutoff = 3.0, residue_dist = 8.0):
+
+        """ This functions will give the residue_id of any "hot residue" needed for the REM
+        symulations, the hot residues are the one in contact with the given organic ligand
+
+        It takes a Protein instance and a Ligand instance (or a list of them) but if the list
+        is longer than one it will raise an error
+
+        The protein instance must contain a file with both the protein and the ligand
+
+        It returns a list of the redisue_id of the right residues
+
+        cutoff is a float that tells the cutoff distance between the ligand and the nearest residue atom
+        to be considered in contact default = 3.0 angstrom
+
+        residue dist tells the maximum distance that a ligand atom and a residue center of mass
+        must have to be scanned for the cutoff default 8.0 angstrom
+
+        returns a list of listst: [[residue_resname, residue_id], ...]
+        """
+
+        if Protein == None:
+            Protein = self.Protein
+        
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        #as Ligand is often a list I check that there is only one
+        Ligand = pipeline_functions.get_iterable(Ligand)
+        if len(Ligand) != 1:
+            raise ValueError(f"Can process only a Ligand at the time not {len(Ligand)}")
+        Ligand = Ligand[0]
+
+        if Protein.file_type == 'cif': 
+            p = Bio.PDB.MMCIFParser()
+
+        elif Protein.file_type == 'pdb':
+            p = Bio.PDB.PDBParser()
+
+        else:
+            raise TypeError(f'"{Protein.file_type}" is not a valid type\n only "cif" and "pdb"')
+
+        structure = p.get_structure(Protein.protein_id, Protein.filename)
+        structure = structure[Protein.model][Protein.chain]
+
+        #I refresh the ligand's residue id
+        Sub_Parser = file_manipulation.SubstitutionParser()
+        TMP_list = Sub_Parser.get_ligand_resnum(Protein = Protein,
+                                                    ligand_resnames = Ligand.ligand_resname,
+                                                    chain_model_selection = True)
+        Ligand.res_number = TMP_list[0][1]
+
+        output_list = []
+
+        #for any atom of the ligand I iterate through the whole protein and first check for the nearest
+        #residues then for the nearest atom of the residue, if it's distance is <= cutoff
+        #it is a hot residue
+        for atom in structure[Ligand.res_number]:
+            
+            for residue in structure:
+                
+                #checking if it's a valid residue
+                is_valid_residue = residue.id[1] != Ligand.res_number and residue.resname not in important_lists.metals and residue.resname not in important_lists.trash and residue.id[0].strip() == ''
+                if is_valid_residue:
+
+                    COM_ligand_atom, COM_residue, distance = self.center_mass_distance(atom, residue)
+
+                    if distance <= residue_dist:
+
+                        TMP_atom_dist = 1.E+20
+                        #check for the nearest atom of the residue
+                        for other_atom in residue:
+
+                            d = (atom.coord[0] - other_atom.coord[0])**2. + (atom.coord[1] - other_atom.coord[1])**2. + (atom.coord[2] - other_atom.coord[2])**2.
+                            d = d ** (0.5)
+                            
+                            if d < TMP_atom_dist:
+                                
+                                TMP_atom_dist = d
+                        
+                        #checking if the nearest atom is near enough to be part of a hot residue
+                        if TMP_atom_dist <= cutoff:
+                            #I append the residue resname, the nearest atom name, and the residue id to the output list
+                            output_list.append([residue.resname.strip().upper(), residue.id[1]])
+
+        #useless variables
+        COM_ligand_atom = None
+        COM_residue = None
+
+
+        return output_list
