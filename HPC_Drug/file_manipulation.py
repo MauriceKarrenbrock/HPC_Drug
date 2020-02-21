@@ -486,6 +486,9 @@ class SubstitutionParser(FileCruncer):
         
         if Protein.filename == None or ligand_resnames == None:
             raise TypeError('Need a valid file and ligand_resnames, None is not valid')
+        
+        # If the ligand resname is a single string I transform it in an iterable object
+        ligand_resnames = pipeline_functions.get_iterable(ligand_resnames)
 
         if len(ligand_resnames) == 0:
             print("The list of ligands is empty, going on returning a None item")
