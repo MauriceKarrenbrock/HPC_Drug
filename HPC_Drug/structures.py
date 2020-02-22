@@ -16,7 +16,7 @@ class Protein(Structure):
                 sulf_bonds = None,
                 seqres = None,
                 file_type = 'cif',
-                model = None,
+                model = 0,
                 chain = None,
                 cys_dict = None,
                 gro_file = None,

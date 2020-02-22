@@ -470,7 +470,9 @@ class Orient(object):
             raise TypeError(f'"{Protein.file_type}" is not a valid type\n only "cif" and "pdb"')
 
         structure = p.get_structure(Protein.protein_id, Protein.filename)
+        structure2 = p.get_structure(Protein.protein_id, Protein.filename)
         structure = structure[Protein.model][Protein.chain]
+        structure2 = structure2[Protein.model][Protein.chain]
 
         #I refresh the ligand's residue id
         Sub_Parser = file_manipulation.SubstitutionParser()
@@ -481,36 +483,46 @@ class Orient(object):
 
         output_list = []
 
+        #this list is needed to avoid counting the same residue twice
+        already_counted_list = []
+
         #for any atom of the ligand I iterate through the whole protein and first check for the nearest
         #residues then for the nearest atom of the residue, if it's distance is <= cutoff
         #it is a hot residue
-        for atom in structure[Ligand.res_number]:
-            
-            for residue in structure:
-                
-                #checking if it's a valid residue
-                is_valid_residue = residue.id[1] != Ligand.res_number and residue.resname not in important_lists.metals and residue.resname not in important_lists.trash and residue.id[0].strip() == ''
-                if is_valid_residue:
-
-                    COM_ligand_atom, COM_residue, distance = self.center_mass_distance(atom, residue)
-
-                    if distance <= residue_dist:
-
-                        TMP_atom_dist = 1.E+20
-                        #check for the nearest atom of the residue
-                        for other_atom in residue:
-
-                            d = (atom.coord[0] - other_atom.coord[0])**2. + (atom.coord[1] - other_atom.coord[1])**2. + (atom.coord[2] - other_atom.coord[2])**2.
-                            d = d ** (0.5)
-                            
-                            if d < TMP_atom_dist:
-                                
-                                TMP_atom_dist = d
+        for res in structure:
+            if res.id[1] == Ligand.res_number:
+                for atom in res:
+                    
+                    for residue in structure2:
                         
-                        #checking if the nearest atom is near enough to be part of a hot residue
-                        if TMP_atom_dist <= cutoff:
-                            #I append the residue resname, the nearest atom name, and the residue id to the output list
-                            output_list.append([residue.resname.strip().upper(), residue.id[1]])
+                        #checking if I didn't already count it (dont't want to count a residue twice)
+                        if residue.id[1] not in already_counted_list:
+                            #checking if it's a valid residue
+                            is_valid_residue = residue.id[1] != Ligand.res_number and residue.resname not in important_lists.metals and residue.resname not in important_lists.trash and residue.id[0].strip() == ''
+                            if is_valid_residue:
+
+                                COM_ligand_atom, COM_residue, distance = self.center_mass_distance(pipeline_functions.get_iterable(atom), residue)
+
+                                if distance <= residue_dist:
+
+                                    TMP_atom_dist = 1.E+20
+                                    #check for the nearest atom of the residue
+                                    for other_atom in residue:
+
+                                        d = (atom.coord[0] - other_atom.coord[0])**2. + (atom.coord[1] - other_atom.coord[1])**2. + (atom.coord[2] - other_atom.coord[2])**2.
+                                        d = d ** (0.5)
+                                        
+                                        if d < TMP_atom_dist:
+                                            
+                                            TMP_atom_dist = d
+                                    
+                                    #checking if the nearest atom is near enough to be part of a hot residue
+                                    if TMP_atom_dist <= cutoff:
+                                        #I append the residue resname, the nearest atom name, and the residue id to the output list
+                                        output_list.append([residue.resname.strip().upper(), residue.id[1]])
+
+                                        #append it to the already conted list
+                                        already_counted_list.append(residue.id[1])
 
         #useless variables
         COM_ligand_atom = None
