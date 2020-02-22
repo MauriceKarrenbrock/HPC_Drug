@@ -165,7 +165,8 @@ class test_no_header_functions(unittest.TestCase):
                                                                                         protein_model = 0)
 
         self.assertEqual(output_dict, right_substitution_dict)
-        self.assertEqual(output_sulf_bond, right_sulf_bond)
+        #I sort the lists in order not to worry about order
+        self.assertEqual(output_sulf_bond.sort(), right_sulf_bond.sort())
 
     
     def test_get_organic_ligands_with_no_header(self):
@@ -179,8 +180,9 @@ class test_no_header_functions(unittest.TestCase):
                                                                             mmcif_file = None,
                                                                             protein_chain = 'A',
                                                                             protein_model = 0)
-
-        self.assertEqual(output_ligand, right_ligand)
+        
+        #I sort the lists in order not to worry about order
+        self.assertEqual(output_ligand.sort(), right_ligand.sort())
 
 
         
