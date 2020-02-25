@@ -459,6 +459,35 @@ class Orient(object):
 
         return [Max, minr]
 
+    def get_first_last_atom_strucure(self, Protein = None, Ligand = None):
+        """Gets the first and last atom of the protein ligand complex (no solvent)"""
+
+            
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        protein_atoms, ligand_atoms = self.protein_ligand_atom_numbers(Protein = Protein, Ligand = Ligand)
+
+        if len(ligand_atoms) == 0:
+            return protein_atoms
+
+        else:
+            M_l = ligand_atoms[0][0]
+            m_l = ligand_atoms[0][1]
+
+            for ligand in ligand_atoms:
+
+                M_l = max(ligand[0], M_l)
+                m_l = min(ligand[1], m_l)
+
+            M_l = max(protein_atoms[0], M_l)
+            m_l = min(protein_atoms[1], m_l)
+
+            return [M_l, m_l]
+
 
 
 
