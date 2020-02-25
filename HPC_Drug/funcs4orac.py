@@ -1,14 +1,17 @@
 #contains all the classes and functions needed fot the orac MD program
 from HPC_Drug import structures
-import Bio.PDB
+from HPC_Drug import orient
 from HPC_Drug import file_manipulation
 from HPC_Drug import important_lists
 from HPC_Drug import pipeline_functions
 from HPC_Drug import lib
+
+import os
 import importlib_resources
 import subprocess
 import prody
-from HPC_Drug import orient
+import Bio.PDB
+
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
     """Takes a protein instance, and returns one
@@ -413,6 +416,84 @@ class OracInput(object):
 
         return '\n'.join(residue_strings)
 
+    def write_solvent_grid(self):
+    """Writes the informations about the solvent grid"""
+
+    lx, ly, lz = self.orient.create_box(self.Protein.structure)
+
+    nx, ny, nz = self.orient.create_solvent_grid(lx, ly, lz)
+
+    string = f"   GENERATE   {nx}  {ny}  {nz}  !! the grid depends on the BOX"
+
+    return string
+
+    def write_EWALD_PME(self):
+        """Writes the informations about the grid
+        in the reciprocal reticle"""
+        
+        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+
+        pme_x, pme_y, pme_z = self.orient.create_recipr_solvent_grid(lx, ly, lz)
+
+        string = f"   EWALD PME 0.37   {pme_x}  {pme_y}  {pme_z}   4 !! grid on the reciprocal"
+
+        return string
+
+    def write_ADD_STR_COM(self):
+        """Writes the informations about the bounding between the protein and the ligands"""
+
+        if self.Ligand == None:
+            return ''
+
+        #get the separeted structures of the protein and the ligands
+        self.Protein.structure, ligand_structures = self.orient.separate_protein_ligand()
+
+        #Make sure to save the structures of each ligand
+        #may come in handy
+        self.Ligand = self.orient.Ligand
+        
+        #Get the atom number range of each segment
+        protein_atoms, ligand_atoms = self.orient.protein_ligand_atom_numbers()
+
+        string = []
+
+        #get the distance of the centers of mass of the protein and the ligands
+        #and create the string
+        for i, ligand in enumerate(pipeline_functions.get_iterable(ligand_structures)):
+
+            COM_Protein, COM_ligand, distance = self.orient.center_mass_distance(self.Protein.structure, ligand)
+            
+            #These are useless
+            COM_Protein = None
+            COM_ligand = None
+
+            tmp_string = ["   ADD_STR_COM   !! linker COM-COM legand protein",
+                        f"       ligand     {ligand_atoms[i][1]}      {ligand_atoms[i][0]}",
+                        f"       target    {protein_atoms[1]}      {protein_atoms[0]}",
+                        f"       force   0.15     {distance}    {distance+0.0001}",
+                        "   END"]
+            
+            tmp_string = '\n'.join(tmp_string)
+            string.append(tmp_string)
+
+        if len(string) > 1:
+            string = '\n'.join(string)
+        elif len(string) == 0:
+            string = ''
+        else:
+            string = string[0]
+        
+        return string
+
+    def write_LINKED_CELL(self):
+        """writes the LINKED CELL string"""
+
+        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+
+        string = f"   LINKED_CELL   {int(lx/3.0)}  {int(ly/3.0)}  {int(lz/3.0)}"
+
+        return string
+
     def write_template_on_file(self, template = None, filename = None):
         """Writes the objects template on {filename} file"""
         if template == None:
@@ -745,94 +826,213 @@ class OracSolvBoxInput(OracInput):
             "&END"                                              
         ]
 
-    def write_solvent_grid(self):
-        """Writes the informations about the solvent grid"""
 
-        lx, ly, lz = self.orient.create_box(self.Protein.structure)
 
-        nx, ny, nz = self.orient.create_solvent_grid(lx, ly, lz)
 
-        string = f"   GENERATE   {nx}  {ny}  {nz}  !! the grid depends on the BOX"
 
-        return string
+class OracREMInput(OracInput):
 
-    def write_EWALD_PME(self):
-        """Writes the informations about the grid
-        in the reciprocal reticle"""
+    """ORAC input for the Replica Exchange Method (REM)"""
+
+
+    def __init__(self,
+                input_filename = None,
+                output_filename = None,
+                Protein = None,
+                Ligand = None,
+                protein_tpg_file = None,
+                protein_prm_file = None,
+                MD_program_path = None,
+                solvent_pdb = None):
+
+        super().__init__(input_filename = input_filename,
+                        output_filename = output_filename,
+                        Protein = Protein,
+                        Ligand = Ligand,
+                        protein_tpg_file = protein_tpg_file,
+                        protein_prm_file = protein_prm_file,
+                        MD_program_path= MD_program_path,
+                        solvent_pdb = solvent_pdb)
         
-        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+        if output_filename == None:
+            self.output_filename = f'{Protein.protein_id}_REM.in'
 
-        pme_x, pme_y, pme_z = self.orient.create_recipr_solvent_grid(lx, ly, lz)
+        self.template = [
+            "#&T NTHREADS    8   CACHELINE   16",
+            "#&T NT-LEVEL1   4   CACHELINE   16",
+            "#&T NT-LEVEL2   4   CACHELINE   16",
+            "&REM",
+            "BATTERIES    15",
+            "SETUP    1.0           0.2         1.0         1",
+            "STEP 15.",
+            "PRINT_DIAGNOSTIC 120.",
+            "SEGMENT",
 
-        string = f"   EWALD PME 0.37   {pme_x}  {pme_y}  {pme_z}   4 !! grid on the reciprocal"
-
-        return string
-
-    def write_ADD_STR_COM(self):
-        """Writes the informations about the bounding between the protein and the ligands"""
-
-        if self.Ligand == None:
-            return ''
-
-        #get the separeted structures of the protein and the ligands
-        self.Protein.structure, ligand_structures = self.orient.separate_protein_ligand()
-
-        #Make sure to save the structures of each ligand
-        #may come in handy
-        self.Ligand = self.orient.Ligand
-        
-        #Get the atom number range of each segment
-        protein_atoms, ligand_atoms = self.orient.atom_numbers()
-
-        string = []
-
-        #get the distance of the centers of mass of the protein and the ligands
-        #and create the string
-        for i, ligand in enumerate(pipeline_functions.get_iterable(ligand_structures)):
-
-            COM_Protein, COM_ligand, distance = self.orient.center_mass_distance(self.Protein.structure, ligand)
+            self.write_SEGMENT_string(),
             
-            #These are useless
-            COM_Protein = None
-            COM_ligand = None
-
-            tmp_string = ["   ADD_STR_COM   !! linker COM-COM legand protein",
-                        f"       ligand     {ligand_atoms[i][1]}      {ligand_atoms[i][0]}",
-                        f"       target    {protein_atoms[1]}      {protein_atoms[0]}",
-                        f"       force   0.15     {distance}    {distance+0.0001}",
-                        "   END"]
+            "kind intra",
+            "END",
+            "PRINT 12000",
             
-            tmp_string = '\n'.join(tmp_string)
-            string.append(tmp_string)
+            f"PRINT_ENERGY 120.0 OPEN {self.Protein.protein_id}.rem",
+            
+            "&END",
+            "&SETUP",
 
-        if len(string) > 1:
-            string = '\n'.join(string)
-        elif len(string) == 0:
-            string = ''
-        else:
-            string = string[0]
-        
+            self.write_box(),
+
+            f"READ_PDB {os.path.abspath(os.path.expanduser(os.path.expandvars(self.Protein.filename)))}",
+
+            "&END",
+            "&PARAMETERS",
+            f"   READ_TPG_ASCII {os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file)))} ! protein",
+
+            self.write_ligand_tpg_path(self.Ligand),
+
+            f"   READ_PRM_ASCII .{os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_prm_file)))} ! protein",
+
+            self.write_ligand_prm_path(self.Ligand),
+
+            "#TPGCYS",
+            "JOIN SOLUTE",
+
+            ' '+'\n '.join(Protein.seqres).lower(),
+
+            self.get_ligand_name_from_tpg(self.Ligand),
+            
+            "END",
+            "JOIN SOLVENT",
+            "tip3",
+            "END",
+            "&END",
+            "&SOLVENT",
+            "ADD_UNITS 6219",
+            "&END",
+            "&SIMULATION",
+            "MDSIM",
+            "TEMPERATURE   300.0 20.0",
+            "ISOSTRESS PRESS-EXT 0.1 BARO-MASS 60.0",
+            "THERMOS",
+            "solute  30.0",
+            "solvent 30.0",
+            "cofm    30.0",
+            "temp_limit 4000.0",
+            "END",
+            "&END",
+            "&INTEGRATOR",
+            "TIMESTEP       15.0",
+            "MTS_RESPA",
+            "step intra 2",
+            "step intra 2",
+            "step nonbond 2  5.1",
+            "step nonbond 5  8.0   reciprocal",
+            "step nonbond 1  10.0",
+            "END",
+            "&END",
+            "&POTENTIAL",
+
+            self.write_EWALD_PME(),
+
+            self.write_ADD_STR_COM(),
+
+            "END",
+            "UPDATE      60.0   1.8",
+
+            self.write_LINKED_CELL(),
+
+            "STRETCHING HEAVY",
+            "QQ-FUDGE  0.83333",
+            "LJ-FUDGE  0.50",
+            "&END",
+            "&RUN",
+            "CONTROL      0",
+            "PROPERTY     20000000.0",
+            "REJECT       30000.0",
+            "TIME         2307593.0",
+            "PRINT        1200.0",
+            "&END",
+            "",
+            "#",
+            "# write restart file every 60.0 (approximately)",
+            "#",
+            "&INOUT",
+            "RESTART",
+            
+            f"write  45000.0 SAVE_ALL_FILES ../RESTART/{self.Protein.protein_id}",
+            
+            "END",
+            
+            f"PLOT FRAGMENT 9000.0 OPEN {self.Protein.protein_id}_rem.xyz",
+            
+            f"ASCII   150000.0 OPEN {self.Protein.protein_id}_rem.pdb",
+            
+            "&END",
+            "&PROPERTIES",
+            "DEF_FRAGMENT   1 4741",
+            "&END"
+        ]
+
+    def write_ligand_tpg_path(self, Ligand = None):
+        """Writes the tpg file for any given ligand
+        overwrites the base class function"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+            if Ligand == None:
+                return ''
+
+        tmp = []
+        for ligand in pipeline_functions.get_iterable(Ligand):
+
+            string = f"   READ_TPG_ASCII {os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.topology_file)))} !! ligand"
+
+            tmp.append(string)
+
+        string = '\n'.join(tmp)
+
         return string
 
-    def write_LINKED_CELL(self):
-        """writes the LINKED CELL string"""
+    def write_ligand_prm_path(self, Ligand = None):
+        """Writes the prm file for any given ligand
+        overwrites the base class function"""
 
-        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+        if Ligand == None:
+            Ligand = self.Ligand
+            if Ligand == None:
+                return ''
 
-        string = f"   LINKED_CELL   {int(lx/3.0)}  {int(ly/3.0)}  {int(lz/3.0)}"
+        tmp = []
+        for ligand in pipeline_functions.get_iterable(Ligand):
+
+            string = f"   READ_PRM_ASCII {os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.param_file)))}  !! ligand"
+
+            tmp.append(string)
+
+        string = '\n'.join(tmp)
 
         return string
 
+    def write_SEGMENT_string(self, Protein = None, Ligand = None):
 
+        if Ligand == None:
+            Ligand = self.Ligand
 
+        if Protein == None:
+            Protein = self.Protein
 
+        hot_residues = self.orient.get_hot_residues_for_rem(Protein = Protein, Ligand = Ligand, cutoff = 4.5, residue_dist = 10.0)
 
+        DUMMY, ligand_atoms = self.orient.protein_ligand_atom_numbers(Protein = Protein, Ligand = Ligand)
 
+        ligand_string = f"define {ligand_atoms[1]} {ligand_atoms[0]}    ! ligand"
 
+        residue_string = ''
+        for residue in hot_residues:
+            max_min = atom_numbers(Protein = Protein, residue_id = hot_residues[1])
+            residue_string = residue_string + f"\ndefine {max_min[1]} {max_min[0]}    ! {hot_residues[0]} {hot_residues[1]}"
 
+        SEGMENT_string = f"{ligand_string}\n{residue_string}"
 
-
-    
-
+        return SEGMENT_string
 
 

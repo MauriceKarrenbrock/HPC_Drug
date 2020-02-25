@@ -360,7 +360,7 @@ class Orient(object):
 
         return Protein.structure, ligand_structures
     
-    def atom_numbers(self, Protein = None, Ligand = None):
+    def protein_ligand_atom_numbers(self, Protein = None, Ligand = None):
         """Given the instance of a ligand and of a protein containing
         the filename of a pdb containing protein + ligands
         will give the beginning and end atom number of the protein
@@ -384,7 +384,7 @@ class Orient(object):
             for line in f:
                 if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
 
-                    atom_number.append(line[4:11].strip())
+                    atom_number.append(line[6:11].strip())
                     resname.append(line[17:20].strip().upper())
         
         #getting a list of the resnames of the ligands
@@ -427,7 +427,42 @@ class Orient(object):
 
         return protein_atoms, ligand_atoms
 
-    def get_hot_residues_for_rem(self, Protein = None, Ligand = None, cutoff = 3.0, residue_dist = 8.0):
+    def atom_numbers(self, Protein = None, residue_id = None):
+        """takes the first and last atom number of the residue number
+        residue_id of the given Protein.filename
+        
+        must be a pdb file
+        
+        return [Max, min]"""
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if type(residue_id) !=  int:
+            raise TypeError(f"I need a residue id not a {type(residue_id)}")
+
+        atom_number = []
+
+        with open(Protein.filename, 'r') as f:
+            for line in f:
+                if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
+                    if line[22:26].strip() == str(residue_id)
+
+                        atom_number.append(line[6:11].strip())
+
+        Max = int(-1E-10)
+        min = int(1E10)
+
+        for i in atom_number:
+            Max = max(int(i), M_l)
+            min = min(int(i), m_l)
+
+        return [Max, min]
+
+
+
+
+    def get_hot_residues_for_rem(self, Protein = None, Ligand = None, cutoff = 4.5, residue_dist = 10.0):
 
         """ This functions will give the residue_id of any "hot residue" needed for the REM
         symulations, the hot residues are the one in contact with the given organic ligand
@@ -440,10 +475,10 @@ class Orient(object):
         It returns a list of the redisue_id of the right residues
 
         cutoff is a float that tells the cutoff distance between the ligand and the nearest residue atom
-        to be considered in contact default = 3.0 angstrom
+        to be considered in contact default = 4.5 angstrom
 
         residue dist tells the maximum distance that a ligand atom and a residue center of mass
-        must have to be scanned for the cutoff default 8.0 angstrom
+        must have to be scanned for the cutoff default 10.0 angstrom
 
         returns a list of listst: [[residue_resname, residue_id], ...]
         """
