@@ -154,3 +154,12 @@ atom_weights = {
       'Hs' : 269.13,
       'Mt' : 268.14,
   }
+
+
+# a dictionary of how many nanoseconds per day a given processor kind
+#can process on a 15000 atoms structure
+processor_kind_ns_per_day_15000_atoms = {
+        'skylake' : 4.,
+        'broadwell' : 5.,
+        'knl' : 1.
+}

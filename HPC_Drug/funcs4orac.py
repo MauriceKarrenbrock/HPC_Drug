@@ -11,6 +11,7 @@ import importlib_resources
 import subprocess
 import prody
 import Bio.PDB
+import math
 
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
@@ -843,7 +844,9 @@ class OracREMInput(OracInput):
                 protein_tpg_file = None,
                 protein_prm_file = None,
                 MD_program_path = None,
-                solvent_pdb = None):
+                solvent_pdb = None,
+                kind_of_processor = 'skylake',
+                number_of_cores_for_node = 64):
 
         super().__init__(input_filename = input_filename,
                         output_filename = output_filename,
@@ -857,12 +860,17 @@ class OracREMInput(OracInput):
         if output_filename == None:
             self.output_filename = f'{Protein.protein_id}_REM.in'
 
+        self.kind_of_processor = kind_of_processor
+        self.number_of_cores_for_node = number_of_cores_for_node
+
         self.template = [
             "#&T NTHREADS    8   CACHELINE   16",
             "#&T NT-LEVEL1   4   CACHELINE   16",
             "#&T NT-LEVEL2   4   CACHELINE   16",
             "&REM",
-            "BATTERIES    15",
+
+            self.write_BATTERIES_string(),
+            
             "SETUP    1.0           0.2         1.0         1",
             "STEP 15.",
             "PRINT_DIAGNOSTIC 120.",
@@ -948,7 +956,9 @@ class OracREMInput(OracInput):
             "CONTROL      0",
             "PROPERTY     20000000.0",
             "REJECT       30000.0",
-            "TIME         2307593.0",
+
+            self.write_TIME_string(),
+
             "PRINT        1200.0",
             "&END",
             "",
@@ -968,7 +978,9 @@ class OracREMInput(OracInput):
             
             "&END",
             "&PROPERTIES",
-            "DEF_FRAGMENT   1 4741",
+
+            self.write_DEF_FRAGMENT_string(),
+
             "&END"
         ]
 
@@ -1035,4 +1047,89 @@ class OracREMInput(OracInput):
 
         return SEGMENT_string
 
+    def write_DEF_FRAGMENT_string(self, Protein = None, Ligand = None):
+        """writes the first and last atom of the protein ligand complex"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        max_min_atom = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
+
+        return f"DEF_FRAGMENT   {max_min_atom[1]} {max_min_atom[0]}"
+
+    def get_ns_per_day(self,  Protein = None, Ligand = None, kind_of_processor = None):
+        """Get's the number of ns per day that a kind_of_processor
+        processor can process on the sistem"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if kind_of_processor == None:
+            kind_of_processor = self.kind_of_processor
+
+        number_of_atoms = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
+        number_of_atoms = number_of_atoms[0]
+
+        ns_per_day = ( 15000. / number_of_atoms ) * important_lists.processor_kind_ns_per_day_15000_atoms[kind_of_processor]
+
+        return ns_per_day
+
+    def write_TIME_string(self, Protein = None, Ligand = None, kind_of_processor = None):
+        """Get's the number of ns per day that a kind_of_processor
+        processor can process on the sistem"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if kind_of_processor == None:
+            kind_of_processor = self.kind_of_processor
+
+        time = self.get_ns_per_day(Protein = Protein, Ligand = Ligand, kind_of_processor = kind_of_processor)
+        time = time * 1.E+6
+
+        return f"TIME         {time}"
+
+    def get_BATTERIES(self, Protein = None, Ligand = None, kind_of_processor = None):
+        """Get's the number of batteries for REM"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if kind_of_processor == None:
+            kind_of_processor = self.kind_of_processor
+
+        ns_per_day = self.get_ns_per_day(Protein = Protein, Ligand = Ligand, kind_of_processor = kind_of_processor)
+
+        BATTERIES = math.ceil( 32. / ns_per_day )
+
+        return BATTERIES
+
+    def write_BATTERIES_string(self, Protein = None, Ligand = None, kind_of_processor = None):
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if kind_of_processor == None:
+            kind_of_processor = self.kind_of_processor
+
+        BATTERIES = self.get_BATTERIES(Protein = Protein, Ligand = Ligand, kind_of_processor = kind_of_processor)
+
+        return f"BATTERIES    {BATTERIES}"
+
+        
 
