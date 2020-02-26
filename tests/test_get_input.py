@@ -35,22 +35,22 @@ class test_GetFile(unittest.TestCase):
 
 class ParseInputFromFile(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+
+        filename = "tests/input_correct_4tests.txt"
+        cls.test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
+
     def test_create_input_dict(self):
         
-        #dummy filename to make the __init__ function happy
-        filename = "tests/input_correct_4tests.txt"
+        dictionary = self.test_class._create_input_dict()
 
-        test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
-        dictionary = test_class._create_input_dict()
-
-        self.assertEqual(set(dictionary.keys()), set(test_class.possible_keys))
+        self.assertEqual(set(dictionary.keys()), set(self.test_class.possible_keys))
         for value in dictionary.values():
             self.assertEqual(value, None)
 
     
     def test_refine_input_correct_input(self):
-
-        filename = "tests/input_correct_4tests.txt"
 
         input_dict = {'Protein_model' : '0',
                     'Protein_chain' : None,
@@ -59,7 +59,9 @@ class ParseInputFromFile(unittest.TestCase):
                     'ligand_elaboration_program_path' : None,
                     'protein_tpg_file' : None,
                     'protein_prm_file' : None,
-                    'solvent_pdb' : None}
+                    'solvent_pdb' : None,
+                    'kind_of_processor' : None,
+                    'number_of_cores_per_node' : '64'}
 
         with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as tpg:
             with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as prm:
@@ -71,29 +73,25 @@ class ParseInputFromFile(unittest.TestCase):
                                     'ligand_elaboration_program_path' :  '~/ORAC/trunk/tools/primadorac/primadorac.bash',
                                     'protein_tpg_file' : tpg,
                                     'protein_prm_file' : prm,
-                                    'solvent_pdb' : solv}
-        
-        test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
+                                    'solvent_pdb' : solv,
+                                    'kind_of_processor' : 'skylake',
+                                    'number_of_cores_per_node' : 64}
 
-        output_dict = test_class._refine_input(input_dict)
+
+        output_dict = self.test_class._refine_input(input_dict)
 
         self.assertEqual(expected_dict, output_dict)
 
     def test_refine_input_wrong_input_type(self):
 
-        filename = "tests/input_correct_4tests.txt"
-
         wrong_input = (77.3, 'a', None)
-
-        test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
 
         for wrong in wrong_input:
             with self.assertRaises(TypeError):
-                test_class._refine_input(wrong)
+                self.test_class._refine_input(wrong)
 
     def test_refine_input_missing_dict_keys(self):
 
-        filename = "tests/input_correct_4tests.txt"
 
         wrong_input_dict = {'Protein_chain' : None,
                             'ph' : '7.0',
@@ -102,21 +100,16 @@ class ParseInputFromFile(unittest.TestCase):
                             'protein_prm_file' : None,
                             'solvent_pdb' : None}
 
-        test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
-
         with self.assertRaises(KeyError):
-            test_class._refine_input(wrong_input_dict)
+            self.test_class._refine_input(wrong_input_dict)
 
 
     def test_read_input_with_correct_input(self):
         """Shall be done better, I didn't mock the private methods"""
 
-        filename = "tests/input_correct_4tests.txt"
-        test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
+        dictionary = self.test_class.read_input()
 
-        dictionary = test_class.read_input()
-
-        self.assertEqual(set(dictionary.keys()), set(test_class.possible_keys))
+        self.assertEqual(set(dictionary.keys()), set(self.test_class.possible_keys))
 
         #da rifare daccapo
         self.assertEqual(dictionary, {'protein' : '1df8',
@@ -135,7 +128,9 @@ class ParseInputFromFile(unittest.TestCase):
                                     'MD_program_path' : '~/ORAC/trunk/src/GNU-FFTW-OMP/orac',
                                     'protein_prm_file' : 'amber99sb-ildn.prm',
                                     'protein_tpg_file' : 'amber99sb-ildn.tpg',
-                                    'solvent_pdb' : 'water.pdb'})
+                                    'solvent_pdb' : 'water.pdb',
+                                    'kind_of_processor' : 'skylake',
+                                    'number_of_cores_per_node' : 64})
 
 
     def test_read_input_with_wrong_input_key(self):
