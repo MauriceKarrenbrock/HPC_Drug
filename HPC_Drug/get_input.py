@@ -28,28 +28,35 @@ class ParseInputFromFile(GetFile):
     :param:filename
     the name of the input file or it's absolute path"""
 
-    possible_keys = ('protein',
-                    'ligand',
-                    'protein_filetype',
-                    'ligand_elaboration_program',
-                    'ligand_elaboration_program_path',
-                    'local',
-                    'filepath',
-                    'Protein_model',
-                    'Protein_chain',
-                    'ligand_in_protein',
-                    'ph',
-                    'repairing_method',
-                    'MD_program',
-                    'MD_program_path',
-                    'protein_prm_file',
-                    'protein_tpg_file',
-                    'solvent_pdb')
+    
 
     def __init__(self, filename):
         super().__init__(filename)
+        
+        self.possible_keys = ('protein',
+                            'ligand',
+                            'protein_filetype',
+                            'ligand_elaboration_program',
+                            'ligand_elaboration_program_path',
+                            'local',
+                            'filepath',
+                            'Protein_model',
+                            'Protein_chain',
+                            'ligand_in_protein',
+                            'ph',
+                            'repairing_method',
+                            'MD_program',
+                            'MD_program_path',
+                            'protein_prm_file',
+                            'protein_tpg_file',
+                            'solvent_pdb',
+                            'kind_of_processor',
+                            'number_of_cores_per_node')
+
+        
         self.input_variables = self.read_input()
 
+        
     def _create_input_dict(self):
         input_dict = {}
 
@@ -143,6 +150,24 @@ class ParseInputFromFile(GetFile):
         if input_variables['solvent_pdb'] == None:
             with importlib_resources.path('HPC_Drug.lib', 'water.pdb') as path:
                 input_variables['solvent_pdb'] = path#.resolve()
+
+        #set a default for processor (skylake)
+        if input_variables['kind_of_processor'] == None:
+            input_variables['kind_of_processor'] = 'skylake'
+        
+        else:
+            #in this way I don't have to worry about strange input formats
+            input_variables['kind_of_processor'] = input_variables['kind_of_processor'].lower().strip()
+
+        #the number of cores per node is usually 64
+        if input_variables['number_of_cores_per_node'] == None:
+            input_variables['number_of_cores_per_node'] = 64
+        
+        else:
+            #cast string to integer
+            input_variables['number_of_cores_per_node'] = int(input_variables['number_of_cores_per_node'].strip())
+
+        
         
         
         return input_variables

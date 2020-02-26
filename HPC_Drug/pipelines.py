@@ -63,7 +63,9 @@ class Pipeline(object):
                 MD_program_path = None,
                 protein_prm_file = None,
                 protein_tpg_file = None,
-                solvent_pdb = None):
+                solvent_pdb = None,
+                kind_of_processor = 'skylake',
+                number_of_cores_per_node = 64):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
@@ -103,6 +105,9 @@ class Pipeline(object):
         self.protein_prm_file = protein_prm_file
         self.protein_tpg_file = protein_tpg_file
         self.solvent_pdb = solvent_pdb
+
+        self.kind_of_processor = kind_of_processor
+        self.number_of_cores_per_node = number_of_cores_per_node
 
     def download(self):
         import os
@@ -398,6 +403,18 @@ class NoLigand_Pipeline(Pipeline):
                                                 solvent_pdb = self.solvent_pdb)
             
             Protein.filename = solv_box.execute()
+
+
+            #Create the REM input
+            rem_input = funcs4orac.OracREMInput(output_filename = f"{Protein.protein_id}_REM.in",
+                                                Protein = Protein,
+                                                Ligand = Ligand,
+                                                protein_tpg_file = self.protein_tpg_file,
+                                                protein_prm_file = self.protein_prm_file,
+                                                MD_program_path = self.MD_program_path,
+                                                solvent_pdb = self.solvent_pdb,
+                                                kind_of_processor = self.kind_of_processor,
+                                                number_of_cores_per_node = self.number_of_cores_per_node)
 
             
         else:

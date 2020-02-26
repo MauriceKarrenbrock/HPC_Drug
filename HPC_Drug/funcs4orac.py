@@ -12,6 +12,7 @@ import subprocess
 import prody
 import Bio.PDB
 import math
+import shutil
 
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
@@ -846,7 +847,7 @@ class OracREMInput(OracInput):
                 MD_program_path = None,
                 solvent_pdb = None,
                 kind_of_processor = 'skylake',
-                number_of_cores_for_node = 64):
+                number_of_cores_per_node = 64):
 
         super().__init__(input_filename = input_filename,
                         output_filename = output_filename,
@@ -861,9 +862,10 @@ class OracREMInput(OracInput):
             self.output_filename = f'{Protein.protein_id}_REM.in'
 
         self.kind_of_processor = kind_of_processor
-        self.number_of_cores_for_node = number_of_cores_for_node
+        self.number_of_cores_per_node = number_of_cores_per_node
 
         self.template = [
+            f"!!! THIS INPUT IS FOR {self.kind_of_processor} ARCHITECTURES",
             "#&T NTHREADS    8   CACHELINE   16",
             "#&T NT-LEVEL1   4   CACHELINE   16",
             "#&T NT-LEVEL2   4   CACHELINE   16",
@@ -893,11 +895,11 @@ class OracREMInput(OracInput):
 
             "&END",
             "&PARAMETERS",
-            f"   READ_TPG_ASCII {os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file)))} ! protein",
+            f"   READ_TPG_ASCII ../{self.protein_tpg_file.rsplit('/', 1)[-1].strip()} ! protein",
 
             self.write_ligand_tpg_path(self.Ligand),
 
-            f"   READ_PRM_ASCII .{os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_prm_file)))} ! protein",
+            f"   READ_PRM_ASCII ../{self.protein_prm_file.rsplit('/', 1)[-1].strip()} ! protein",
 
             self.write_ligand_prm_path(self.Ligand),
 
@@ -996,7 +998,7 @@ class OracREMInput(OracInput):
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
 
-            string = f"   READ_TPG_ASCII {os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.topology_file)))} !! ligand"
+            string = f"   READ_TPG_ASCII ../{ligand.topology_file.rsplit('/', 1)[-1].strip()} !! ligand"
 
             tmp.append(string)
 
@@ -1016,7 +1018,7 @@ class OracREMInput(OracInput):
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
 
-            string = f"   READ_PRM_ASCII {os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.param_file)))}  !! ligand"
+            string = f"   READ_PRM_ASCII ../{ligand.param_file.rsplit('/', 1)[-1].strip()}  !! ligand"
 
             tmp.append(string)
 
@@ -1130,6 +1132,57 @@ class OracREMInput(OracInput):
         BATTERIES = self.get_BATTERIES(Protein = Protein, Ligand = Ligand, kind_of_processor = kind_of_processor)
 
         return f"BATTERIES    {BATTERIES}"
+
+    def execute(self, template = None, filename = None, MD_program_path = None):
+        """This execute method is different from the other ones
+        because it doesn't run Orac, but writes an orac input to be used on a HPC cluster
+        creates the needed directories and copies the needed files.
+        and writes the workload manager input too (like SLURM)
+        
+        returns the absolute path of the orac input file"""
+
+        #WORK IN PROGRESS
+
+        if MD_program_path == None:
+            MD_program_path = self.MD_program_path
+
+        if template == None:
+            template = self.template
+
+        if filename == None:
+            filename = self.output_filename
+
+        #creates the REM directory that will be copied to the HPC cluster
+        os.makedirs(f"{self.Protein.protein_id}_REM/RESTART")
+        os.chdir(f"{self.Protein.protein_id}_REM")
+
+        #for any existing ligand
+        for ligand in pipeline_functions.get_iterable(self.Ligand):
+            #copy the ligand topology file to the working directory
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.topology_file))), os.getcwd())
+            #copy the ligand parameter file to the working directory
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.param_file))), os.getcwd())
+
+        #copy the protein topology file to the working directory
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), os.getcwd())
+        #copy the protein parameter file to the working directory
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), os.getcwd())
+
+
+
+        #writes the orac input
+        filename = self.write_template_on_file(template, filename)
+
+        #WRITE WORKLOAD MANAGER FUNCTION HERE
+
+        #get the absolute path
+        filename = os.path.abspath(os.path.expanduser(os.path.expandvars(filename)))
+
+        #return to the previous working directory
+        os.chdir('../.')
+
+        return filename
+
 
         
 
