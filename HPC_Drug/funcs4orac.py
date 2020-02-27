@@ -5,6 +5,8 @@ from HPC_Drug import file_manipulation
 from HPC_Drug import important_lists
 from HPC_Drug import pipeline_functions
 from HPC_Drug import lib
+from HPC_Drug import funcs4slurm
+from HPC_Drug import funcs4pbs
 
 import os
 import importlib_resources
@@ -1133,6 +1135,37 @@ class OracREMInput(OracInput):
 
         return f"BATTERIES    {BATTERIES}"
 
+    def write_workloadmanager_inputs(self):
+        """private method called by self.execute()"""
+
+        slurm = funcs4slurm.SlurmInput(MD_input_file = self.output_filename,
+                                    slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.slr',
+                                    MD_program = 'orac',
+                                    MD_calculation_type = 'rem',
+                                    number_of_cores_per_node = self.number_of_cores_per_node,
+                                    max_time = "24:00:00",
+                                    ntasks = self.get_BATTERIES(Protein = self.Protein, Ligand = self.Ligand, kind_of_processor = self.kind_of_processor) * 8,
+                                    cpus_per_task = 8,
+                                    std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
+                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err')
+
+        dummy = slurm.write()
+
+        pbs = funcs4pbs.SlurmInput(MD_input_file = self.output_filename,
+                                    slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.pbs',
+                                    MD_program = 'orac',
+                                    MD_calculation_type = 'rem',
+                                    number_of_cores_per_node = self.number_of_cores_per_node,
+                                    max_time = "24:00:00",
+                                    ntasks = self.get_BATTERIES(Protein = self.Protein, Ligand = self.Ligand, kind_of_processor = self.kind_of_processor) * 8,
+                                    cpus_per_task = 8,
+                                    std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
+                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err')
+
+        dummy = pbs.write()
+
+
+
     def execute(self, template = None, filename = None, MD_program_path = None):
         """This execute method is different from the other ones
         because it doesn't run Orac, but writes an orac input to be used on a HPC cluster
@@ -1173,7 +1206,8 @@ class OracREMInput(OracInput):
         #writes the orac input
         filename = self.write_template_on_file(template, filename)
 
-        #WRITE WORKLOAD MANAGER FUNCTION HERE
+        #write workload manager input for different workload managers (slurm pbs ...)
+        self.write_workloadmanager_inputs()
 
         #get the absolute path
         filename = os.path.abspath(os.path.expanduser(os.path.expandvars(filename)))
