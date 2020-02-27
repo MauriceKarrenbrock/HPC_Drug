@@ -231,6 +231,9 @@ class NoLigand_Pipeline(Pipeline):
 
         #Write Protein only pdb
         Protein.filename = Protein.write_PDB(f"{Protein.protein_id}_protein.pdb")
+
+        #removes the remaining trash ions
+        Protein.filename = file_manipulation.remove_trash_metal_ions(pdb_file = Protein.filename)
         
         #extracts the ligands structures (if any) from the pdb
         #creates a ligand structure and writes a pdb
@@ -415,6 +418,8 @@ class NoLigand_Pipeline(Pipeline):
                                                 solvent_pdb = self.solvent_pdb,
                                                 kind_of_processor = self.kind_of_processor,
                                                 number_of_cores_per_node = self.number_of_cores_per_node)
+
+            orac_rem_input_file = rem_input.execute()
 
             
         else:

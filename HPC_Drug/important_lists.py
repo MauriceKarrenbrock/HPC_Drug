@@ -17,8 +17,7 @@ metals = ('AL', 'BA',
         'ZN2', 'FE',
         'FE2', 'MN',
         'NI', 'LI',
-        'NA', 'Y',
-        'U', 'IOD')
+        'Y', 'U')
 
 hist_resnames = ('HIS', 'HIE', 'HID', 'HSD', 'HSE')
 cyst_resnames = ('CYS',' CYM', 'CYZ', 'CYSH', 'CYSM', 'CYX')
@@ -38,6 +37,10 @@ trash = ('PR', 'SO4',
         'CYS', 'ASN',
         'CSO', 'CSD',
         'HOH')
+
+# Contains the trash metal ions that need to be removed
+trash_ions = ('IOD', 'K',
+            'NA', 'CL')
 
 
 #The periodic table with atom weights dictionary

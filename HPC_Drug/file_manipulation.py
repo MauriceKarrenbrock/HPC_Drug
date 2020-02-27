@@ -905,3 +905,25 @@ def get_organic_ligands_with_no_header(protein_id = None,
                 ligand_list.append([residue.resname.strip().upper(), str(residue.id[1])])
 
     return ligand_list
+
+def remove_trash_metal_ions(pdb_file):
+    """This function removes unwanted metal ions
+    that are still inside the structure after it went through prody
+    selection
+
+    This is a brutal function I will need to do a better job
+    the file must be a pdb"""
+
+    with open(pdb_file, 'r') as f:
+        lines = f.readlines()
+
+    with open(pdb_file, 'w') as w:
+        for line in lines:
+
+            if line[0:4] == 'ATOM' or line[0:6] == 'HETATM' or line[0:3] == 'TER':
+
+                if line[17:20].strip().upper() not in important_lists.trash_ions:
+
+                    w.write(f"{line.strip()}\n")
+
+    return pdb_file
