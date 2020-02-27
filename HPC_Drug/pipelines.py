@@ -34,7 +34,9 @@ def choose_pipeline(*args, **kwargs):
                                     MD_program_path = input_dict['MD_program_path'],
                                     protein_prm_file = input_dict['protein_prm_file'],
                                     protein_tpg_file = input_dict['protein_tpg_file'],
-                                    solvent_pdb = input_dict['solvent_pdb'])
+                                    solvent_pdb = input_dict['solvent_pdb'],
+                                    kind_of_processor = input_dict['kind_of_processor'],
+                                    number_of_cores_per_node = input_dict['number_of_cores_per_node'])
 
         else:
             # ligand is given
