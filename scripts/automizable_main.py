@@ -26,7 +26,9 @@ for line in sys.stdin:
                                                 MD_program_path = '~/ORAC/trunk/src/GNU-FFTW-OMP/orac',
                                                 protein_tpg_file = '../amber99sb-ildn.tpg',
                                                 protein_prm_file = '../amber99sb-ildn.prm',
-                                                solvent_pdb = '../water.pdb')
+                                                solvent_pdb = '../water.pdb',
+                                                kind_of_processor = 'skylake',
+                                                number_of_cores_per_node = 64)
 
         if not os.path.exists(protein_id):
             os.mkdir(protein_id)
