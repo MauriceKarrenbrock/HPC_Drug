@@ -399,7 +399,7 @@ class NoLigand_Pipeline(Pipeline):
             elif len(Ligand) > 1:
                 raise ValueError(f"Found more than one Ligand {Ligand}")
         
-            solv_box = funcs4orac.OracSolvBoxInput(output_filename = f"{Protein.protein_id}_solv_box.in",
+            solv_box = funcs4orac.OracSolvBoxInput(output_filename = f"{Protein.protein_id}_solvbox.in",
                                                 Protein = Protein,
                                                 Ligand = Ligand,
                                                 protein_tpg_file = self.protein_tpg_file,

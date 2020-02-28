@@ -19,7 +19,8 @@ class SlurmInput(object):
                 cpus_per_task = 8,
                 std_out = 'STD_out.out',
                 std_err = 'STD_err.err',
-                partition_name = None):
+                partition_name = None,
+                account_name = None):
         
         self.MD_input_file = MD_input_file
         self.slurm_input_file = slurm_input_file
@@ -45,6 +46,8 @@ class SlurmInput(object):
 
         #many HPC clusters have different partitions
         self.partition_name = partition_name
+
+        self.account_name = account_name
         
 
         self.template = self.get_template()
@@ -59,6 +62,8 @@ class SlurmInput(object):
             "##THIS IS A VERY GENERIC SLURM INPUT FILE",
             "##CONTACT YOUR SISTEM ADMINISTRATOR TO KNOW WHICH EXTRA LINES YOU MAY NEED TO INSERT HERE",
 
+            self.write_account_string(),
+            
             f"#SBATCH --time={self.max_time}",
 
             f"#SBATCH --nodes={self.ntasks / (math.floor(self.number_of_cores_per_node / self.cpus_per_task))} # ntasks / ntasks per node",
@@ -84,12 +89,22 @@ class SlurmInput(object):
             return orac_REM_template
 
     def write_partition_string(self):
+        """private"""
 
         if self.partition_name == None:
             return ''
 
         else:
             return f"#SBATCH --partition={self.partition_name}"
+
+    def write_account_string(self):
+        """private"""
+
+        if self.account_name == None:
+            return " "
+
+        else:
+            return f"#SBATCH -A  {self.account_name}"
 
     def write(self):
         """Writes the chosen template on a file called as 

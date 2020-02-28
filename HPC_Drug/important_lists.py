@@ -40,7 +40,8 @@ trash = ('PR', 'SO4',
 
 # Contains the trash metal ions that need to be removed
 trash_ions = ('IOD', 'K',
-            'NA', 'CL')
+            'NA', 'CL',
+            'LI', 'CA')
 
 
 #The periodic table with atom weights dictionary
