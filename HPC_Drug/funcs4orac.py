@@ -255,7 +255,8 @@ class OracInput(object):
                 protein_tpg_file = None,
                 protein_prm_file = None,
                 solvent_pdb = None,
-                MD_program_path = 'orac'):
+                MD_program_path = 'orac',
+                output_pdb_file = None):
         
         self.Protein = Protein
         self.Ligand = Ligand
@@ -291,6 +292,8 @@ class OracInput(object):
         self.MD_program_path = MD_program_path
         if self.MD_program_path == None:
             raise Exception('Need a MD_program_path (for example ~/ORAC/trunk/bin/orac)')
+
+        self.output_pdb_file = output_pdb_file
 
         self.template = None
 
@@ -524,7 +527,7 @@ class OracInput(object):
             filename = self.output_filename
         
         if output_pdb_file == None:
-            output_pdb_file = self.Protein.filename.rsplit('.', 1)[0].strip() + '_optimized.pdb'
+            output_pdb_file = self.output_pdb_file
 
         filename = self.write_template_on_file(template, filename)
 
@@ -562,14 +565,16 @@ class OracFirstOptimization(OracInput):
                 Ligand = None,
                 protein_tpg_file = None,
                 protein_prm_file = None,
-                MD_program_path = None):
+                MD_program_path = None,
+                output_pdb_file = None):
         
         super().__init__(output_filename = output_filename,
                         Protein = Protein,
                         Ligand = Ligand,
                         protein_tpg_file = protein_tpg_file,
                         protein_prm_file = protein_prm_file,
-                        MD_program_path = MD_program_path)
+                        MD_program_path = MD_program_path,
+                        output_pdb_file = output_pdb_file)
         #checking if I really have a protein and a ligand
         if Protein == None:
             raise ValueError("Portein can't be None type")
@@ -579,6 +584,10 @@ class OracFirstOptimization(OracInput):
         
         if self.output_filename == None:
             self.output_filename = f"{Protein.protein_id}_firstopt_orac.in"
+
+        if self.output_pdb_file == None:
+            self.output_pdb_file = f"{self.Protein.protein_id}_optimized.pdb"
+        
 
         self.template = [
             "###############################################################",
@@ -655,11 +664,11 @@ class OracFirstOptimization(OracInput):
             "&END",
             "",
             "#overwriting the input pdb",
-            f"# write final pdb file to {self.Protein.filename.rsplit('.', 1)[0].strip()}_optimized.pdb",
+            f"# write final pdb file to {self.output_pdb_file}",
             "#",
             "&INOUT",
-            f"   ASCII_OUTBOX    20.0 OPEN {self.Protein.filename.rsplit('.', 1)[0].strip()}_optimized.pdb",
-            f"   PLOT FRAGMENT 1.0 OPEN {self.Protein.filename.rsplit('.', 1)[0].strip()}_optimized.xyz",
+            f"   ASCII_OUTBOX    20.0 OPEN {self.output_pdb_file}",
+            f"   PLOT FRAGMENT 1.0 OPEN {self.output_pdb_file.rsplit('.', 1)[0].strip()}.xyz",
             "&END",
         ]
 
@@ -684,7 +693,8 @@ class OracSolvBoxInput(OracInput):
                 protein_tpg_file = None,
                 protein_prm_file = None,
                 MD_program_path = None,
-                solvent_pdb = None):
+                solvent_pdb = None,
+                output_pdb_file = None):
         
         """takes the output_filename of the file on which to write
         and the istances of the present proteins and ligands"""
@@ -696,10 +706,14 @@ class OracSolvBoxInput(OracInput):
                         protein_tpg_file = protein_tpg_file,
                         protein_prm_file = protein_prm_file,
                         MD_program_path= MD_program_path,
-                        solvent_pdb = solvent_pdb)
+                        solvent_pdb = solvent_pdb,
+                        output_pdb_file = output_pdb_file)
         
         if output_filename == None:
             self.output_filename = f'{Protein.protein_id}_orac_solvbox.in'
+
+        if self.output_pdb_file == None:
+            self.output_pdb_file = f"{self.Protein.protein_id}_solvbox.pdb"
 
         self.template = [
             "#&T NTHREADS    8   CACHELINE   16",
@@ -819,17 +833,16 @@ class OracSolvBoxInput(OracInput):
             "&INOUT ! files I/O",
             "   RESTART",
 
-            f"      write  15000.0  OPEN  {self.Protein.protein_id}_solventbox.rst",
+            f"      write  15000.0  OPEN  {self.output_pdb_file.rsplit('.', 1)[0].strip()}.rst",
 
             "   END",
 
-            f"   ASCII   3000.0 OPEN {self.Protein.protein_id}_solventbox.pdb",
+            f"   ASCII   3000.0 OPEN {self.output_pdb_file}",
 
-            f"   PLOT STEER_ANALYTIC  500.0  OPEN {self.Protein.protein_id}_solventbox.dat",
+            f"   PLOT STEER_ANALYTIC  500.0  OPEN {self.output_pdb_file.rsplit('.', 1)[0].strip()}.dat",
 
             "&END"                                              
         ]
-
 
 
 
@@ -1166,18 +1179,13 @@ class OracREMInput(OracInput):
 
 
 
-    def execute(self, template = None, filename = None, MD_program_path = None):
+    def execute(self, template = None, filename = None):
         """This execute method is different from the other ones
         because it doesn't run Orac, but writes an orac input to be used on a HPC cluster
         creates the needed directories and copies the needed files.
         and writes the workload manager input too (like SLURM)
         
         returns the absolute path of the orac input file"""
-
-        #WORK IN PROGRESS
-
-        if MD_program_path == None:
-            MD_program_path = self.MD_program_path
 
         if template == None:
             template = self.template
@@ -1187,21 +1195,25 @@ class OracREMInput(OracInput):
 
         #creates the REM directory that will be copied to the HPC cluster
         os.makedirs(f"{self.Protein.protein_id}_REM/RESTART")
-        os.chdir(f"{self.Protein.protein_id}_REM")
 
         #for any existing ligand
         for ligand in pipeline_functions.get_iterable(self.Ligand):
-            #copy the ligand topology file to the working directory
-            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.topology_file))), os.getcwd())
-            #copy the ligand parameter file to the working directory
-            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.param_file))), os.getcwd())
+            #copy the ligand topology file to the new directory
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.topology_file))), os.getcwd() + f"{self.Protein.protein_id}_REM")
+            #copy the ligand parameter file to the new directory
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.param_file))), os.getcwd() + f"{self.Protein.protein_id}_REM")
 
-        #copy the protein topology file to the working directory
-        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), os.getcwd())
-        #copy the protein parameter file to the working directory
-        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), os.getcwd())
+        #copy the protein topology file to the new directory
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), os.getcwd() + f"{self.Protein.protein_id}_REM")
+        #copy the protein parameter file to the new directory
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), os.getcwd() + f"{self.Protein.protein_id}_REM")
+
+        #copy the protein pdb file to the new directory
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.Protein.filename))), os.getcwd() + f"{self.Protein.protein_id}_REM")
 
 
+        #Got to the created directory
+        os.chdir(f"{self.Protein.protein_id}_REM")
 
         #writes the orac input
         filename = self.write_template_on_file(template, filename)
