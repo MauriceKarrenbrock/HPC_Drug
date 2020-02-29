@@ -515,6 +515,32 @@ class OracInput(object):
 
         return filename
 
+    def write_chain_in_pdb(self, chain_id = None, pdb_file = None):
+        """This is a patch because orac removes the chain id from
+        pdb files and this confuses some pdb parsers"""
+
+        if chain_id == None:
+            chain_id = self.Protein.chain
+
+        chain_id = chain_id.upper().strip()
+
+        if pdb_file == None:
+            pdb_file = self.output_pdb_file
+
+        with open(pdb_file, 'r') as f:
+            lines = f.readlines()
+
+        with open(pdb_file, 'w') as w:
+
+            for i in range(len(lines)):
+
+                if lines[i][0:4] == 'ATOM' or lines[i][0:6] == 'HETATM' or lines[i][0:3] == 'TER':
+
+                    lines[i] = lines[i][:21] + chain_id + lines[i][22:]
+
+                w.write(f"{lines[i].strip()}\n")
+        
+
     def execute(self, template = None, filename = None, output_pdb_file = None, MD_program_path = None):
 
         if MD_program_path == None:
@@ -543,6 +569,8 @@ class OracInput(object):
 
         if r.returncode != 0:
             raise Exception(f"Orac failure\n{r.stdout}\n{r.stderr}")
+
+        self.write_chain_in_pdb()
  
         return output_pdb_file  
 
@@ -906,7 +934,7 @@ class OracREMInput(OracInput):
 
             self.write_box(),
 
-            f"READ_PDB {os.path.abspath(os.path.expanduser(os.path.expandvars(self.Protein.filename)))}",
+            f"READ_PDB {self.Protein.filename.rsplit('/', 1)[-1].strip()}",
 
             "&END",
             "&PARAMETERS",
