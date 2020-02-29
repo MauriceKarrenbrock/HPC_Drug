@@ -141,15 +141,15 @@ class ParseInputFromFile(GetFile):
         
         if input_variables['protein_tpg_file'] == None:
             with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as path:
-                input_variables['protein_tpg_file'] = path#.resolve()
+                input_variables['protein_tpg_file'] = str(path.resolve())
         
         if input_variables['protein_prm_file'] == None:
             with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as path:
-                input_variables['protein_prm_file'] = path#.resolve()
+                input_variables['protein_prm_file'] = str(path.resolve())
 
         if input_variables['solvent_pdb'] == None:
             with importlib_resources.path('HPC_Drug.lib', 'water.pdb') as path:
-                input_variables['solvent_pdb'] = path#.resolve()
+                input_variables['solvent_pdb'] = str(path.resolve())
 
         #set a default for processor (skylake)
         if input_variables['kind_of_processor'] == None:

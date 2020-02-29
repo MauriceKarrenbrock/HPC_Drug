@@ -274,20 +274,20 @@ class OracInput(object):
         #if no path is given searches the standard amber tpg inside lib module
         if self.protein_tpg_file == None:
             with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as path:
-                self.protein_tpg_file = path#.resolve()
+                self.protein_tpg_file = str(path.resolve())
             
         
         self.protein_prm_file = protein_prm_file
         #if no path is given searches the standard amber prm inside lib module
         if self.protein_prm_file == None:
             with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as path:
-                self.protein_prm_file = path#.resolve()
+                self.protein_prm_file = str(path.resolve())
 
         self.solvent_pdb = solvent_pdb
         #if no path is given searches the standard water.pdb inside lib module
         if self.solvent_pdb == None:
             with importlib_resources.path('HPC_Drug.lib', 'water.pdb') as path:
-                self.solvent_pdb = path#.resolve()
+                self.solvent_pdb = str(path.resolve())
         
         self.MD_program_path = MD_program_path
         if self.MD_program_path == None:
