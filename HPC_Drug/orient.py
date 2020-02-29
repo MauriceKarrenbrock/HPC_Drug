@@ -540,8 +540,7 @@ class Orient(object):
             structure = structure[Protein.model][Protein.chain]
             structure2 = structure2[Protein.model][Protein.chain]
         except KeyError:
-            structure = structure
-            structure2 = structure2
+            pass
 
         #I refresh the ligand's residue id
         Sub_Parser = file_manipulation.SubstitutionParser()
