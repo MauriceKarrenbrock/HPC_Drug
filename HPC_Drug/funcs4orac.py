@@ -1081,7 +1081,9 @@ class OracREMInput(OracInput):
 
         DUMMY, ligand_atoms = self.orient.protein_ligand_atom_numbers(Protein = Protein, Ligand = Ligand)
 
-        ligand_string = f"define {ligand_atoms[1]} {ligand_atoms[0]}    ! ligand"
+        if len(ligand_atoms) > 0:
+            for item in ligand_atoms:
+                ligand_string = f"define {item[1]} {item[0]}    ! ligand"
 
         residue_string = ''
         for residue in hot_residues:
