@@ -506,8 +506,11 @@ class SubstitutionParser(FileCruncer):
         struct = p.get_structure(Protein.protein_id, Protein.filename)
 
         if chain_model_selection == True:
-            #Taking only the right chain and model
-            struct = struct[Protein.model][Protein.chain]
+            try:
+                #Taking only the right chain and model
+                struct = struct[Protein.model][Protein.chain]
+            except KeyError:
+                struct = struct
 
         residues = struct.get_residues()
 

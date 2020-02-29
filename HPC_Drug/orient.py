@@ -535,8 +535,13 @@ class Orient(object):
 
         structure = p.get_structure(Protein.protein_id, Protein.filename)
         structure2 = p.get_structure(Protein.protein_id, Protein.filename)
-        structure = structure[Protein.model][Protein.chain]
-        structure2 = structure2[Protein.model][Protein.chain]
+
+        try:
+            structure = structure[Protein.model][Protein.chain]
+            structure2 = structure2[Protein.model][Protein.chain]
+        except KeyError:
+            structure = structure
+            structure2 = structure2
 
         #I refresh the ligand's residue id
         Sub_Parser = file_manipulation.SubstitutionParser()
