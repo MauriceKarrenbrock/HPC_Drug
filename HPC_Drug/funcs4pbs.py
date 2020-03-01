@@ -39,8 +39,8 @@ class SlurmInput(object):
         self.max_time = max_time
 
 
-        self.ntasks = ntasks,
-        self.cpus_per_task = cpus_per_task,
+        self.ntasks = ntasks
+        self.cpus_per_task = cpus_per_task
         self.std_out = std_out
         self.std_err = std_err
 

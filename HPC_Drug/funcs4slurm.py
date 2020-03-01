@@ -39,10 +39,12 @@ class SlurmInput(object):
         self.max_time = max_time
 
 
-        self.ntasks = ntasks,
-        self.cpus_per_task = cpus_per_task,
+        self.ntasks = ntasks
+
+        self.cpus_per_task = cpus_per_task
         self.std_out = std_out
         self.std_err = std_err
+
 
         #many HPC clusters have different partitions
         self.partition_name = partition_name
@@ -66,7 +68,7 @@ class SlurmInput(object):
             
             f"#SBATCH --time={self.max_time}",
 
-            f"#SBATCH --nodes={self.ntasks / (math.floor(self.number_of_cores_per_node / self.cpus_per_task))} # ntasks / ntasks per node",
+            f"#SBATCH --nodes={math.ceil((self.ntasks) / (math.floor((self.number_of_cores_per_node) / (self.cpus_per_task))))} # ntasks / ntasks per node",
             
             f"#SBATCH --ntasks-per-node={math.floor(self.number_of_cores_per_node / self.cpus_per_task)} # math.floor(cpu_per_node / cpus_per_task)",
             
