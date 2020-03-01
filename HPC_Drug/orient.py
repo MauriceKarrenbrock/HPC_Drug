@@ -297,7 +297,7 @@ class Orient(object):
             """Updates the ligand resnumbers that may be changed
             because of previous calculations"""
 
-            if Ligand == None or len(Ligand) == 0:
+            if Ligand == None or len(pipeline_functions.get_iterable(Ligand)) == 0:
                 print("I found no ligand, returning None")
                 return None
 

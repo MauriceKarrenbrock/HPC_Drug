@@ -1180,7 +1180,9 @@ class OracREMInput(OracInput):
 
     def write_workloadmanager_inputs(self):
         """private method called by self.execute()"""
-
+        
+        file_list = []
+ 
         slurm = funcs4slurm.SlurmInput(MD_input_file = self.output_filename,
                                     slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.slr',
                                     MD_program = 'orac',
@@ -1192,7 +1194,7 @@ class OracREMInput(OracInput):
                                     std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
                                     std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err')
 
-        dummy = slurm.write()
+        file_list.append(slurm.write())
 
         pbs = funcs4pbs.SlurmInput(MD_input_file = self.output_filename,
                                     slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.pbs',
@@ -1205,7 +1207,9 @@ class OracREMInput(OracInput):
                                     std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
                                     std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err')
 
-        dummy = pbs.write()
+        file_list.append(pbs.write())
+
+        return file_list
 
 
 
@@ -1224,38 +1228,39 @@ class OracREMInput(OracInput):
             filename = self.output_filename
 
         #creates the REM directory that will be copied to the HPC cluster
-        os.makedirs(f"{self.Protein.protein_id}_REM/RESTART")
+        os.makedirs(f"{self.Protein.protein_id}_REM/RESTART", exist_ok=True)
 
         #for any existing ligand
         for ligand in pipeline_functions.get_iterable(self.Ligand):
             #copy the ligand topology file to the new directory
-            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.topology_file))), os.getcwd() + f"{self.Protein.protein_id}_REM")
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.topology_file))), f"{self.Protein.protein_id}_REM")
             #copy the ligand parameter file to the new directory
-            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.param_file))), os.getcwd() + f"{self.Protein.protein_id}_REM")
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.param_file))), f"{self.Protein.protein_id}_REM")
 
         #copy the protein topology file to the new directory
-        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), os.getcwd() + f"{self.Protein.protein_id}_REM")
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), f"{self.Protein.protein_id}_REM")
         #copy the protein parameter file to the new directory
-        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), os.getcwd() + f"{self.Protein.protein_id}_REM")
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_prm_file))), f"{self.Protein.protein_id}_REM")
 
         #copy the protein pdb file to the new directory
-        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.Protein.filename))), os.getcwd() + f"{self.Protein.protein_id}_REM")
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.Protein.filename))), f"{self.Protein.protein_id}_REM")
 
-
-        #Got to the created directory
-        os.chdir(f"{self.Protein.protein_id}_REM")
 
         #writes the orac input
         filename = self.write_template_on_file(template, filename)
+        
+        #copy the orac input file to the REM directory
+        filename = shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(filename))), f"{self.Protein.protein_id}_REM")
+
+        
 
         #write workload manager input for different workload managers (slurm pbs ...)
-        self.write_workloadmanager_inputs()
+        workload_files = self.write_workloadmanager_inputs()
 
-        #get the absolute path
-        filename = os.path.abspath(os.path.expanduser(os.path.expandvars(filename)))
+        #copy the workload manager files to the REM directory
+        for item in workload_files:
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(item))), f"{self.Protein.protein_id}_REM")
 
-        #return to the previous working directory
-        os.chdir('../.')
 
         return filename
 
