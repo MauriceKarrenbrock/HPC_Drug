@@ -8,7 +8,9 @@ import Bio.PDB
 import Bio.PDB.vectors
 from math import sqrt
 from numpy import *
+import prody
 #import sys
+
 from HPC_Drug import important_lists
 from HPC_Drug import pipeline_functions
 from HPC_Drug import file_manipulation
@@ -20,6 +22,8 @@ import warnings
 import Bio
 warnings.simplefilter('ignore', Bio.BiopythonWarning)
 
+#deactivating all prody warnings
+prody.confProDy(verbosity='none')
 
 class Orient(object):
     """This class contains the methods needed to 
