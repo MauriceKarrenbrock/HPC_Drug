@@ -8,7 +8,7 @@
 #'cif' is for PDBx/mmCIF (default)
 #'pdb' for standard PDB file (not implemented)
 
-protein = 1df8
+protein = 5aol
 #3m5e
 protein_filetype = cif
 

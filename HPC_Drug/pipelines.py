@@ -197,6 +197,7 @@ class NoLigand_Pipeline(Pipeline):
         #adds missing atoms and residues
         #changes non standard residues to standard ones
         #takes a PDBx/mmCIF and returns a PDBx/mmCIF
+        #Or a PDB and returns a PDB
         Protein.filename = repairer.add_missing_atoms(pdb_id = Protein.protein_id,
                                                     file_type = Protein.file_type,
                                                     input_filename = Protein.filename,
@@ -215,7 +216,6 @@ class NoLigand_Pipeline(Pipeline):
         # z = None
 
         #selects only a selected model and chain, and keeps only one conformation for any disordered atom
-        #returns a PDB file
         Protein = file_manipulation.select_model_chain_custom(Protein = Protein)
 
         Protein = file_manipulation.mmcif2pdb(Protein = Protein)
@@ -311,7 +311,28 @@ class NoLigand_Pipeline(Pipeline):
         elif self.MD_program == 'gromacs':
 
             #makes the necessary resname substitutions for the ForceField
-            Protein = funcs4gromacs.residue_substitution(Protein, 'standard')
+            Protein = funcs4gromacs.residue_substitution(Protein, 'custom_zinc')
+
+
+
+            #a patch to add possible missing TER lines in pdb files
+            #adressing issues #2733 and #2736 on biopython github
+            #Will be removed when the issues will be solved
+            with open(Protein.filename, 'r') as f:
+                lines = f.readlines()
+
+            with open(Protein.filename, 'w') as f:
+                for i in range(len(lines)-1):
+                    if lines[i][0:4] == 'ATOM' and lines[i + 1][0:6] == 'HETATM':
+                        #writes a TER line on the last ATOM of each chain (not robust for not natural AA)
+                        lines[i] = lines[i].strip() + '\n' + "{0:<6}{1}{2}{3}".format("TER", lines[i][6:11], ' '*6, lines[i][17:26])
+                    
+                    f.write(f"{lines[i].strip()}\n")
+
+                f.write(f"{lines[len(lines)-1].strip()}\n")
+            #END OF PATCH
+
+            
 
             #Make the protein's gro and top file
             gro_top_maker = funcs4gromacs.GromacsMakeProteinGroTop(output_filename = "choices.txt",

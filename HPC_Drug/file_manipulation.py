@@ -55,13 +55,13 @@ def mmcif2pdb(Protein = None):
 
     elif Protein.file_type == 'cif':
 
-        new_name = Protein.filename.rsplit('.', 1)[0] + 'pdb'
+        new_name = Protein.filename.rsplit('.', 1)[0] + '.pdb'
 
         p = Bio.PDB.MMCIFParser()
 
         struct = p.get_structure(Protein.protein_id, Protein.filename)
 
-        s = Bio.PDB.MMCIFIO()
+        s = Bio.PDB.PDBIO()
         s.set_structure(struct)
         s.save(new_name)
 
@@ -273,12 +273,25 @@ class PDBRepair(FileCruncer):
 
         does only work on the protein, not on the ligand
         
-        The input file MUST be a PDBx/mmCIF"""
+        The input file MUST be a PDBx/mmCIF or PDB"""
 
         if repairing_method == 'pdbfixer':
             import pdbfixer
             import simtk.openmm.app
             import os
+
+            if file_type == 'cif':
+
+
+                #PART OF A PATCH TO ADRESS issue #195 on pdbfixer github
+                TMP_dict = Bio.PDB.MMCIF2Dict.MMCIF2Dict(input_filename)
+
+                patch_dict = {}
+
+                for i in range(len(TMP_dict['_atom_site.label_asym_id'])):
+
+                    patch_dict[TMP_dict['_atom_site.label_asym_id'][i]] = TMP_dict['_atom_site.auth_asym_id'][i]
+                #--------
 
             fixer = self.fix_pdbfixer(input_filename = input_filename,
                                     ph = ph,
@@ -288,9 +301,24 @@ class PDBRepair(FileCruncer):
             if output_filename == None:
                 output_filename = f'{pdb_id}_repaired.{file_type}'
             
-            if file_type == 'cif': 
+            if file_type == 'cif':
+
                 with open(output_filename, 'w') as f:
                     simtk.openmm.app.pdbxfile.PDBxFile.writeFile(fixer.topology, fixer.positions, f, keepIds= True)
+
+
+                #PART OF A PATCH TO ADRESS issue #195 on pdbfixer github
+                TMP_dict = Bio.PDB.MMCIF2Dict.MMCIF2Dict(output_filename)
+
+                for i in range(len(TMP_dict['_atom_site.label_asym_id'])):
+
+                    TMP_dict['_atom_site.auth_asym_id'][i] = patch_dict[TMP_dict['_atom_site.label_asym_id'][i]]
+                
+                p = Bio.PDB.MMCIFIO()
+                p.set_dict(TMP_dict)
+                p.save(output_filename)
+                #---------------
+
 
             elif file_type == 'pdb':
 
@@ -314,13 +342,12 @@ class PDBRepair(FileCruncer):
 
     def fix_pdbfixer(self, input_filename, ph = 7.0, add_H = False, file_type = 'cif'):
         """This method is called by add_missing_atoms
-        Reads an PDBx/mmCIF"""
+        Reads an PDBx/mmCIF or PDB"""
         
         import pdbfixer
         import simtk.openmm.app
 
         if file_type == 'cif':
-
             with open(input_filename, 'r') as f:
                 fixer = pdbfixer.PDBFixer(pdbxfile = f)
 
@@ -597,7 +624,7 @@ class SubstitutionParser(FileCruncer):
 
 def select_model_chain_custom(Protein = None):
     """Takes a Protein instance containing the filename of a PDB or a mmcif
-    Returns a Protein instance with an updated pdb file
+    Returns a Protein instance with an updated pdb or mmcif file
     using biopython
     selects only a chosen model and chain
     and eliminates disordered atoms chosing only one conformation
@@ -653,7 +680,12 @@ def select_model_chain_custom(Protein = None):
    
     struct = p.get_structure(Protein.protein_id, Protein.filename)
 
-    s = Bio.PDB.PDBIO()
+    if Protein.file_type == 'pdb':
+        s = Bio.PDB.PDBIO()
+
+    elif Protein.file_type == 'cif':
+        s = Bio.PDB.MMCIFIO()
+
     s.set_structure(struct[Protein.model][Protein.chain])
     s.save(Protein.filename)
 
