@@ -139,17 +139,31 @@ class ParseInputFromFile(GetFile):
         if input_variables['ligand_elaboration_program_path'] == None:
             input_variables['ligand_elaboration_program_path'] = '~/ORAC/trunk/tools/primadorac/primadorac.bash'
         
-        if input_variables['protein_tpg_file'] == None:
-            with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as path:
-                input_variables['protein_tpg_file'] = str(path.resolve())
-        
-        if input_variables['protein_prm_file'] == None:
-            with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as path:
-                input_variables['protein_prm_file'] = str(path.resolve())
 
-        if input_variables['solvent_pdb'] == None:
-            with importlib_resources.path('HPC_Drug.lib', 'water.pdb') as path:
-                input_variables['solvent_pdb'] = str(path.resolve())
+
+        if input_variables['MD_program'] == None:
+            input_variables['MD_program'] = 'gromacs'
+
+        if input_variables['MD_program'] == 'orac':
+            if input_variables['protein_tpg_file'] == None:
+                with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as path:
+                    input_variables['protein_tpg_file'] = str(path.resolve())
+            
+            if input_variables['protein_prm_file'] == None:
+                with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as path:
+                    input_variables['protein_prm_file'] = str(path.resolve())
+
+            if input_variables['solvent_pdb'] == None:
+                with importlib_resources.path('HPC_Drug.lib', 'water.pdb') as path:
+                    input_variables['solvent_pdb'] = str(path.resolve())
+        
+        elif input_variables['MD_program'] == 'gromacs':
+            if input_variables['protein_tpg_file'] == None:
+                input_variables['protein_tpg_file'] = '6'
+
+            if input_variables['solvent_pdb'] == None:
+                input_variables['solvent_pdb'] = 'amber99sb-ildn.ff/spce.itp'
+
 
         #set a default for processor (skylake)
         if input_variables['kind_of_processor'] == None:

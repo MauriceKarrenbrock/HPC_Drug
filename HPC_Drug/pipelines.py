@@ -338,8 +338,8 @@ class NoLigand_Pipeline(Pipeline):
             gro_top_maker = funcs4gromacs.GromacsMakeProteinGroTop(output_filename = "choices.txt",
                                                     Protein = Protein,
                                                     Ligand = Ligand,
-                                                    protein_tpg_file = self.protein_tpg_file,
-                                                    solvent_model = self.solvent_pdb,
+                                                    protein_tpg_file = '6',
+                                                    solvent_model = '7',
                                                     MD_program_path = self.MD_program_path)
             
             Protein = gro_top_maker.execute()
