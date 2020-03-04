@@ -1087,8 +1087,9 @@ class OracREMInput(OracInput):
 
         residue_string = ''
         for residue in hot_residues:
-            max_min = self.orient.atom_numbers(Protein = Protein, residue_id = residue[1])
-            residue_string = residue_string + f"\ndefine {max_min[1]} {max_min[0]}    ! {residue[0]} {residue[1]}"
+            if residue[0].strip().upper() != 'TIP':
+                max_min = self.orient.atom_numbers(Protein = Protein, residue_id = residue[1])
+                residue_string = residue_string + f"\ndefine {max_min[1]} {max_min[0]}    ! {residue[0]} {residue[1]}"
 
         SEGMENT_string = f"{ligand_string}\n{residue_string}"
 
