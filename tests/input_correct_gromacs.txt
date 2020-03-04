@@ -63,7 +63,7 @@ MD_program_path = gmx
 #protein ff
 #if omitted default one is 6 that in standard gromacs is
 # AMBER99SB-ILDN protein, nucleic AMBER94 (Lindorff-Larsen et al., Proteins 78, 1950-58, 2010)
-protein_prm_file = 6
+protein_tpg_file = 6
 
 #the solvent model that will be chosen
 #standard is amber99sb-ildn.ff/spce.itp
