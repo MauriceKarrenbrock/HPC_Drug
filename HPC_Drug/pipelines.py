@@ -14,37 +14,34 @@ def choose_pipeline(*args, **kwargs):
     
     input_dict = kwargs
 
-    if input_dict['protein_filetype'] == 'cif':
-        # Protein is a pdb file
-        if (input_dict['ligand_in_protein'] == None or input_dict['ligand_in_protein'] == 'yes'):
-            #ligand will be taken from protein file (at your own risk)
-            
-            return NoLigand_Pipeline(protein = input_dict['protein'],
-                                    protein_filetype = input_dict['protein_filetype'],
-                                    local = input_dict['local'],
-                                    filepath = input_dict['filepath'],
-                                    ligand = input_dict['ligand'],
-                                    ligand_elaboration_program = input_dict['ligand_elaboration_program'],
-                                    ligand_elaboration_program_path = input_dict['ligand_elaboration_program_path'],
-                                    Protein_model = input_dict['Protein_model'],
-                                    Protein_chain = input_dict['Protein_chain'],
-                                    ph = input_dict['ph'],
-                                    repairing_method = input_dict['repairing_method'],
-                                    MD_program = input_dict['MD_program'],
-                                    MD_program_path = input_dict['MD_program_path'],
-                                    protein_prm_file = input_dict['protein_prm_file'],
-                                    protein_tpg_file = input_dict['protein_tpg_file'],
-                                    solvent_pdb = input_dict['solvent_pdb'],
-                                    kind_of_processor = input_dict['kind_of_processor'],
-                                    number_of_cores_per_node = input_dict['number_of_cores_per_node'])
-
-        else:
-            # ligand is given
-
-            return Ligand_Pipeline()
+    # Protein is a pdb file
+    if (input_dict['ligand_in_protein'] == None or input_dict['ligand_in_protein'] == 'yes'):
+        #ligand will be taken from protein file (at your own risk)
         
+        return NoLigand_Pipeline(protein = input_dict['protein'],
+                                protein_filetype = input_dict['protein_filetype'],
+                                local = input_dict['local'],
+                                filepath = input_dict['filepath'],
+                                ligand = input_dict['ligand'],
+                                ligand_elaboration_program = input_dict['ligand_elaboration_program'],
+                                ligand_elaboration_program_path = input_dict['ligand_elaboration_program_path'],
+                                Protein_model = input_dict['Protein_model'],
+                                Protein_chain = input_dict['Protein_chain'],
+                                ph = input_dict['ph'],
+                                repairing_method = input_dict['repairing_method'],
+                                MD_program = input_dict['MD_program'],
+                                MD_program_path = input_dict['MD_program_path'],
+                                protein_prm_file = input_dict['protein_prm_file'],
+                                protein_tpg_file = input_dict['protein_tpg_file'],
+                                solvent_pdb = input_dict['solvent_pdb'],
+                                kind_of_processor = input_dict['kind_of_processor'],
+                                number_of_cores_per_node = input_dict['number_of_cores_per_node'])
+
     else:
-        raise NotImplementedError('The pipeline for {} file type was not implemented'.format(input_dict['protein_filetype']))
+        # ligand is given
+
+        return Ligand_Pipeline()
+        
 
 class Pipeline(object):
     """General pipeline class"""
