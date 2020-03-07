@@ -1,12 +1,18 @@
 #containing functions and classes for the creation of a gromacs input
 import Bio.PDB
 import subprocess
+import os
+import shutil
+import math
 
 from HPC_Drug import structures
 from HPC_Drug import file_manipulation
 from HPC_Drug import important_lists
 from HPC_Drug import funcs4orac
 from HPC_Drug import pipeline_functions
+from HPC_Drug import orient
+from HPC_Drug import funcs4pbs
+from HPC_Drug import funcs4slurm
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
     """Takes a protein instance, and returns one
@@ -406,7 +412,7 @@ class GromacsSolvBoxInput(GromacsInput):
                 protein_tpg_file = None,
                 solvent_model = "amber99sb-ildn.ff/spce.itp",
                 MD_program_path = 'gmx',
-                box_borders = '1'):
+                box_borders = '0.8'):
 
         super().__init__(input_filename = input_filename,
                         output_filename = output_filename,
@@ -445,7 +451,7 @@ class GromacsSolvBoxInput(GromacsInput):
                         "; Start time and timestep in ps",
                         "tinit                    = 0",
                         "dt                       = 0.0001",
-                        "nsteps                   = 5000000",
+                        "nsteps                   = 100000",
                         "; For exact run continuation or redoing part of a run",
                         "init-step                = 0",
                         "; Part index is updated automatically on checkpointing (keeps files separate)",
@@ -630,3 +636,260 @@ class GromacsSolvBoxInput(GromacsInput):
             self.interact_with_gromacs(string = string)
  
         return output_file
+
+
+class GromacsREMInput(GromacsInput):
+    
+    def __init__(self,
+                input_filename = None,
+                output_filename = None,
+                Protein = None,
+                Ligand = None,
+                protein_tpg_file = None,
+                solvent_model = "amber99sb-ildn.ff/spce.itp",
+                MD_program_path = 'gmx',
+                kind_of_processor = 'skylake',
+                number_of_cores_per_node = 64):
+
+        super().__init__(input_filename = input_filename,
+                        output_filename = output_filename,
+                        Protein = Protein,
+                        Ligand = Ligand,
+                        protein_tpg_file = protein_tpg_file,
+                        solvent_model = solvent_model,
+                        MD_program_path = MD_program_path)
+
+
+        if self.input_filename == None:
+            self.input_filename = f"{self.Protein.protein_id}_REM"
+
+        if self.output_filename == None:
+            self.output_filename = f"{self.Protein.protein_id}_REM.mdp"
+
+        self.kind_of_processor = kind_of_processor
+        self.number_of_cores_per_node = number_of_cores_per_node
+
+        #an instance of orient.Orient class
+        self.orient = orient.Orient(self.Protein, self.Ligand)
+
+
+
+        self.template = ["WORK IN PROGRESS"]
+
+
+    def get_ns_per_day(self,  Protein = None, Ligand = None, kind_of_processor = None):
+        """Get's the number of ns per day that a kind_of_processor
+        processor can process on the sistem"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if kind_of_processor == None:
+            kind_of_processor = self.kind_of_processor
+
+        number_of_atoms = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
+        number_of_atoms = number_of_atoms[0]
+
+        ns_per_day = ( 15000. / number_of_atoms ) * important_lists.processor_kind_ns_per_day_15000_atoms[kind_of_processor]
+
+        return ns_per_day
+
+    def get_BATTERIES(self, Protein = None, Ligand = None, kind_of_processor = None):
+        """Get's the number of batteries for REM"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if kind_of_processor == None:
+            kind_of_processor = self.kind_of_processor
+
+        ns_per_day = self.get_ns_per_day(Protein = Protein, Ligand = Ligand, kind_of_processor = kind_of_processor)
+
+        BATTERIES = math.ceil( 32. / ns_per_day )
+
+        return BATTERIES
+
+    def _edit_top_file(self):
+        """PRIVATE"""
+
+        hot_residues = self.orient.get_hot_residues_for_rem(Protein = self.Protein, Ligand = self.Ligand, cutoff = 4.5, residue_dist = 10.0)
+        hot_ids = []
+        for residue in hot_residues:
+            hot_ids.append(str(residue[1]).strip())
+
+        with open(self.Protein.top_file, 'r') as f:
+            lines = f.readlines()
+
+        #auxiliary bool variable
+        is_hot_residue = False
+        with open(self.Protein.top_file, 'w') as f:
+            for i in range(len(lines)):
+
+                if lines[i][0:9] == "; residue" and lines[i][9:13].strip() in hot_ids:
+
+                    is_hot_residue = True
+
+                if lines[i][0:9] == "; residue" and lines[i][9:13].strip() not in hot_ids:
+
+                    is_hot_residue = False
+
+                #This is a check for the last residue in the chain (could probably be done better)
+                if lines[i][16:17].strip() == "":
+
+                    is_hot_residue = False
+
+                if is_hot_residue:
+                    lines[i][17:18] = "_"
+
+                f.write(f"{lines[i].strip()}\n")
+
+    def interact_with_plumed(self, string = None):
+        """Interacts with plumed running string
+        with subprocess.run
+        string must contain the plumed path"""
+
+        print("Running Plumed")
+        r = subprocess.run(string,
+                        shell = True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        universal_newlines=True)
+
+        print(r.stdout)
+        print(r.stderr)
+
+        if r.returncode != 0:
+            raise Exception(f"Plumed failure\n{r.stdout}\n{r.stderr}")
+
+    def write_workloadmanager_inputs(self, input_files = None):
+        """private method called by self.execute()"""
+        
+        if input_files == None:
+            input_files = self.input_filename
+
+        file_list = []
+ 
+        slurm = funcs4slurm.SlurmInput(MD_input_file = input_files,
+                                    slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.slr',
+                                    MD_program = 'gromacs',
+                                    MD_calculation_type = 'rem',
+                                    number_of_cores_per_node = self.number_of_cores_per_node,
+                                    max_time = "24:00:00",
+                                    ntasks = self.get_BATTERIES(Protein = self.Protein, Ligand = self.Ligand, kind_of_processor = self.kind_of_processor) * 8,
+                                    cpus_per_task = 8,
+                                    std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
+                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err')
+
+        file_list.append(slurm.write())
+
+        pbs = funcs4pbs.SlurmInput(MD_input_file = input_files,
+                                    slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.pbs',
+                                    MD_program = 'gromacs',
+                                    MD_calculation_type = 'rem',
+                                    number_of_cores_per_node = self.number_of_cores_per_node,
+                                    max_time = "24:00:00",
+                                    ntasks = self.get_BATTERIES(Protein = self.Protein, Ligand = self.Ligand, kind_of_processor = self.kind_of_processor) * 8,
+                                    cpus_per_task = 8,
+                                    std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
+                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err')
+
+        file_list.append(pbs.write())
+
+        return file_list
+
+    def make_TPR_files_script(self, mpi_runs, replicas_for_run = 8):
+        """private"""
+
+        filename = "MAKE_TPR_FILES.sh"
+
+        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE"
+
+        for i in range(mpi_runs):
+            for j in range(replicas_for_run):
+                string = string + f"grompp_mpi_d -maxwarn 100 -o BATTERY{i}/{self.input_filename}_{j}.tpr -f BATTERY{i}/{self.output_filename} -p BATTERY{i}/{self.Protein.protein_id}_scaled_{j}.top \n"
+
+
+        with open(filename, 'w') as f:
+            f.write(string)
+
+        return filename
+
+
+    def execute(self):
+        """This method does not run gromacs but
+        creates the input to make a REM simulation on a
+        HPC cluster"""
+
+        self.output_filename = self.write_template_on_file(self.template, self.output_filename)
+
+        number_of_mpiruns = self.get_BATTERIES()
+
+        #create the elaborated top file for plumed
+        self.interact_with_gromacs(string = f"{self.MD_program_path} grompp -f {self.output_filename} -c {self.Protein.gro_file} -p {self.Protein.top_file} -maxwarn 100 -pp {self.Protein.top_file.rsplit('.', 1)[0]}_elaborated.top")
+        self.Protein.top_file = f"{self.Protein.top_file.rsplit('.', 1)[0]}_elaborated.top"
+
+        #finds the hot residues and edits the elaborated top file accordingly
+        self._edit_top_file()
+
+        #use plumed to make the scaled topologies
+        hamiltonian_scaling_values = (1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3)
+        for counter, value in enumerate(hamiltonian_scaling_values):
+            self.interact_with_plumed(string = f"plumed partial_tempering {value} < {self.Protein.top_file} > {self.Protein.protein_id}_scaled_{counter}.top")
+
+        #make an empty_plumed.dat file for plumed
+        with open("empty_plumed.dat", 'w') as f:
+            f.write(" ")
+        
+ 
+        #list that contains the input files for gromacs
+        input_files = []
+
+        i = 0
+        for i in range(number_of_mpiruns):
+
+            #creates the REM directory that will be copied to the HPC cluster
+            os.makedirs(f"{self.Protein.protein_id}_REM/BATTERY{i}", exist_ok=True)
+
+            #update the input_files list
+            input_files.append(f"BATTERY{i}/{self.input_filename}")
+
+            #copy the needed files in the new directories
+            j = 0
+            for j in (self.Protein.gro_file, self.output_filename):
+                shutil.copy(j, f"{self.Protein.protein_id}_REM/BATTERY{i}")
+
+            #copy the scaled top files
+            j = 0
+            for j in range(len(hamiltonian_scaling_values)):
+                shutil.copy(f"{self.Protein.protein_id}_scaled_{j}.top", f"{self.Protein.protein_id}_REM/BATTERY{i}")
+
+        #copy the dummy empty_plumed.dat file
+        shutil.copy("empty_plumed.dat", f"{self.Protein.protein_id}_REM")
+        
+        #make and copy the workload manager input files
+        #write workload manager input for different workload managers (slurm pbs ...)
+        workload_files = self.write_workloadmanager_inputs(input_files = input_files)
+        for wl_file in workload_files:
+            shutil.copy(wl_file, f"{self.Protein.protein_id}_REM")
+
+
+        #make and copy the script that will make the tpr files in loco
+        TPR_file_script = self.make_TPR_files_script(mpi_runs = number_of_mpiruns, replicas_for_run = len(hamiltonian_scaling_values))
+        shutil.copy(TPR_file_script, f"{self.Protein.protein_id}_REM")
+
+        return self.output_filename
+
+        
+
+        
+
+
+
+
+

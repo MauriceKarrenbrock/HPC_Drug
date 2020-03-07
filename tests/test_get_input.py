@@ -61,7 +61,8 @@ class ParseInputFromFile(unittest.TestCase):
                     'protein_prm_file' : None,
                     'solvent_pdb' : None,
                     'kind_of_processor' : None,
-                    'number_of_cores_per_node' : '64'}
+                    'number_of_cores_per_node' : '64',
+                    'MD_program' : 'orac'}
 
         with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as tpg:
             with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as prm:
@@ -71,11 +72,12 @@ class ParseInputFromFile(unittest.TestCase):
                                     'ph' : 7.0,
                                     'ligand_elaboration_program' : 'primadorac',
                                     'ligand_elaboration_program_path' :  '~/ORAC/trunk/tools/primadorac/primadorac.bash',
-                                    'protein_tpg_file' : tpg,
-                                    'protein_prm_file' : prm,
-                                    'solvent_pdb' : solv,
+                                    'protein_tpg_file' : str(tpg.resolve()),
+                                    'protein_prm_file' : str(prm.resolve()),
+                                    'solvent_pdb' : str(solv.resolve()),
                                     'kind_of_processor' : 'skylake',
-                                    'number_of_cores_per_node' : 64}
+                                    'number_of_cores_per_node' : 64,
+                                    'MD_program' : 'orac'}
 
 
         output_dict = self.test_class._refine_input(input_dict)
