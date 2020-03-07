@@ -339,7 +339,7 @@ class NoLigand_Pipeline(Pipeline):
             gro_top_maker = funcs4gromacs.GromacsMakeProteinGroTop(output_filename = "choices.txt",
                                                     Protein = Protein,
                                                     Ligand = Ligand,
-                                                    protein_tpg_file = '6',
+                                                    protein_tpg_file = self.protein_tpg_file,
                                                     solvent_model = '7',
                                                     MD_program_path = self.MD_program_path)
             
@@ -380,11 +380,24 @@ class NoLigand_Pipeline(Pipeline):
                                         Protein = Protein,
                                         Ligand = Ligand,
                                         protein_tpg_file = self.protein_tpg_file,
-                                        solvent_model = "amber99sb-ildn.ff/spce.itp",
+                                        solvent_model = self.solvent_pdb,
                                         MD_program_path = self.MD_program_path,
-                                        box_borders = '1')
+                                        box_borders = '0.8')
 
             Protein.gro_file = solv_box.execute()
+
+            #create the REM input
+            rem_input = funcs4gromacs.GromacsREMInput(input_filename = f"{Protein.protein_id}_REM",
+                                                    output_filename = f"{Protein.protein_id}_REM.mdp",
+                                                    Protein = Protein,
+                                                    Ligand = Ligand,
+                                                    protein_tpg_file = self.protein_tpg_file,
+                                                    MD_program_path = self.MD_program_path,
+                                                    solvent_model = self.solvent_pdb,
+                                                    kind_of_processor = self.kind_of_processor,
+                                                    number_of_cores_per_node = self.number_of_cores_per_node)
+
+            gromacs_rem_input_file = rem_input.execute()
 
         elif self.MD_program == 'orac':
 
