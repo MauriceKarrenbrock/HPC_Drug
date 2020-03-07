@@ -1,4 +1,6 @@
 """Contains the functions to make a slurm input (workload manager)"""
+from HPC_Drug import pipeline_functions
+
 
 import math
 
@@ -20,7 +22,8 @@ class SlurmInput(object):
                 std_out = 'STD_out.out',
                 std_err = 'STD_err.err',
                 partition_name = None,
-                account_name = None):
+                account_name = None,
+                MD_program_path = None):
         
         self.MD_input_file = MD_input_file
         self.slurm_input_file = slurm_input_file
@@ -51,6 +54,12 @@ class SlurmInput(object):
 
         self.account_name = account_name
         
+        self.MD_program_path = MD_program_path
+        if self.MD_program_path == None and self.MD_program == "gromacs":
+            self.MD_program_path = "gmx"
+
+        elif self.MD_program_path == None and self.MD_program == "orac":
+            self.MD_program_path = "~/ORAC/trunk/src/INTEL-FFTW-OMP-MPI/orac"
 
         self.template = self.get_template()
 
@@ -58,7 +67,7 @@ class SlurmInput(object):
         """private function used by the __init__ function
         to get the right template"""
 
-        orac_REM_template = [
+        REM_SBATCH_template = [
             "#!/bin/bash",
             "\n##CAUTION!!!!",
             "##THIS IS A VERY GENERIC SLURM INPUT FILE",
@@ -82,13 +91,27 @@ class SlurmInput(object):
             
             f"#SBATCH --error={self.std_err}",
 
-            " ",
+            " "]
 
-            f"mpirun 	  ~/ORAC/trunk/src/INTEL-FFTW-OMP-MPI/orac < ./{self.MD_input_file}"
+        orac_REM_mpirun_template =[
+            self.write_orac_mpirun_string()
+        ]
+
+        gromacs_REM_mpirun_template = [
+            self.write_gromacs_mpirun_string()
         ]
 
         if self.MD_program == 'orac' and self.MD_calculation_type == 'rem':
+
+            orac_REM_template = REM_SBATCH_template + orac_REM_mpirun_template 
+
             return orac_REM_template
+
+        elif self.MD_program == 'gromacs' and self.MD_calculation_type == 'rem':
+
+            gromacs_REM_template = REM_SBATCH_template + gromacs_REM_mpirun_template 
+
+            return gromacs_REM_template
 
     def write_partition_string(self):
         """private"""
@@ -107,6 +130,28 @@ class SlurmInput(object):
 
         else:
             return f"#SBATCH -A  {self.account_name}"
+
+    def write_orac_mpirun_string(self):
+        """private"""
+
+        string = ""
+        for i in pipeline_functions.get_iterable(self.MD_input_file):
+            string = string + f"mpirun 	  {self.MD_program_path} < {i}\n"
+
+        return string
+
+
+    def write_gromacs_mpirun_string(self):
+        """private"""
+
+        string = ""
+
+        for i in pipeline_functions.get_iterable(self.MD_input_file):
+            string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun_d -v -plumed empty_plumed.dat -multi 8 -replex 100 -hrex -dlb no -s {i} & \n"
+
+        string = string + "wait"
+
+        return string
 
     def write(self):
         """Writes the chosen template on a file called as 
