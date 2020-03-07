@@ -69,3 +69,8 @@ protein_tpg_file = 6
 #standard is amber99sb-ildn.ff/spce.itp
 # from the standard gromacs share directory
 solvent_pdb = amber99sb-ildn.ff/spce.itp
+
+#there can be custom residue substitutions for metal binding residues
+#default standard
+#standard, custom_zinc
+residue_substitution = standard

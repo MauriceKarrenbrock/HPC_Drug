@@ -62,7 +62,8 @@ class ParseInputFromFile(unittest.TestCase):
                     'solvent_pdb' : None,
                     'kind_of_processor' : None,
                     'number_of_cores_per_node' : '64',
-                    'MD_program' : 'orac'}
+                    'MD_program' : 'orac',
+                    'residue_substitution' : None}
 
         with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as tpg:
             with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as prm:
@@ -77,7 +78,8 @@ class ParseInputFromFile(unittest.TestCase):
                                     'solvent_pdb' : str(solv.resolve()),
                                     'kind_of_processor' : 'skylake',
                                     'number_of_cores_per_node' : 64,
-                                    'MD_program' : 'orac'}
+                                    'MD_program' : 'orac',
+                                    'residue_substitution' : 'standard'}
 
 
         output_dict = self.test_class._refine_input(input_dict)

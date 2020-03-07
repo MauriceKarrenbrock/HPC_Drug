@@ -69,3 +69,8 @@ protein_tpg_file = amber99sb-ildn.tpg
 #solvent pdb, if omitted default will be used
 #see HPC_Drug/lib/
 solvent_pdb = water.pdb
+
+#there can be custom residue substitutions for metal binding residues
+#default standard
+#standard, custom_zinc
+residue_substitution = standard
