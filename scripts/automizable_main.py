@@ -27,6 +27,7 @@ for line in sys.stdin:
                                                 protein_tpg_file = '../amber99sb-ildn.tpg',
                                                 protein_prm_file = '../amber99sb-ildn.prm',
                                                 solvent_pdb = '../water.pdb',
+                                                residue_substitution = 'standard',
                                                 kind_of_processor = 'skylake',
                                                 number_of_cores_per_node = 64)
 

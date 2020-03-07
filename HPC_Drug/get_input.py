@@ -51,7 +51,8 @@ class ParseInputFromFile(GetFile):
                             'protein_tpg_file',
                             'solvent_pdb',
                             'kind_of_processor',
-                            'number_of_cores_per_node')
+                            'number_of_cores_per_node',
+                            'residue_substitution')
 
         
         self.input_variables = self.read_input()
@@ -182,7 +183,8 @@ class ParseInputFromFile(GetFile):
             input_variables['number_of_cores_per_node'] = int(input_variables['number_of_cores_per_node'].strip())
 
         
-        
+        if input_variables['residue_substitution'] == None:
+            input_variables['residue_substitution'] = 'standard'
         
         return input_variables
 

@@ -34,6 +34,7 @@ def choose_pipeline(*args, **kwargs):
                                 protein_prm_file = input_dict['protein_prm_file'],
                                 protein_tpg_file = input_dict['protein_tpg_file'],
                                 solvent_pdb = input_dict['solvent_pdb'],
+                                residue_substitution = input_dict['residue_substitution'],
                                 kind_of_processor = input_dict['kind_of_processor'],
                                 number_of_cores_per_node = input_dict['number_of_cores_per_node'])
 
@@ -63,6 +64,7 @@ class Pipeline(object):
                 protein_prm_file = None,
                 protein_tpg_file = None,
                 solvent_pdb = None,
+                residue_substitution = 'standard',
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64):
         
@@ -104,6 +106,8 @@ class Pipeline(object):
         self.protein_prm_file = protein_prm_file
         self.protein_tpg_file = protein_tpg_file
         self.solvent_pdb = solvent_pdb
+
+        self.residue_substitution = residue_substitution.strip()
 
         self.kind_of_processor = kind_of_processor
         self.number_of_cores_per_node = number_of_cores_per_node
@@ -308,7 +312,7 @@ class NoLigand_Pipeline(Pipeline):
         elif self.MD_program == 'gromacs':
 
             #makes the necessary resname substitutions for the ForceField
-            Protein = funcs4gromacs.residue_substitution(Protein, 'custom_zinc')
+            Protein = funcs4gromacs.residue_substitution(Protein, self.residue_substitution)
 
 
 
@@ -385,7 +389,7 @@ class NoLigand_Pipeline(Pipeline):
         elif self.MD_program == 'orac':
 
             #makes the necessary resname substitutions for the ForceField
-            Protein = funcs4orac.residue_substitution(Protein, 'custom_zinc')
+            Protein = funcs4orac.residue_substitution(Protein, self.residue_substitution)
             
             #update the seqres with the names needed for Orac
             Protein = funcs4orac.custom_orac_seqres_from_PDB(Protein)
