@@ -24,7 +24,12 @@ class SlurmInput(object):
                 account_name = None,
                 MD_program_path = None):
         
+        #if it is a string I transform it in a one object list
+        #to iterate on it if necessary
+        if type(MD_input_file) == str:
+            MD_input_file = [MD_input_file]
         self.MD_input_file = MD_input_file
+        
         self.slurm_input_file = slurm_input_file
         self.MD_program = MD_program.lower().strip()
         self.MD_calculation_type = MD_calculation_type.lower().strip()
@@ -74,7 +79,7 @@ class SlurmInput(object):
 
             f"#PBS -l walltime={self.max_time}",
 
-            f"#PBS -l select={self.ntasks / (math.floor(self.number_of_cores_per_node / self.cpus_per_task))}:ncpus={self.ntasks}:mpiprocs={math.floor(self.number_of_cores_per_node / self.cpus_per_task)}",
+            f"#PBS -l select={math.ceil( self.ntasks / (math.floor(self.number_of_cores_per_node / self.cpus_per_task )))}:ncpus={self.ntasks}:mpiprocs={math.floor(self.number_of_cores_per_node / self.cpus_per_task)}",
 
             f"#PBS -o {self.std_out}",
 
