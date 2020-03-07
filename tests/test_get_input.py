@@ -134,7 +134,8 @@ class ParseInputFromFile(unittest.TestCase):
                                     'protein_tpg_file' : 'amber99sb-ildn.tpg',
                                     'solvent_pdb' : 'water.pdb',
                                     'kind_of_processor' : 'skylake',
-                                    'number_of_cores_per_node' : 64})
+                                    'number_of_cores_per_node' : 64,
+                                    'residue_substitution' : 'standard'})
 
 
     def test_read_input_with_wrong_input_key(self):
