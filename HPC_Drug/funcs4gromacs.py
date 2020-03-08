@@ -820,7 +820,6 @@ class GromacsREMInput(GromacsInput):
                     if lines[i][16] != " ":
 
                         lines[i] = lines[i][:17] + "_" + lines[i][18:]
-                        print(lines[i])
 
                 f.write(f"{lines[i].rstrip()}\n")
 
