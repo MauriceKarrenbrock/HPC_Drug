@@ -136,6 +136,49 @@ def _disulf_cysteine_gromacs_substitutions(input_list, resname = None):
         return input_list[0]
 
 
+def gro2pdb(gro_file, pdb_file = None, chain = 'A', gromacs_path = 'gmx'):
+    """converts a gro file in a pdb using gmx editconf and adds
+    the chain identifier to the pdb (it is missing and it confuses many pdb parsers)
+
+    gro_file :: string, the gro file to convert
+    pdb_file :: string, optional, the name of the output file
+    chain :: string, optional, default = A, it is the chain value that will be inserted in the pdb
+    gromacs_path :: string, the gromacs executable default gmx
+
+    returns a string of the pdb file name
+    """
+
+    def write_chain_in_pdb(chain_id = None, pdb_file = None):
+        """This is a patch because orac removes the chain id from
+        pdb files and this confuses some pdb parsers"""
+
+        with open(pdb_file, 'r') as f:
+            lines = f.readlines()
+
+        with open(pdb_file, 'w') as w:
+
+            for i in range(len(lines)):
+
+                if lines[i][0:4] == 'ATOM' or lines[i][0:6] == 'HETATM' or lines[i][0:3] == 'TER':
+
+                    lines[i] = lines[i][:21] + chain_id + lines[i][22:]
+
+                w.write(f"{lines[i].strip()}\n")
+
+
+
+    if pdb_file == None:
+        pdb_file = gro_file.rsplit('.', 1)[0].strip() + ".pdb"
+
+    subprocess.run(f"{gromacs_path} editconf -f {gro_file} -o {pdb_file}",
+                        shell = True,
+                        check = True)
+
+    write_chain_in_pdb(chain_id = chain, pdb_file = pdb_file)
+
+    return pdb_file
+
+
 class GromacsInput(object):
     """Generic Gromacs input template object"""
 
@@ -151,12 +194,12 @@ class GromacsInput(object):
         self.Protein = Protein
         self.Ligand = Ligand
 
-        #input filename is the cleaned pdb with both protein and ligand
+        #input filename is the cleaned gro file with both protein and ligand
         #but no solvent or trash HETATMS
-        #if not explicitly given it is considered Protein.filename (standard behaviour)
+        #if not explicitly given it is considered Protein_id_unnamed.gro (standard behaviour)
         self.input_filename = input_filename
         if self.input_filename == None:
-            self.input_filename = self.Protein.filename
+            self.input_filename = self.Protein.protein_id + '_unnamed.gro'
         
         self.output_filename = output_filename
 
@@ -228,6 +271,16 @@ class GromacsInput(object):
         filename = self.write_template_on_file(template, filename)
 
         self.interact_with_gromacs(string = command_string)
+
+        try:
+            #make a pdb file from the gro file
+            self.Protein.filename = gro2pdb(gro_file = output_file,
+                                            pdb_file = self.Protein.filename,
+                                            chain = self.Protein.chain,
+                                            gromacs_path = self.MD_program_path)
+
+        except:
+            pass
  
         return output_file
 
@@ -634,6 +687,12 @@ class GromacsSolvBoxInput(GromacsInput):
         self.Protein = self._edit_top_file(Protein = self.Protein, water_itp = self.solvent_model)
         for string in command_string:
             self.interact_with_gromacs(string = string)
+
+        #make a pdb file from the gro file
+        self.Protein.filename = gro2pdb(gro_file = output_file,
+                                        pdb_file = self.Protein.filename,
+                                        chain = self.Protein.chain,
+                                        gromacs_path = self.MD_program_path)
  
         return output_file
 
