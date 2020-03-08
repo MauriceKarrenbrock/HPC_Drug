@@ -790,23 +790,39 @@ class GromacsREMInput(GromacsInput):
         with open(self.Protein.top_file, 'w') as f:
             for i in range(len(lines)):
 
-                if lines[i][0:9] == "; residue" and lines[i][9:13].strip() in hot_ids:
+                if lines[i][0:9] == "; residue" and lines[i][9:13].strip() in hot_ids :
+                    if lines[i][14:17].strip() != 'SOL' :
 
-                    is_hot_residue = True
+                        is_hot_residue = True
+                        
+                        f.write(f"{lines[i].rstrip()}\n")
 
-                if lines[i][0:9] == "; residue" and lines[i][9:13].strip() not in hot_ids:
+                        continue
+
+                elif lines[i][0:9] == "; residue" and lines[i][9:13].strip() not in hot_ids:
 
                     is_hot_residue = False
+
+                    f.write(f"{lines[i].rstrip()}\n")
+
+                    continue
 
                 #This is a check for the last residue in the chain (could probably be done better)
-                if lines[i][16:17].strip() == "":
+                elif lines[i][0].strip() == "[":
 
                     is_hot_residue = False
 
-                if is_hot_residue:
-                    lines[i][17:18] = "_"
+                    f.write(f"{lines[i].rstrip()}\n")
 
-                f.write(f"{lines[i].strip()}\n")
+                    continue
+
+                if is_hot_residue and len(lines[i]) >= 17:
+                    if lines[i][16] != " ":
+
+                        lines[i] = lines[i][:17] + "_" + lines[i][18:]
+                        print(lines[i])
+
+                f.write(f"{lines[i].rstrip()}\n")
 
     def interact_with_plumed(self, string = None):
         """Interacts with plumed running string
@@ -867,7 +883,7 @@ class GromacsREMInput(GromacsInput):
 
         filename = "MAKE_TPR_FILES.sh"
 
-        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE"
+        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\n"
 
         for i in range(mpi_runs):
             for j in range(replicas_for_run):
