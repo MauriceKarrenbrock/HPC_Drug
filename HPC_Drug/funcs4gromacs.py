@@ -894,6 +894,31 @@ class GromacsREMInput(GromacsInput):
 
         return filename
 
+    def _get_hamiltonian_scaling_values(self):
+        """
+        Scales the hamiltonian with a geometrical progression
+        scale(m) =scale^(m/(nprocs−1)) with scale = 0.2 and nprocs = 8
+        0 <= m <= nprocs -1
+
+        for more information check the orac manual http://www.chim.unifi.it/orac/orac-manual.pdf
+        page 123 """
+
+        nprocs = 8.0
+        scale = 0.2
+
+        #instantiating the list and putting the value for scale^0 = 1.0
+        hamiltonian_scaling_values = [1.0]
+
+        for m in range(1, 8):
+
+            scale_m = scale ** ( m / (nprocs -1) )
+
+            hamiltonian_scaling_values.append(scale_m)
+
+            hamiltonian_scaling_values = tuple(hamiltonian_scaling_values)
+
+        return hamiltonian_scaling_values
+
 
     def execute(self):
         """This method does not run gromacs but
@@ -912,7 +937,9 @@ class GromacsREMInput(GromacsInput):
         self._edit_top_file()
 
         #use plumed to make the scaled topologies
-        hamiltonian_scaling_values = (1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3)
+        
+        hamiltonian_scaling_values = self._get_hamiltonian_scaling_values()
+
         for counter, value in enumerate(hamiltonian_scaling_values):
             self.interact_with_plumed(string = f"plumed partial_tempering {value} < {self.Protein.top_file} > {self.Protein.protein_id}_scaled_{counter}.top")
 
