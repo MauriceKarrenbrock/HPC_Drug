@@ -782,6 +782,12 @@ class GromacsREMInput(GromacsInput):
         for residue in hot_residues:
             hot_ids.append(str(residue[1]).strip())
 
+        #add the ligand resnumber
+        Sub_Parser = file_manipulation.SubstitutionParser()
+        hot_ids.append(str(Sub_Parser.get_ligand_resnum(Protein = self.Protein,
+                                                    ligand_resnames = self.Ligand.ligand_resname,
+                                                    chain_model_selection = True)[1]))
+
         with open(self.Protein.top_file, 'r') as f:
             lines = f.readlines()
 
@@ -937,7 +943,7 @@ class GromacsREMInput(GromacsInput):
         self._edit_top_file()
 
         #use plumed to make the scaled topologies
-        
+
         hamiltonian_scaling_values = self._get_hamiltonian_scaling_values()
 
         for counter, value in enumerate(hamiltonian_scaling_values):
