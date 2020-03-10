@@ -708,7 +708,8 @@ class GromacsREMInput(GromacsInput):
                 solvent_model = "amber99sb-ildn.ff/spce.itp",
                 MD_program_path = 'gmx',
                 kind_of_processor = 'skylake',
-                number_of_cores_per_node = 64):
+                number_of_cores_per_node = 64,
+                use_gpu = 'auto'):
 
         super().__init__(input_filename = input_filename,
                         output_filename = output_filename,
@@ -731,9 +732,163 @@ class GromacsREMInput(GromacsInput):
         #an instance of orient.Orient class
         self.orient = orient.Orient(self.Protein, self.Ligand)
 
+        #gromacs has various options to use gpu
+        #auto (default) that will use all the available ones automaticly
+        #cpu uses no GPU even if available
+        #gpu forces the use of GPU (but in case you want to use a gpu auto would be safer and more robust)
+        self.use_gpu = use_gpu.lower().strip()
+        if self.use_gpu not in ('auto', 'cpu', 'gpu'):
+            raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
 
 
-        self.template = ["WORK IN PROGRESS"]
+
+        self.template = [
+            "; VARIOUS PREPROCESSING OPTIONS",
+            "; Preprocessor information: use cpp syntax.",
+            "; e.g.: -I/home/joe/doe -I/home/mary/roe",
+            "include                  =",
+            "; e.g.: -DPOSRES -DFLEXIBLE (note these variable names are case sensitive)",
+            "define                   =",
+            "",
+            "; RUN CONTROL PARAMETERS",
+            "integrator               = md",
+            "; Start time and timestep in ps",
+
+            self.write_TIME_TIMESTEP_string,
+
+            "; For exact run continuation or redoing part of a run",
+            "init-step                = 0",
+            "; Part index is updated automatically on checkpointing (keeps files separate)",
+            "simulation-part          = 1",
+            "; mode for center of mass motion removal",
+            "comm-mode                = Linear",
+            "; number of steps for center of mass motion removal",
+            "nstcomm                  = 100",
+            "; group(s) for center of mass motion removal",
+            "comm-grps                =",
+            "",
+            "; TEST PARTICLE INSERTION OPTIONS",
+            "rtpi                     = 0.05",
+            "",
+            "; OUTPUT CONTROL OPTIONS",
+            "; Output frequency for coords (x), velocities (v) and forces (f)",
+            "nstxout                  = 10000",
+            "nstvout                  = 10000",
+            "nstfout                  = 10000",
+            "; Output frequency for energies to log file and energy file",
+            "nstlog                   = 1000",
+            "nstcalcenergy            = 100",
+            "nstenergy                = 1000",
+            "; Output frequency and precision for .xtc file",
+            "nstxtcout                = 2000",
+            "xtc-precision            = 1000",
+            "; This selects the subset of atoms for the .xtc file. You can",
+            "; select multiple groups. By default all atoms will be written.",
+            "xtc-grps                 =",
+            "; Selection of energy groups",
+            "energygrps               = System",
+            "",
+            "; NEIGHBORSEARCHING PARAMETERS",
+            "; cut-off scheme (group: using charge groups, Verlet: particle based cut-offs)",
+            "; nblist update frequency",
+            "cutoff-scheme            = Verlet",
+            "nstlist                  = 20",
+            "verlet-buffer-tolerance  = 0.0001",
+            "; ns algorithm (simple or grid)",
+            "ns_type                  = grid",
+            "; Periodic boundary conditions: xyz, no, xy",
+            "pbc                      = xyz",
+            "periodic-molecules       = no",
+            "; Allowed energy drift due to the Verlet buffer in kJ/mol/ps per atom,",
+            "; a value of -1 means: use rlist",
+            "; nblist cut-off",
+            "rlist                    = 1.0",
+            "; long-range cut-off for switched potentials",
+            "rlistlong                = -1",
+            "",
+            "; OPTIONS FOR ELECTROSTATICS AND VDW",
+            "; Method for doing electrostatics",
+            "coulombtype              = PME",
+            "rcoulomb-switch          = 0",
+            "rcoulomb                 = 1.0",
+            "; Relative dielectric constant for the medium and the reaction field",
+            "epsilon-r                = 1",
+            "epsilon-rf               = 0",
+            "; Method for doing Van der Waals",
+            "vdw-type                 = Cut-off",
+            "; cut-off lengths",
+            "rvdw-switch              = 0",
+            "rvdw                     = 1.0",
+            "; Apply long range dispersion corrections for Energy and Pressure",
+            "DispCorr                 = EnerPres",
+            "; Extension of the potential lookup tables beyond the cut-off",
+            "table-extension          = 1",
+            "; Separate tables between energy group pairs",
+            "energygrp-table          =",
+            "; Spacing for the PME/PPPM FFT grid",
+            "fourierspacing           = 0.12",
+            "; FFT grid size, when a value is 0 fourierspacing will be used",
+            "fourier-nx               = 0",
+            "fourier-ny               = 0",
+            "fourier-nz               = 0",
+            "; EWALD/PME/PPPM parameters",
+            "pme-order                = 4",
+            "ewald-rtol               = 1e-06",
+            "ewald-geometry           = 3d",
+            "epsilon-surface          =",
+            "optimize-fft             = no",
+            "",
+            "; IMPLICIT SOLVENT ALGORITHM",
+            "implicit-solvent         = No",
+            "",
+            "; OPTIONS FOR WEAK COUPLING ALGORITHMS",
+            "; Temperature coupling",
+            "tcoupl                   = v-rescale",
+            "nsttcouple               = -1",
+            "nh-chain-length          = 1",
+            "; Groups to couple separately",
+            "tc-grps                  = System",
+            "; Time constant (ps) and reference temperature (K)",
+            "tau-t                    = 0.2",
+            "ref-t                    = 298.15",
+            "; pressure coupling",
+            "pcoupl                   = Berendsen",
+            "pcoupltype               = Isotropic",
+            "nstpcouple               = -1",
+            "; Time constant (ps), compressibility (1/bar) and reference P (bar)",
+            "tau-p                    = 0.5",
+            "compressibility          = 4.6e-5",
+            "ref-p                    = 1",
+            "; Scaling of reference coordinates, No, All or COM",
+            "refcoord-scaling         = COM",
+            "",
+            "; GENERATE VELOCITIES FOR STARTUP RUN",
+            "gen-vel                  = no",
+            "gen-temp                 = 500",
+            "gen-seed                 = 173529",
+            "",
+            "; OPTIONS FOR BONDS",
+            "constraints              = all-bonds",
+            "; Type of constraint algorithm",
+            "constraint-algorithm     = Lincs",
+            "; Do not constrain the start configuration",
+            "continuation             = no",
+            "; Use successive overrelaxation to reduce the number of shake iterations",
+            "Shake-SOR                = no",
+            "; Relative tolerance of shake",
+            "shake-tol                = 0.00001",
+            "; Highest order in the expansion of the constraint coupling matrix",
+            "lincs-order              = 5",
+            "; Number of iterations in the final step of LINCS. 1 is fine for",
+            "; normal simulations, but use 2 to conserve energy in NVE runs.",
+            "; For energy minimization with constraints it should be 4 to 8.",
+            "lincs-iter               = 2",
+            "; Lincs will write a warning to the stderr if in one step a bond",
+            "; rotates over more degrees than",
+            "lincs-warnangle          = 30",
+            "; Convert harmonic bonds to morse potentials",
+            "morse                    = no"
+        ]
 
 
     def get_ns_per_day(self,  Protein = None, Ligand = None, kind_of_processor = None):
@@ -752,9 +907,33 @@ class GromacsREMInput(GromacsInput):
         number_of_atoms = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
         number_of_atoms = number_of_atoms[0]
 
-        ns_per_day = ( 15000. / number_of_atoms ) * important_lists.processor_kind_ns_per_day_15000_atoms[kind_of_processor]
+        if self.use_gpu != 'cpu':
+            ns_per_day = ( 15000. / number_of_atoms ) * important_lists.processor_kind_ns_per_day_15000_atoms_for_cpu_only_runs[kind_of_processor]
+        
+        elif self.use_gpu in ('auto', 'gpu'):
+            ns_per_day = ( 15000. / number_of_atoms ) * important_lists.ns_per_day_15000_on_gpu_accellerated_architectures
+
+        else:
+            raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
 
         return ns_per_day
+
+    def write_TIME_TIMESTEP_string(self):
+        """writes the tinit timestep and number of steps string"""
+
+        tinit = 0
+        timestep = 0.0150 #ps
+        
+        #ps calculated in 24 hours by one mpi_run (BATTERIES)
+        number_of_steps = self.get_ns_per_day() * 1.E+3
+        #number of steps (integer)
+        number_of_steps = math.ceil( number_of_steps / timestep )
+
+        string = f"tinit                    = {tinit}\n\
+                dt                       = {timestep}\n\
+                nsteps                   = {number_of_steps}\n"
+
+        return string
 
     def get_BATTERIES(self, Protein = None, Ligand = None, kind_of_processor = None):
         """Get's the number of batteries for REM"""
@@ -864,7 +1043,8 @@ class GromacsREMInput(GromacsInput):
                                     ntasks = self.get_BATTERIES(Protein = self.Protein, Ligand = self.Ligand, kind_of_processor = self.kind_of_processor) * 8,
                                     cpus_per_task = 8,
                                     std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
-                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err')
+                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err',
+                                    use_gpu = self.use_gpu)
 
         file_list.append(slurm.write())
 
@@ -877,7 +1057,8 @@ class GromacsREMInput(GromacsInput):
                                     ntasks = self.get_BATTERIES(Protein = self.Protein, Ligand = self.Ligand, kind_of_processor = self.kind_of_processor) * 8,
                                     cpus_per_task = 8,
                                     std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
-                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err')
+                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err',
+                                    use_gpu = self.use_gpu)
 
         file_list.append(pbs.write())
 

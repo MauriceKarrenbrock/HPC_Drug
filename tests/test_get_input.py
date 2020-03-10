@@ -63,7 +63,8 @@ class ParseInputFromFile(unittest.TestCase):
                     'kind_of_processor' : None,
                     'number_of_cores_per_node' : '64',
                     'MD_program' : 'orac',
-                    'residue_substitution' : None}
+                    'residue_substitution' : None,
+                    'use_gpu' : None}
 
         with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as tpg:
             with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as prm:
@@ -79,7 +80,8 @@ class ParseInputFromFile(unittest.TestCase):
                                     'kind_of_processor' : 'skylake',
                                     'number_of_cores_per_node' : 64,
                                     'MD_program' : 'orac',
-                                    'residue_substitution' : 'standard'}
+                                    'residue_substitution' : 'standard',
+                                    'use_gpu' : 'auto'}
 
 
         output_dict = self.test_class._refine_input(input_dict)
@@ -115,7 +117,6 @@ class ParseInputFromFile(unittest.TestCase):
 
         self.assertEqual(set(dictionary.keys()), set(self.test_class.possible_keys))
 
-        #da rifare daccapo
         self.assertEqual(dictionary, {'protein' : '1df8',
                                     'ligand' : None,
                                     'protein_filetype' : 'cif',
@@ -135,7 +136,8 @@ class ParseInputFromFile(unittest.TestCase):
                                     'solvent_pdb' : 'water.pdb',
                                     'kind_of_processor' : 'skylake',
                                     'number_of_cores_per_node' : 64,
-                                    'residue_substitution' : 'standard'})
+                                    'residue_substitution' : 'standard',
+                                    'use_gpu' : 'auto'})
 
 
     def test_read_input_with_wrong_input_key(self):

@@ -23,7 +23,8 @@ class SlurmInput(object):
                 std_err = 'STD_err.err',
                 partition_name = None,
                 account_name = None,
-                MD_program_path = None):
+                MD_program_path = None,
+                use_gpu = 'auto'):
 
 
         #if it is a string I transform it in a one object list
@@ -67,6 +68,14 @@ class SlurmInput(object):
 
         elif self.MD_program_path == None and self.MD_program == "orac":
             self.MD_program_path = "~/ORAC/trunk/src/INTEL-FFTW-OMP-MPI/orac"
+
+        #gromacs has various options to use gpu
+        #auto (default) that will use all the available ones automaticly
+        #cpu uses no GPU even if available
+        #gpu forces the use of GPU (but in case you want to use a gpu auto would be safer and more robust)
+        self.use_gpu = use_gpu.lower().strip()
+        if self.use_gpu not in ('auto', 'cpu', 'gpu'):
+            raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
 
         self.template = self.get_template()
 
@@ -151,10 +160,23 @@ class SlurmInput(object):
     def write_gromacs_mpirun_string(self):
         """private"""
 
+        def gpu_options(use_gpu):
+            if use_gpu == 'auto':
+                return ""
+
+            else:
+                string = f" -nb {use_gpu} -pme {use_gpu} -bonded {use_gpu} -update {use_gpu} -pmefft {use_gpu}"
+                
+                if use_gpu == 'gpu':
+                    string = string + " -npme 1"
+
+                return string
+            
+
         string = ""
 
         for i in pipeline_functions.get_iterable(self.MD_input_file):
-            string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun_d -v -plumed empty_plumed.dat -multi 8 -replex 100 -hrex -dlb no -s {i} & \n"
+            string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun_d {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -multi 8 -replex 100 -hrex -dlb no -s {i} & \n"
 
         string = string + "wait"
 

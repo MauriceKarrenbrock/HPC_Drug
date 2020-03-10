@@ -52,7 +52,8 @@ class ParseInputFromFile(GetFile):
                             'solvent_pdb',
                             'kind_of_processor',
                             'number_of_cores_per_node',
-                            'residue_substitution')
+                            'residue_substitution',
+                            'use_gpu')
 
         
         self.input_variables = self.read_input()
@@ -185,6 +186,9 @@ class ParseInputFromFile(GetFile):
         
         if input_variables['residue_substitution'] == None:
             input_variables['residue_substitution'] = 'standard'
+
+        if input_variables['use_gpu'] == None:
+            input_variables['use_gpu'] = 'auto'
         
         return input_variables
 
