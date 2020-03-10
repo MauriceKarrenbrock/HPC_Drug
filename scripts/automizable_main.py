@@ -1,12 +1,26 @@
-import subprocess
-import os
+#This is an example of automated program that executes the given pipeline for any given protein id in a file
+#that has a protein id per line
+#es:
+#1df8
+#2gz7
+#...
+
+# python automizable_main.py input_file.txt
+
 import HPC_Drug
 import HPC_Drug.pipelines
+
+import subprocess
+import os
 import sys
 import contextlib
 
+input_file_name = sys.argv[1]
 
-for line in sys.stdin:
+with open(input_file_name, 'r') as f:
+    lines = f.readlines()
+
+for line in lines:
     protein_id = line.strip().lower()
 
     try:
@@ -29,7 +43,8 @@ for line in sys.stdin:
                                                 solvent_pdb = '../water.pdb',
                                                 residue_substitution = 'standard',
                                                 kind_of_processor = 'skylake',
-                                                number_of_cores_per_node = 64)
+                                                number_of_cores_per_node = 64,
+                                                use_gpu = 'auto')
 
         if not os.path.exists(protein_id):
             os.mkdir(protein_id)
