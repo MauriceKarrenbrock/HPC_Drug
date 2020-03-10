@@ -162,8 +162,14 @@ atom_weights = {
 
 # a dictionary of how many nanoseconds per day a given processor kind
 #can process on a 15000 atoms structure
-processor_kind_ns_per_day_15000_atoms = {
+#for CPU only simulations
+processor_kind_ns_per_day_15000_atoms_for_cpu_only_runs = {
         'skylake' : 4.,
         'broadwell' : 5.,
         'knl' : 1.
 }
+
+#the ammount of ns per day a GPU accellerated architecture can usually generate
+#on a 15000 atoms sistem
+#this is a very conservative value!!!
+ns_per_day_15000_on_gpu_accellerated_architectures = 15.0

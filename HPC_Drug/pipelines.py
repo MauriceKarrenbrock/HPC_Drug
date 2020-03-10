@@ -36,7 +36,8 @@ def choose_pipeline(*args, **kwargs):
                                 solvent_pdb = input_dict['solvent_pdb'],
                                 residue_substitution = input_dict['residue_substitution'],
                                 kind_of_processor = input_dict['kind_of_processor'],
-                                number_of_cores_per_node = input_dict['number_of_cores_per_node'])
+                                number_of_cores_per_node = input_dict['number_of_cores_per_node'],
+                                use_gpu = input_dict['use_gpu'])
 
     else:
         # ligand is given
@@ -66,7 +67,8 @@ class Pipeline(object):
                 solvent_pdb = None,
                 residue_substitution = 'standard',
                 kind_of_processor = 'skylake',
-                number_of_cores_per_node = 64):
+                number_of_cores_per_node = 64,
+                use_gpu = 'auto'):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
@@ -111,6 +113,14 @@ class Pipeline(object):
 
         self.kind_of_processor = kind_of_processor
         self.number_of_cores_per_node = number_of_cores_per_node
+
+        #gromacs has various options to use gpu
+        #auto (default) that will use all the available ones automaticly
+        #cpu uses no GPU even if available
+        #gpu forces the use of GPU (but in case you want to use a gpu auto would be safer and more robust)
+        self.use_gpu = use_gpu.lower().strip()
+        if self.use_gpu not in ('auto', 'cpu', 'gpu'):
+            raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
 
     def download(self):
         import os
@@ -395,7 +405,8 @@ class NoLigand_Pipeline(Pipeline):
                                                     MD_program_path = self.MD_program_path,
                                                     solvent_model = self.solvent_pdb,
                                                     kind_of_processor = self.kind_of_processor,
-                                                    number_of_cores_per_node = self.number_of_cores_per_node)
+                                                    number_of_cores_per_node = self.number_of_cores_per_node,
+                                                    use_gpu = self.use_gpu)
 
             gromacs_rem_input_file = rem_input.execute()
 

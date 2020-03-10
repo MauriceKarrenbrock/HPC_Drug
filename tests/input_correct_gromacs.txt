@@ -74,3 +74,10 @@ solvent_pdb = amber99sb-ildn.ff/spce.itp
 #default standard
 #standard, custom_zinc
 residue_substitution = standard
+
+#gromacs can use gpu accelerators
+#there are 3 options
+#auto (default)
+#cpu ues only cpu even if gpus are available
+#gpu forces to use gpus (using auto is HIGHLY RECCOMENDED)
+use_gpu = auto
