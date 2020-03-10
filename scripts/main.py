@@ -1,7 +1,9 @@
 # This is the main file
-import sys
+
 from HPC_Drug import get_input
 from HPC_Drug import pipelines
+
+import sys
 import os
 
 def main():
