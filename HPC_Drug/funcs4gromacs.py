@@ -754,7 +754,7 @@ class GromacsREMInput(GromacsInput):
             "integrator               = md",
             "; Start time and timestep in ps",
 
-            self.write_TIME_TIMESTEP_string,
+            self.write_TIME_TIMESTEP_string(),
 
             "; For exact run continuation or redoing part of a run",
             "init-step                = 0",
@@ -907,7 +907,7 @@ class GromacsREMInput(GromacsInput):
         number_of_atoms = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
         number_of_atoms = number_of_atoms[0]
 
-        if self.use_gpu != 'cpu':
+        if self.use_gpu == 'cpu':
             ns_per_day = ( 15000. / number_of_atoms ) * important_lists.processor_kind_ns_per_day_15000_atoms_for_cpu_only_runs[kind_of_processor]
         
         elif self.use_gpu in ('auto', 'gpu'):
@@ -929,9 +929,7 @@ class GromacsREMInput(GromacsInput):
         #number of steps (integer)
         number_of_steps = math.ceil( number_of_steps / timestep )
 
-        string = f"tinit                    = {tinit}\n\
-                dt                       = {timestep}\n\
-                nsteps                   = {number_of_steps}\n"
+        string = f"tinit                    = {tinit} \ndt                       = {timestep} \nnsteps                   = {number_of_steps}\n"
 
         return string
 
@@ -963,9 +961,11 @@ class GromacsREMInput(GromacsInput):
 
         #add the ligand resnumber
         Sub_Parser = file_manipulation.SubstitutionParser()
-        hot_ids.append(str(Sub_Parser.get_ligand_resnum(Protein = self.Protein,
-                                                    ligand_resnames = self.Ligand.ligand_resname,
-                                                    chain_model_selection = True)[1]))
+
+        for ligand in self.Ligand:
+            hot_ids.append(str(Sub_Parser.get_ligand_resnum(Protein = self.Protein,
+                                                    ligand_resnames = ligand.ligand_resname,
+                                                    chain_model_selection = True)[0][1]))
 
         with open(self.Protein.top_file, 'r') as f:
             lines = f.readlines()
@@ -1073,7 +1073,7 @@ class GromacsREMInput(GromacsInput):
 
         for i in range(mpi_runs):
             for j in range(replicas_for_run):
-                string = string + f"grompp_mpi_d -maxwarn 100 -o BATTERY{i}/{self.input_filename}_{j}.tpr -f BATTERY{i}/{self.output_filename} -p BATTERY{i}/{self.Protein.protein_id}_scaled_{j}.top \n"
+                string = string + f"{self.MD_program_path} grompp_mpi_d -maxwarn 100 -o BATTERY{i}/{self.input_filename}_{j}.tpr -f BATTERY{i}/{self.output_filename} -p BATTERY{i}/{self.Protein.protein_id}_scaled_{j}.top \n"
 
 
         with open(filename, 'w') as f:
@@ -1102,7 +1102,7 @@ class GromacsREMInput(GromacsInput):
 
             hamiltonian_scaling_values.append(scale_m)
 
-            hamiltonian_scaling_values = tuple(hamiltonian_scaling_values)
+        hamiltonian_scaling_values = tuple(hamiltonian_scaling_values)
 
         return hamiltonian_scaling_values
 
