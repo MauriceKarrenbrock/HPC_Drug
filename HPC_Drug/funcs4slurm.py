@@ -176,7 +176,7 @@ class SlurmInput(object):
         string = ""
 
         for i in pipeline_functions.get_iterable(self.MD_input_file):
-            string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun_d {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -multi 8 -replex 100 -hrex -dlb no -s {i} & \n"
+            string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi_d mdrun {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -multi 8 -replex 100 -hrex -dlb no -s {i} & \n"
 
         string = string + "wait"
 
