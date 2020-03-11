@@ -196,10 +196,7 @@ class GromacsInput(object):
 
         #input filename is the cleaned gro file with both protein and ligand
         #but no solvent or trash HETATMS
-        #if not explicitly given it is considered Protein_id_unnamed.gro (standard behaviour)
         self.input_filename = input_filename
-        if self.input_filename == None:
-            self.input_filename = self.Protein.protein_id + '_unnamed.gro'
         
         self.output_filename = output_filename
 
@@ -722,6 +719,9 @@ class GromacsREMInput(GromacsInput):
 
         if self.input_filename == None:
             self.input_filename = f"{self.Protein.protein_id}_REM"
+        
+        else:
+            self.input_filename = self.input_filename.rsplit('.', 1)[0]
 
         if self.output_filename == None:
             self.output_filename = f"{self.Protein.protein_id}_REM.mdp"
