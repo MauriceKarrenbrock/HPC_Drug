@@ -1073,7 +1073,7 @@ class GromacsREMInput(GromacsInput):
 
         for i in range(mpi_runs):
             for j in range(replicas_for_run):
-                string = string + f"gmx_mpi_d grompp -maxwarn 100 -o BATTERY{i}/{self.input_filename}_{j}.tpr -f BATTERY{i}/{self.output_filename} -p BATTERY{i}/{self.Protein.protein_id}_scaled_{j}.top -c BATTERY{i}/{self.Protein.gro_file.rsplit('/', 1)[-1]} \n"
+                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/{self.input_filename}_{j}.tpr -f BATTERY{i}/{self.output_filename} -p BATTERY{i}/{self.Protein.protein_id}_scaled_{j}.top -c BATTERY{i}/{self.Protein.gro_file.rsplit('/', 1)[-1]} \n"
 
 
         with open(filename, 'w') as f:
