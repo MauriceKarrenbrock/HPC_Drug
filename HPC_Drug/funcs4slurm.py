@@ -1,7 +1,7 @@
 """Contains the functions to make a slurm input (workload manager)"""
 from HPC_Drug import pipeline_functions
 
-
+import collections
 import math
 
 class SlurmInput(object):
@@ -12,6 +12,7 @@ class SlurmInput(object):
 
     def __init__(self,
                 MD_input_file = 'md.in',
+                MD_input_directories = None,
                 slurm_input_file = 'HPC_Drug.slr',
                 MD_program = 'gromacs',
                 MD_calculation_type = 'rem',
@@ -26,12 +27,38 @@ class SlurmInput(object):
                 MD_program_path = None,
                 use_gpu = 'auto'):
 
+        
+        self.MD_input_file = MD_input_file.strip()
 
-        #if it is a string I transform it in a one object list
-        #to iterate on it if necessary
-        if type(MD_input_file) == str:
-            MD_input_file = [MD_input_file]        
-        self.MD_input_file = MD_input_file
+
+        #it should be a list, it can be a nested list with 2 indexes
+        #the first will be the mpirun index, the second will be the one representing the
+        #directories to give to gmx -multidir (works only for gromacs not orac)
+        #example:
+        #self.MD_input_directories = [['a', 'b'], ['c', 'd']]
+        #/usr/bin/bash
+        # ....
+        #mpirun -multidir a b &
+        #mpirun -multidir c d &
+        #wait
+        self.MD_input_directories = MD_input_directories.strip()
+        
+        if self.MD_input_directories == None:
+            pass
+        elif type(self.MD_input_directories) == str:
+            #if it is a string I adapt the file name to it
+            #it is actually a quite bad way of using it
+            #it would be better to directly give the right MD_input_file and keep it None
+            self.MD_input_file = self.MD_input_directories.rstrip('/') + '/' + self.MD_input_file.lstrip('/')
+
+            self.MD_input_directories = None
+
+        #if I was given a monodimensional list I transform it in a bidimensional one
+        elif isinstance(self.MD_input_directories[0], collections.Iterable) == False:
+
+            self.MD_input_directories = [self.MD_input_directories]
+
+
 
 
         self.slurm_input_file = slurm_input_file
@@ -171,14 +198,30 @@ class SlurmInput(object):
                     string = string + " -npme 1"
 
                 return string
+
+        def multidir_string(dirs):
+            
+            string = " -multidir "
+
+            for i in dirs:
+                string = string + f" {i} "
+
+            return string
+
+
             
 
         string = ""
 
-        for i in pipeline_functions.get_iterable(self.MD_input_file):
-            string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi_d mdrun {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -multi 8 -replex 100 -hrex -dlb no -s {i} & \n"
+        if self.MD_input_directories == None:
 
-        string = string + "wait"
+            string = f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no -s {self.MD_input_file} \n"
+
+        else:
+            for dirs in self.MD_input_directories:
+                string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no {multidir_string(dirs = dirs)} -s {self.MD_input_file} & \n"
+
+            string = string + "wait"
 
         return string
 

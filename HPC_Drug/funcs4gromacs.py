@@ -717,11 +717,12 @@ class GromacsREMInput(GromacsInput):
                         MD_program_path = MD_program_path)
 
 
+        #the tpr file
         if self.input_filename == None:
-            self.input_filename = f"{self.Protein.protein_id}_REM"
+            self.input_filename = f"{self.Protein.protein_id}_REM.tpr"
         
-        else:
-            self.input_filename = self.input_filename.rsplit('.', 1)[0]
+        elif self.input_filename.rsplit('.', 1)[-1].strip() != 'tpr':
+            self.input_filename = self.input_filename + '.tpr'
 
         if self.output_filename == None:
             self.output_filename = f"{self.Protein.protein_id}_REM.mdp"
@@ -1026,15 +1027,23 @@ class GromacsREMInput(GromacsInput):
         if r.returncode != 0:
             raise Exception(f"Plumed failure\n{r.stdout}\n{r.stderr}")
 
-    def write_workloadmanager_inputs(self, input_files = None):
+    def write_workloadmanager_inputs(self, input_file, mpi_runs, replicas_for_run = 8):
         """private method called by self.execute()"""
-        
-        if input_files == None:
-            input_files = self.input_filename
 
         file_list = []
+
+        #making a nested list the firs dimension reppresents the mpirun
+        #and the second the various directories that will be called
+        #with each mpirun (gmx -multidir)
+        multidir = [[] for x in range(mpi_runs)]
+
+        for i in range(mpi_runs):
+            for j in range(replicas_for_run):
+
+                multidir[i].append(f"BATTERY{i}/scaled{j}")
  
-        slurm = funcs4slurm.SlurmInput(MD_input_file = input_files,
+        slurm = funcs4slurm.SlurmInput(MD_input_file = input_file,
+                                    MD_input_directories = multidir,
                                     slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.slr',
                                     MD_program = 'gromacs',
                                     MD_calculation_type = 'rem',
@@ -1048,7 +1057,8 @@ class GromacsREMInput(GromacsInput):
 
         file_list.append(slurm.write())
 
-        pbs = funcs4pbs.SlurmInput(MD_input_file = input_files,
+        pbs = funcs4pbs.SlurmInput(MD_input_file = input_file,
+                                    MD_input_directories = multidir,
                                     slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.pbs',
                                     MD_program = 'gromacs',
                                     MD_calculation_type = 'rem',
@@ -1073,7 +1083,7 @@ class GromacsREMInput(GromacsInput):
 
         for i in range(mpi_runs):
             for j in range(replicas_for_run):
-                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/{self.input_filename}_{j}.tpr -f BATTERY{i}/{self.output_filename} -p BATTERY{i}/{self.Protein.protein_id}_scaled_{j}.top -c BATTERY{i}/{self.Protein.gro_file.rsplit('/', 1)[-1]} \n"
+                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{self.input_filename} -f BATTERY{i}/{self.output_filename} -p BATTERY{i}/{self.Protein.protein_id}_scaled_{j}.top -c BATTERY{i}/{self.Protein.gro_file.rsplit('/', 1)[-1]} \n"
 
 
         with open(filename, 'w') as f:
@@ -1133,19 +1143,18 @@ class GromacsREMInput(GromacsInput):
         #make an empty_plumed.dat file for plumed
         with open("empty_plumed.dat", 'w') as f:
             f.write(" ")
-        
- 
-        #list that contains the input files for gromacs
-        input_files = []
 
         i = 0
+        j = 0
         for i in range(number_of_mpiruns):
 
-            #creates the REM directory that will be copied to the HPC cluster
-            os.makedirs(f"{self.Protein.protein_id}_REM/BATTERY{i}", exist_ok=True)
+            for j in range(len(hamiltonian_scaling_values)):
 
-            #update the input_files list
-            input_files.append(f"BATTERY{i}/{self.input_filename}")
+                #creates the REM directory that will be copied to the HPC cluster
+                os.makedirs(f"{self.Protein.protein_id}_REM/BATTERY{i}/scaled{j}", exist_ok=True)
+
+                #copy the dummy empty_plumed.dat file
+                shutil.copy("empty_plumed.dat", f"{self.Protein.protein_id}_REM/BATTERY{i}/scaled{j}")
 
             #copy the needed files in the new directories
             j = 0
@@ -1156,13 +1165,10 @@ class GromacsREMInput(GromacsInput):
             j = 0
             for j in range(len(hamiltonian_scaling_values)):
                 shutil.copy(f"{self.Protein.protein_id}_scaled_{j}.top", f"{self.Protein.protein_id}_REM/BATTERY{i}")
-
-        #copy the dummy empty_plumed.dat file
-        shutil.copy("empty_plumed.dat", f"{self.Protein.protein_id}_REM")
         
         #make and copy the workload manager input files
         #write workload manager input for different workload managers (slurm pbs ...)
-        workload_files = self.write_workloadmanager_inputs(input_files = input_files)
+        workload_files = self.write_workloadmanager_inputs(input_file = self.input_filename, mpi_runs = number_of_mpiruns, replicas_for_run = len(hamiltonian_scaling_values))
         for wl_file in workload_files:
             shutil.copy(wl_file, f"{self.Protein.protein_id}_REM")
 
