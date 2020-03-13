@@ -27,7 +27,7 @@ class SlurmInput(object):
                 MD_program_path = None,
                 use_gpu = 'auto'):
         
-        self.MD_input_file = MD_input_file.strip()
+        self.MD_input_file = MD_input_file
 
 
         #it should be a list, it can be a nested list with 2 indexes
@@ -40,7 +40,7 @@ class SlurmInput(object):
         #mpirun -multidir a b &
         #mpirun -multidir c d &
         #wait
-        self.MD_input_directories = MD_input_directories.strip()
+        self.MD_input_directories = MD_input_directories
         
         if self.MD_input_directories == None:
             pass
@@ -48,7 +48,7 @@ class SlurmInput(object):
             #if it is a string I adapt the file name to it
             #it is actually a quite bad way of using it
             #it would be better to directly give the right MD_input_file and keep it None
-            self.MD_input_file = self.MD_input_directories.rstrip('/') + '/' + self.MD_input_file.lstrip('/')
+            self.MD_input_file = self.MD_input_directories.strip().rstrip('/') + '/' + self.MD_input_file.strip().lstrip('/')
 
             self.MD_input_directories = None
 
