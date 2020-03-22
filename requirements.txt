@@ -1,16 +1,14 @@
-astroid==2.3.2
-biopython==1.74
-isort==4.3.21
-lazy-object-proxy==1.4.3
-mccabe==0.6.1
-numpy==1.17.3
-pandas==0.25.2
-ProDy==1.10.11
-pylint==2.4.3
-pyparsing==2.4.2
-python-dateutil==2.8.0
-pytz==2019.3
-scipy==1.3.1
-six==1.12.0
-typed-ast==1.4.0
-wrapt==1.11.2
+biopython>=1.77 #development version (github) is strongly suggested due to some bugfixes
+importlib-resources>=1.0.2
+numpy>=1.18.1
+OpenMM>=7.5.0 #development version (conda install -c omnia-dev openmm) is strongly suggested due to some bugfixes
+pdbfixer>=1.6 #development version (github) is strongly suggested due to some bugfixes
+ProDy>=1.10.11
+scipy>=1.4.1
+plumed>=2.6.0 # conda install -c conda-forge plumed
+python<=3.6.9 # the program uses the importlib_resources backport to importlib.resources will make a python>=3.7 version as soon as possible
+
+#not python requirements
+#primadorac http://www.chim.unifi.it/orac
+#orac http://www.chim.unifi.it/orac
+#gromacs http://www.gromacs.org
