@@ -41,7 +41,7 @@ class test_PDBCruncer(unittest.TestCase):
     
     def test_parse_must_return_atomgroup(self):
 
-        pdb_file = "tests/2f3z.pdb"
+        pdb_file = "tests/files4tests/2f3z.pdb"
         protein_id = "2f3z"
 
         test_class = file_manipulation.PDBCruncer()
@@ -51,7 +51,7 @@ class test_PDBCruncer(unittest.TestCase):
 
     #Too slow, because it connects to the pdb database
     # def test_parse_with_wrong_input_file(self):
-    #     pdb_file = "tests/dummy.pdb"
+    #     pdb_file = "tests/files4tests/dummy.pdb"
     #     protein_id = "dummy"
 
     #     test_class = file_manipulation.PDBCruncer()
@@ -139,7 +139,7 @@ class test_no_header_functions(unittest.TestCase):
         }
 
         output_dict = file_manipulation.get_metal_binding_residues_with_no_header(protein_id = '5aol',
-                                                                                pdb_file = 'tests/5aol.pdb',
+                                                                                pdb_file = 'tests/files4tests/5aol.pdb',
                                                                                 mmcif_file = None,
                                                                                 cutoff = 3.0,
                                                                                 substitutions_dict = {},
@@ -165,7 +165,7 @@ class test_no_header_functions(unittest.TestCase):
         right_sulf_bond = [('26', '84'), ('40', '95'), ('58', '110'), ('65', '72')]
 
         output_dict, output_sulf_bond = file_manipulation.get_disulf_bonds_with_no_header(protein_id = '3dxg',
-                                                                                        pdb_file = 'tests/3dxg.pdb',
+                                                                                        pdb_file = 'tests/files4tests/3dxg.pdb',
                                                                                         mmcif_file = None,
                                                                                         cutoff = 3.0,
                                                                                         substitutions_dict = {},
@@ -185,7 +185,7 @@ class test_no_header_functions(unittest.TestCase):
 
 
         output_ligand = file_manipulation.get_organic_ligands_with_no_header(protein_id = '3dxg',
-                                                                            pdb_file = 'tests/3dxg.pdb',
+                                                                            pdb_file = 'tests/files4tests/3dxg.pdb',
                                                                             mmcif_file = None,
                                                                             protein_chain = 'A',
                                                                             protein_model = 0)

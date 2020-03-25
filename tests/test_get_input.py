@@ -47,7 +47,7 @@ class ParseInputFromFile(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        filename = "tests/input_correct_4tests.txt"
+        filename = "tests/files4tests/input_correct_4tests.txt"
         cls.test_class = HPC_Drug.get_input.ParseInputFromFile(filename)
 
     def test_create_input_dict(self):
@@ -152,7 +152,7 @@ class ParseInputFromFile(unittest.TestCase):
     def test_read_input_with_wrong_input_key(self):
         """Shall be done better, I didn't mock the private methods"""
         
-        filename = "tests/input_wrong.txt"
+        filename = "tests/files4tests/input_wrong.txt"
 
         with self.assertRaises(ValueError):
             test_class = HPC_Drug.get_input.ParseInputFromFile(filename)   

@@ -20,7 +20,7 @@ class TestOrient(unittest.TestCase):
     def setUpClass(cls):
 
         Protein = HPC_Drug.structures.Protein(protein_id = '2gz7',
-                filename = 'tests/2gz7.cif',
+                filename = 'tests/files4tests/2gz7.cif',
                 structure = None,
                 substitutions_dict = None,
                 sulf_bonds = None,
