@@ -157,9 +157,8 @@ class Pipeline(object):
 
 
 class NoLigand_Pipeline(Pipeline):
-    """Protein is given as a mmcif
-    The ligand is not given as input
-    Will be searched in the protein file"""
+    """Protein is given as a mmcif or pdb
+    The ligand is already inside the protein file"""
     
     def execute(self):
         """The execution of the pipeline"""
