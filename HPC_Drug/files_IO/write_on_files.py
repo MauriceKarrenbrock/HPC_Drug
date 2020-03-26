@@ -10,12 +10,12 @@ A copy of the license must be included with any copy of the program or part of i
 # This file contains the generic functions needed to write or append lines to a non formatted text file (.txt .pdb .tex ...)
 
 
-def write_file(lines, file = "file.txt"):
+def write_file(lines, file_name = "file.txt"):
     """This function writes a new file (or overwrides an existing one)
     
     lines :: anything that supports iteration like lists, tuples etc or a single string
 
-    file :: string, default "new_file.txt"
+    file_name :: string, default "new_file.txt"
     
     doesn't return anything
     
@@ -24,18 +24,18 @@ def write_file(lines, file = "file.txt"):
     if type(lines) == str:
         lines = [lines]
 
-    with open(file, 'w') as f:
+    with open(file_name, 'w') as f:
 
         for line in lines:
             
             f.write(line)
 
-def append_file(lines, file = "file.txt"):
+def append_file(lines, file_name = "file.txt"):
     """This function appendsa lines to an existing file
     
     lines :: anything that supports iteration like lists, tuples etc or a single string
 
-    file :: string, default "new_file.txt"
+    file_name :: string, default "new_file.txt"
     
     doesn't return anything
     
@@ -44,7 +44,7 @@ def append_file(lines, file = "file.txt"):
     if type(lines) == str:
         lines = [lines]
 
-    with open(file, 'a') as f:
+    with open(file_name, 'a') as f:
 
         for line in lines:
             

@@ -1,3 +1,12 @@
+"""
+Copyright (c) 2020-2020 Maurice Karrenbrock
+
+This software is open-source and is distributed under the
+GNU Affero General Public License v3 (agpl v3) license
+
+A copy of the license must be included with any copy of the program or part of it
+"""
+
 import unittest
 import os
 
@@ -13,7 +22,7 @@ class test_write_file(unittest.TestCase):
 
             for i in wrong_inputs:
                 
-                write_on_files.write_file(lines = i, file = "dummy")
+                write_on_files.write_file(lines = i, file_name = "dummy")
 
     
     def test_with_string(self):
@@ -23,7 +32,7 @@ class test_write_file(unittest.TestCase):
         output_file = "tests/files4tests/test_with_string.txt"
 
         try:
-            write_on_files.write_file(lines = string, file = output_file)
+            write_on_files.write_file(lines = string, file_name = output_file)
 
             with open(output_file, 'r') as f:
                 lines = f.readlines()
@@ -43,7 +52,7 @@ class test_write_file(unittest.TestCase):
         try:
 
             for i in range(len(input_lists)):
-                write_on_files.write_file(lines = input_lists[i], file = output_file)
+                write_on_files.write_file(lines = input_lists[i], file_name = output_file)
 
                 with open(output_file, 'r') as f:
                     lines = f.readlines()
@@ -63,7 +72,7 @@ class test_write_file(unittest.TestCase):
         try:
 
             for i in range(len(input_tuples)):
-                write_on_files.write_file(lines = input_tuples[i], file = output_file)
+                write_on_files.write_file(lines = input_tuples[i], file_name = output_file)
 
                 with open(output_file, 'r') as f:
                     lines = f.readlines()
@@ -80,7 +89,7 @@ def _create_input_file():
     file_name = 'tests/files4tests/file_to_append.txt'
     string = "aaa"
 
-    write_on_files.write_file(lines = string, file = file_name)
+    write_on_files.write_file(lines = string, file_name = file_name)
 
     return file_name, string
 
@@ -94,7 +103,7 @@ class test_append_file(unittest.TestCase):
 
             for i in wrong_inputs:
                 
-                write_on_files.append_file(lines = i, file = "dummy")
+                write_on_files.append_file(lines = i, file_name = "dummy")
 
     
     def test_with_string(self):
@@ -105,7 +114,7 @@ class test_append_file(unittest.TestCase):
         string = f"{small_string}\n{small_string}"
 
         try:
-            write_on_files.append_file(lines = string, file = input_file)
+            write_on_files.append_file(lines = string, file_name = input_file)
 
             with open(input_file, 'r') as f:
                 lines = f.readlines()
@@ -127,7 +136,7 @@ class test_append_file(unittest.TestCase):
 
             try:
 
-                write_on_files.append_file(lines = input_lists[i], file = input_file)
+                write_on_files.append_file(lines = input_lists[i], file_name = input_file)
 
                 with open(input_file, 'r') as f:
                     lines = f.readlines()
@@ -151,7 +160,7 @@ class test_append_file(unittest.TestCase):
             try:
 
             
-                write_on_files.append_file(lines = input_tuples[i], file = input_file)
+                write_on_files.append_file(lines = input_tuples[i], file_name = input_file)
 
                 with open(input_file, 'r') as f:
                     lines = f.readlines()
