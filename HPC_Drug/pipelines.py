@@ -10,6 +10,8 @@ A copy of the license must be included with any copy of the program or part of i
 # This file contains the possible pipelines depending from input
 
 import subprocess
+import os
+
 from HPC_Drug import file_manipulation
 from HPC_Drug import structures
 from HPC_Drug import pipeline_functions
@@ -131,11 +133,10 @@ class Pipeline(object):
         if self.use_gpu not in ('auto', 'cpu', 'gpu'):
             raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
 
-    def download(self):
-        import os
+    def get_protein_file(self):
 
-        """If requested in input will download pdb file
-        If the given local file doesn't exist will download pdb
+        """If requested in input will download pdb (or mmCIF) file
+        If the given local file doesn't exist will download pdb (or mmCIF)
         otherwise returns the given path without modifying it"""
 
         #checks if I got a wrong input
@@ -162,12 +163,11 @@ class NoLigand_Pipeline(Pipeline):
     
     def execute(self):
         """The execution of the pipeline"""
-        import os
 
         #If requested in input will download pdb file
         #If the given local file doesn't exist will download pdb
         #otherwise returns the given path without modifying it
-        self.protein_filename = self.download()
+        self.protein_filename = self.get_protein_file()
         
 
         #Declaring protein instance
