@@ -27,7 +27,7 @@ class test_Pipeline(unittest.TestCase):
 
                     p.local = name
 
-                    name = p.download()
+                    name = p.get_protein_file()
 
     
     def test_download_with_local_yes_existing_file(self):
@@ -42,7 +42,7 @@ class test_Pipeline(unittest.TestCase):
 
                 p.protein_filename = 'dummy_name'
 
-                self.assertEqual('dummy_name', p.download())
+                self.assertEqual('dummy_name', p.get_protein_file())
 
     def test_download_with_local_yes_not_existing_file(self):
 
@@ -55,7 +55,7 @@ class test_Pipeline(unittest.TestCase):
                     
                     p.local = 'yes'
 
-                    self.assertEqual('hello', p.download())
+                    self.assertEqual('hello', p.get_protein_file())
 
                     
 
@@ -71,4 +71,4 @@ class test_Pipeline(unittest.TestCase):
 
                 p.local = 'no'
 
-                self.assertEqual('hello', p.download())
+                self.assertEqual('hello', p.get_protein_file())
