@@ -71,7 +71,7 @@ class ProdySelect(object):
         Returns a prody structure containing only the protein
         """
 
-        return select(self._structure, "protein")
+        return select(structure = self._structure, string = "protein")
 
     def protein_and_ions(self):
         """
@@ -80,7 +80,7 @@ class ProdySelect(object):
 
         try:
 
-            return select(self._structure, "protein or ion")
+            return select(structure = self._structure, string = "protein or ion")
 
         except:
 
@@ -96,7 +96,7 @@ class ProdySelect(object):
 
         resname = resname.strip().upper()
 
-        return select(self._structure, 'resname ' + resname)
+        return select(structure = self._structure, string = 'resname ' + resname)
 
     def resnum(self, resnum):
         """
@@ -106,4 +106,4 @@ class ProdySelect(object):
         resnum :: integer
         """
 
-        return select(self._structure, f"resnum {resnum}")
+        return select(structure = self._structure, string = f"resnum {resnum}")
