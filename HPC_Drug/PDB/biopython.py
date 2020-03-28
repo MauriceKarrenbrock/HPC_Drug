@@ -28,9 +28,12 @@ def parse_pdb(protein_id, file_name):
     
     return structure """
 
+    if type(protein_id) != str or type(file_name) != str:
+        raise TypeError("Both protein_id and file_name must be strings")
+
     parser = Bio.PDB.PDBParser()
 
-    structure = parser.get_structure(protein_id, file_name, )
+    structure = parser.get_structure(protein_id, file_name)
 
     return structure
 
@@ -43,6 +46,9 @@ def parse_mmcif(protein_id, file_name):
     
     return structure"""
 
+    if type(protein_id) != str or type(file_name) != str:
+        raise TypeError("Both protein_id and file_name must be strings")
+
     parser = Bio.PDB.MMCIFParser()
 
     structure = parser.get_structure(protein_id, file_name)
@@ -53,7 +59,8 @@ def structure_factory(Protein):
     """This is a function that uses the right
     parse_{} function depending on Protein.file_type
 
-    Protein :: HPC_Drug.structures.Protein instance 
+    Protein :: HPC_Drug.structures.Protein instance or HPC_Drug.structures.Ligand instance
+    or wathever has a file_type and filename attribute
     
     return structure"""
     
@@ -69,12 +76,15 @@ def structure_factory(Protein):
 
     else:
 
-        TypeError(f"Protein.file_type can only be 'cif' or 'pdb' not {Protein.file_type}")
+        raise TypeError(f"Protein.file_type can only be 'cif' or 'pdb' not {Protein.file_type}")
 
 
 def mmcif2dict(file_name):
     """Uses Bio.PDB.MMCIF2DICT to return a dictionary
     of the mmcif file"""
+
+    if type(file_name) != str:
+        raise TypeError("file_name must be a string")
 
     return Bio.PDB.MMCIF2Dict.MMCIF2Dict(file_name)
 
@@ -102,6 +112,9 @@ def write_pdb(structure, file_name = "file.pdb"):
         raise TypeError("Need a Bio.PDB.Entity instance like:\n"
                         "Structure, Model, Chain, Residue, list of Atoms.")
 
+    if type(file_name) != str:
+        raise TypeError("file_name must be a string")
+
     writer = Bio.PDB.PDBIO()
 
     writer.set_structure(structure)
@@ -128,6 +141,9 @@ def write_mmcif(structure, file_name = "file.cif"):
         raise TypeError("Need a Bio.PDB.Entity instance like:\n"
                         "Structure, Model, Chain, Residue, list of Atoms.")
 
+    if type(file_name) != str:
+        raise TypeError("file_name must be a string")
+
     writer = Bio.PDB.MMCIFIO()
 
     writer.set_structure(structure)
@@ -143,8 +159,8 @@ def write_dict2mmcif(dictionary, file_name = "file.cif"):
     returns nothing
     """
 
-    if type(dictionary) != dict:
-        raise TypeError(f"Need a dictionary not a {type(dictionary)}")
+    if type(file_name) != str:
+        raise TypeError("file_name must be a string")
     
     p = Bio.PDB.MMCIFIO()
     p.set_dict(dictionary)
