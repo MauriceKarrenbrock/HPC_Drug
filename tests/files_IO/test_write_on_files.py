@@ -12,6 +12,12 @@ import os
 
 from HPC_Drug.files_IO import write_on_files
 
+def _clean(file_name):
+
+    if os.path.exists(file_name):
+
+        os.remove(file_name)
+
 class test_write_file(unittest.TestCase):
 
     def test_wrong_input(self):
@@ -22,7 +28,9 @@ class test_write_file(unittest.TestCase):
 
             for i in wrong_inputs:
                 
-                write_on_files.write_file(lines = i, file_name = "dummy")
+                write_on_files.write_file(lines = i, file_name = "tests/files4tests/dummy.txt")
+
+        _clean("tests/files4tests/dummy.txt")
 
     
     def test_with_string(self):
@@ -40,7 +48,7 @@ class test_write_file(unittest.TestCase):
             self.assertEqual(lines, [small_string + '\n', small_string])
         finally:
 
-            os.remove(output_file)
+            _clean(output_file)
 
     def test_with_list(self):
 
@@ -60,7 +68,7 @@ class test_write_file(unittest.TestCase):
                 self.assertEqual(lines, expected_ouputs[i])
         finally:
 
-            os.remove(output_file)
+            _clean(output_file)
 
     def test_with_tuple(self):
 
@@ -80,7 +88,7 @@ class test_write_file(unittest.TestCase):
                 self.assertEqual(lines, expected_ouputs[i])
         finally:
 
-            os.remove(output_file)
+            _clean(output_file)
 
 
 def _create_input_file():
@@ -103,7 +111,9 @@ class test_append_file(unittest.TestCase):
 
             for i in wrong_inputs:
                 
-                write_on_files.append_file(lines = i, file_name = "dummy")
+                write_on_files.append_file(lines = i, file_name = "tests/files4tests/dummy.txt")
+
+            _clean("tests/files4tests/dummy.txt")
 
     
     def test_with_string(self):
@@ -122,7 +132,7 @@ class test_append_file(unittest.TestCase):
             self.assertEqual(lines, [existing_string + small_string + '\n', small_string])
         finally:
             
-            os.remove(input_file)
+            _clean(input_file)
 
     def test_with_list(self):
 
@@ -145,7 +155,7 @@ class test_append_file(unittest.TestCase):
 
             finally:
 
-                os.remove(input_file)
+                _clean(input_file)
 
     def test_with_tuple(self):
 
@@ -169,5 +179,5 @@ class test_append_file(unittest.TestCase):
 
             finally:
 
-                os.remove(input_file)
+                _clean(input_file)
 
