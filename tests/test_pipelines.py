@@ -14,61 +14,56 @@ import HPC_Drug.pipelines
 
 class test_Pipeline(unittest.TestCase):
 
-    def test_download_exception_wrong_local_input(self):
-
-        wrong_names = ('ggg', 'K', 'sissi')
+    @classmethod
+    def setUpClass(cls):
 
         # make a dummy __init__() function
         with unittest.mock.patch.object(HPC_Drug.pipelines.Pipeline(), "__init__", lambda x: None):
-            p = HPC_Drug.pipelines.Pipeline()
-            
-            for name in wrong_names:
-                with self.assertRaises(ValueError):
 
-                    p.local = name
+            cls.pipeline = HPC_Drug.pipelines.Pipeline()
 
-                    name = p.get_protein_file()
+
+    def test_download_exception_wrong_local_input(self):
+
+        with self.assertRaises(ValueError):
+
+            self.pipeline.local = "WRONG"
+
+            self.pipeline.get_protein_file()
 
     
     def test_download_with_local_yes_existing_file(self):
 
-        # make a dummy __init__() function
-        with unittest.mock.patch.object(HPC_Drug.pipelines.Pipeline(), "__init__", lambda x: None):
-            with unittest.mock.patch("os.path.exists", lambda x: True):
+        with unittest.mock.patch("HPC_Drug.pipelines.os.path.exists", return_value = True):
+            
+            self.pipeline.local = 'yes'
 
-                p = HPC_Drug.pipelines.Pipeline()
-                
-                p.local = 'yes'
+            self.pipeline.protein_filename = 'test_name'
 
-                p.protein_filename = 'dummy_name'
-
-                self.assertEqual('dummy_name', p.get_protein_file())
+            self.assertEqual('test_name', self.pipeline.get_protein_file())
 
     def test_download_with_local_yes_not_existing_file(self):
+        
+            with unittest.mock.patch("HPC_Drug.pipelines.os.path.exists", return_value = False):
 
-        # make a dummy __init__() function
-        with unittest.mock.patch.object(HPC_Drug.pipelines.Pipeline(), "__init__", lambda x: None):
-            with unittest.mock.patch("os.path.exists", lambda x: False):
-                with unittest.mock.patch("HPC_Drug.file_manipulation.download_protein_structure", lambda x, y, z: 'hello'):
+                with self.assertRaises(FileNotFoundError):
 
-                    p = HPC_Drug.pipelines.Pipeline()
-                    
-                    p.local = 'yes'
+                    self.pipeline.local = 'yes'
 
-                    self.assertEqual('hello', p.get_protein_file())
-
-                    
-
-
+                    self.pipeline.get_protein_file()
 
     def test_download_with_local_no(self):
 
-        # make a dummy __init__() function
-        with unittest.mock.patch.object(HPC_Drug.pipelines.Pipeline(), "__init__", lambda x: None):
-            with unittest.mock.patch("HPC_Drug.file_manipulation.download_protein_structure", lambda x, y, z: 'hello'):
-                
-                p = HPC_Drug.pipelines.Pipeline()
+        with unittest.mock.patch("HPC_Drug.PDB.download_pdb.download", return_value = "test", autospec=True) as mocked_function:
+            
+            self.pipeline.local = 'no'
 
-                p.local = 'no'
+            self.pipeline.protein_filetype = "cif"
 
-                self.assertEqual('hello', p.get_protein_file())
+            self.pipeline.protein_id = "idid"
+
+            output = self.pipeline.get_protein_file()
+
+            mocked_function.assert_called_once_with(protein_id = self.pipeline.protein_id, file_type = self.pipeline.protein_filetype, pdir = None)
+
+            self.assertEqual(output, 'test')

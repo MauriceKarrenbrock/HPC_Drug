@@ -12,6 +12,8 @@ A copy of the license must be included with any copy of the program or part of i
 import subprocess
 import os
 
+from HPC_Drug import PDB
+
 from HPC_Drug import file_manipulation
 from HPC_Drug import structures
 from HPC_Drug import pipeline_functions
@@ -62,7 +64,7 @@ class Pipeline(object):
     def __init__(self,
                 protein = None,
                 protein_filetype = 'cif',
-                local = None,
+                local = 'no',
                 filepath = None,
                 ligand = None,
                 ligand_elaboration_program = 'primadorac',
@@ -87,7 +89,7 @@ class Pipeline(object):
         if self.protein_filetype == None:
             self.protein_filetype = 'cif'
 
-        self.local = local
+        self.local = local.strip().lower()
         self.protein_filename = filepath
 
         self.model = Protein_model
@@ -140,14 +142,18 @@ class Pipeline(object):
         otherwise returns the given path without modifying it"""
 
         #checks if I got a wrong input
-        if self.local.lower() != 'no' and self.local.lower() != 'yes':
+        if self.local != 'no' and self.local != 'yes':
             raise ValueError(f'local cannot be {self.local} it can only be "yes" "no" or omitted')
 
         #if local = no or if the given path doesn't exist it will download the file in the given format (mmcif or pdb)
-        if self.local == 'no' or self.local == None or (not os.path.exists(self.protein_filename)):
+        if self.local == 'no' or self.local == None:
             
             #downloads the pdb or mmcif returning it's name
-            return file_manipulation.download_protein_structure(self.protein_id, self.protein_filetype, None)
+            return PDB.download_pdb.download(protein_id = self.protein_id, file_type = self.protein_filetype, pdir = None)
+
+        elif self.local == 'yes' and (not os.path.exists(self.protein_filename)):
+
+            raise FileNotFoundError(f"File {self.protein_filename} does not exist")
 
         else:
             #protein filename points to an existing file
@@ -165,7 +171,7 @@ class NoLigand_Pipeline(Pipeline):
         """The execution of the pipeline"""
 
         #If requested in input will download pdb file
-        #If the given local file doesn't exist will download pdb
+        #If the given local file doesn't exist raises FileNotFounfError
         #otherwise returns the given path without modifying it
         self.protein_filename = self.get_protein_file()
         
