@@ -19,8 +19,8 @@ class TestOrient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        Protein = HPC_Drug.structures.Protein(protein_id = '2gz7',
-                filename = 'tests/files4tests/2gz7.cif',
+        Protein = HPC_Drug.structures.protein.Protein(protein_id = '2gz7',
+                pdb_file = 'tests/files4tests/2gz7.cif',
                 structure = None,
                 substitutions_dict = None,
                 sulf_bonds = None,
@@ -31,13 +31,13 @@ class TestOrient(unittest.TestCase):
                 gro_file = None,
                 top_file = None)
 
-        Ligand = HPC_Drug.structures.Ligand(ligand_resname = 'D3F',
-                filename = None,
+        Ligand = HPC_Drug.structures.ligand.Ligand(resname = 'D3F',
+                pdb_file = None,
                 structure = None,
                 file_type = 'pdb',
-                topology_file = None,
-                param_file = None,
-                res_number = 307,
+                tpg_file = None,
+                prm_file = None,
+                resnum = 307,
                 itp_file = None)
 
         cls.orient_class = HPC_Drug.orient.Orient(Protein = Protein,

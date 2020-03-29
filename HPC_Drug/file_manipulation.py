@@ -23,37 +23,10 @@ import pdbfixer
 import simtk.openmm.app
 
 
-
-
-
-def download_protein_structure(protein_id, file_type = 'cif', pdir = None):
-    """The function downloads a PDB or a mmCIF from wwwPDB in a selected directory
-    the default directory is the working directory
-    it returns the filename (str)"""
-    
-
-    if file_type == 'cif':
-        file_type = 'mmCif'
-    
-    elif file_type != 'pdb' and file_type != 'cif':
-        raise ValueError(f"Must be 'pdb' or 'cif' not {file_type}")
-    
-    if pdir == None:
-        pdir = os.getcwd()
-
-    pdbl = Bio.PDB.PDBList()
-    filename = pdbl.retrieve_pdb_file(protein_id, False, pdir, file_format = file_type, overwrite = True)
-    
-    if not os.path.exists(filename):
-        raise FileNotFoundError(f'Was not able to download the protein or to find {filename}')
-    
-    else:
-        return filename
-
 def mmcif2pdb(Protein = None):
     """Takes a Protein instance and returns one
     if Protein.file_type == 'cif' converts the file in a pdb
-    and updates Protein.file_type and Protein.filename
+    and updates Protein.file_type and Protein.pdb_file
     otherwise does nothing"""
 
     if Protein == None:
@@ -64,17 +37,17 @@ def mmcif2pdb(Protein = None):
 
     elif Protein.file_type == 'cif':
 
-        new_name = Protein.filename.rsplit('.', 1)[0] + '.pdb'
+        new_name = Protein.pdb_file.rsplit('.', 1)[0] + '.pdb'
 
         p = Bio.PDB.MMCIFParser()
 
-        struct = p.get_structure(Protein.protein_id, Protein.filename)
+        struct = p.get_structure(Protein.protein_id, Protein.pdb_file)
 
         s = Bio.PDB.PDBIO()
         s.set_structure(struct)
         s.save(new_name)
 
-        Protein.filename = new_name
+        Protein.pdb_file = new_name
         Protein.file_type = 'pdb'
 
         return Protein
@@ -520,7 +493,7 @@ class SubstitutionParser(FileCruncer):
         if True will only select Protein.model model and Protein.chain chain
         from the given structure"""
         
-        if Protein.filename == None or ligand_resnames == None:
+        if Protein.pdb_file == None or ligand_resnames == None:
             raise TypeError('Need a valid file and ligand_resnames, None is not valid')
         
         # If the ligand resname is a single string I transform it in an iterable object
@@ -539,7 +512,7 @@ class SubstitutionParser(FileCruncer):
         else:
             raise TypeError(f'"{Protein.file_type}" is not a valid type\n only "cif" and "pdb"')
 
-        struct = p.get_structure(Protein.protein_id, Protein.filename)
+        struct = p.get_structure(Protein.protein_id, Protein.pdb_file)
 
         if chain_model_selection == True:
             try:
@@ -564,7 +537,7 @@ class SubstitutionParser(FileCruncer):
         of the seqres
 
         takes a Protein intance and returns a Protein
-        Protein.filename must be a mmCIF file
+        Protein.pdb_file must be a mmCIF file
 
         Very usefull when you need to know which cysteines make disulf bonds
         but you have to change the resnumbers"""
@@ -575,7 +548,7 @@ class SubstitutionParser(FileCruncer):
         #Iterate on the residues in order to check for cysteines
         cys_dict = {}
         i = 0
-        with open(Protein.filename, 'r') as f:
+        with open(Protein.pdb_file, 'r') as f:
             for line in f:
                 if line[0:4] == 'ATOM':
 
@@ -647,10 +620,10 @@ def select_model_chain_custom(Protein = None):
     if Protein == None:
         raise Exception('Protein cannot be None type')
 
-    if Protein.protein_id == None or Protein.filename == None:
+    if Protein.protein_id == None or Protein.pdb_file == None:
         raise ValueError('protein_id and input_filename must be given')
-    elif not os.path.exists(Protein.filename):
-        raise ValueError(f"{Protein.filename} not found")
+    elif not os.path.exists(Protein.pdb_file):
+        raise ValueError(f"{Protein.pdb_file} not found")
 
     #Bring None arguments to default
     if Protein.model == None:
@@ -687,7 +660,7 @@ def select_model_chain_custom(Protein = None):
     else:
         raise TypeError(f"Protein.file_type must be of 'cif' or 'pdb' type not {Protein.file_type}")
    
-    struct = p.get_structure(Protein.protein_id, Protein.filename)
+    struct = p.get_structure(Protein.protein_id, Protein.pdb_file)
 
     if Protein.file_type == 'pdb':
         s = Bio.PDB.PDBIO()
@@ -696,10 +669,10 @@ def select_model_chain_custom(Protein = None):
         s = Bio.PDB.MMCIFIO()
 
     s.set_structure(struct[Protein.model][Protein.chain])
-    s.save(Protein.filename)
+    s.save(Protein.pdb_file)
 
-    if not os.path.exists(Protein.filename):
-        raise Exception(f'Could not save {Protein.filename} file')
+    if not os.path.exists(Protein.pdb_file):
+        raise Exception(f'Could not save {Protein.pdb_file} file')
 
     return Protein
 

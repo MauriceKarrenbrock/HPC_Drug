@@ -70,7 +70,7 @@ class test_parse_structure_factory(unittest.TestCase):
 
     def test_with_wrong_input(self):
 
-        with mock.patch('HPC_Drug.structures.Protein', file_type = "WRONG", autospec=True) as mocked_protein:
+        with mock.patch('HPC_Drug.structures.protein.Protein', file_type = "WRONG", autospec=True) as mocked_protein:
 
             with self.assertRaises(TypeError):
 
@@ -78,7 +78,7 @@ class test_parse_structure_factory(unittest.TestCase):
 
     def test_with_pdb(self):
 
-        with mock.patch('HPC_Drug.structures.Protein', file_type = "pdb", filename = "file.pdb", protein_id = "idid") as mocked_protein:
+        with mock.patch('HPC_Drug.structures.protein.Protein', file_type = "pdb", pdb_file = "file.pdb", protein_id = "idid", autospec=True) as mocked_protein:
 
             with mock.patch('HPC_Drug.PDB.biopython.parse_pdb', return_value = "test") as mocked_parser:
 
@@ -90,7 +90,7 @@ class test_parse_structure_factory(unittest.TestCase):
 
     def test_with_mmcif(self):
 
-        with mock.patch('HPC_Drug.structures.Protein', file_type = "cif", filename = "file.cif", protein_id = "idid", autospec=True) as mocked_protein:
+        with mock.patch('HPC_Drug.structures.protein.Protein', file_type = "cif", pdb_file = "file.cif", protein_id = "idid", autospec=True) as mocked_protein:
 
             with mock.patch('HPC_Drug.PDB.biopython.parse_mmcif', return_value = "test") as mocked_parser:
 

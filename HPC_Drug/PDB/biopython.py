@@ -59,8 +59,8 @@ def structure_factory(Protein):
     """This is a function that uses the right
     parse_{} function depending on Protein.file_type
 
-    Protein :: HPC_Drug.structures.Protein instance or HPC_Drug.structures.Ligand instance
-    or wathever has a file_type and filename attribute
+    Protein :: HPC_Drug.structures.protein.Protein instance or HPC_Drug.structures.ligand.Ligand instance
+    or wathever has a file_type and pdb_file attribute
     
     return structure"""
     
@@ -68,11 +68,11 @@ def structure_factory(Protein):
 
     if file_type == 'cif':
 
-        return parse_mmcif(protein_id = Protein.protein_id, file_name = Protein.filename)
+        return parse_mmcif(protein_id = Protein.protein_id, file_name = Protein.pdb_file)
 
     elif file_type == 'pdb':
 
-        return parse_pdb(protein_id = Protein.protein_id, file_name = Protein.filename)
+        return parse_pdb(protein_id = Protein.protein_id, file_name = Protein.pdb_file)
 
     else:
 

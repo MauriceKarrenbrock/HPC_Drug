@@ -57,7 +57,7 @@ class Orient(object):
         
         if entity == None:
             Pp = Bio.PDB.PDBParser()
-            entity = Pp.get_structure(self.Protein.protein_id, self.Protein.filename)
+            entity = Pp.get_structure(self.Protein.protein_id, self.Protein.pdb_file)
         
         # Structure, Model, Chain, Residue
         if isinstance(entity, Entity.Entity):
@@ -114,7 +114,7 @@ class Orient(object):
 
         if structure == None:
             Pp = Bio.PDB.PDBParser()
-            structure = Pp.get_structure(self.Protein.protein_id, self.Protein.filename)
+            structure = Pp.get_structure(self.Protein.protein_id, self.Protein.pdb_file)
 
         if isinstance(structure, Entity.Entity):
             atom_list = structure.get_atoms()
@@ -184,7 +184,7 @@ class Orient(object):
 
         if structure == None:
             Pp = Bio.PDB.PDBParser()
-            structure = Pp.get_structure(self.Protein.protein_id, self.Protein.filename)
+            structure = Pp.get_structure(self.Protein.protein_id, self.Protein.pdb_file)
         
         if rot_matrix == None:
             tmp, tmp_1, rot_matrix = self.calculate_moment_of_intertia_tensor()
@@ -316,8 +316,8 @@ class Orient(object):
 
             ligand_resnames = []
             for ligand in pipeline_functions.get_iterable(Ligand):
-                if ligand.ligand_resname not in ligand_resnames:
-                    ligand_resnames.append(ligand.ligand_resname)
+                if ligand.resname not in ligand_resnames:
+                    ligand_resnames.append(ligand.resname)
 
             c = file_manipulation.SubstitutionParser()
             ligand_resnames = c.get_ligand_resnum(Protein = Protein,
@@ -329,13 +329,13 @@ class Orient(object):
             Ligand = []
 
             for ligand in ligand_resnames:
-                Ligand.append(structures.Ligand(ligand_resname = ligand[0],
-                                                filename = None,
+                Ligand.append(structures.ligand.Ligand(resname = ligand[0],
+                                                pdb_file = None,
                                                 structure = None,
                                                 file_type = 'pdb',
-                                                topology_file = None,
-                                                param_file = None,
-                                                res_number = ligand[1]))
+                                                tpg_file = None,
+                                                prm_file = None,
+                                                resnum = ligand[1]))
 
             return Ligand
 
@@ -351,24 +351,24 @@ class Orient(object):
         #Extract the protein with ProDy, write a new pdb
         #and then get the Biopython protein structure
         c = file_manipulation.PDBCruncer()
-        tmp_protein = structures.Protein(protein_id= Protein.protein_id)
-        tmp_protein.structure = c.get_protein(Protein.protein_id, Protein.filename)
-        tmp_protein.filename = tmp_protein.write_PDB(f"{Protein.protein_id}_protein.pdb")
+        tmp_protein = structures.protein.Protein(protein_id= Protein.protein_id)
+        tmp_protein.structure = c.get_protein(Protein.protein_id, Protein.pdb_file)
+        tmp_protein.write(file_name = f"{Protein.protein_id}_protein.pdb", struct_type = 'biopython')
 
         p = Bio.PDB.PDBParser()
         
-        Protein.structure = p.get_structure(tmp_protein.protein_id, tmp_protein.filename)
+        Protein.structure = p.get_structure(tmp_protein.protein_id, tmp_protein.pdb_file)
 
         #doing the same thing for every ligand
         ligand_structures = []
         for i, ligand in enumerate(pipeline_functions.get_iterable(Ligand)):
             ligand.structure = c.get_ligand(protein_id = Protein.protein_id,
-                                            filename = Protein.filename,
-                                            ligand_name =ligand.ligand_resname,
-                                            ligand_resnumber = ligand.res_number)
+                                            filename = Protein.pdb_file,
+                                            ligand_name =ligand.resname,
+                                            ligand_resnumber = ligand.resnum)
 
-            ligand.filename = ligand.write_PDB(f"{Protein.protein_id}_lgand{i}.pdb")
-            ligand.structure = p.get_structure(Protein.protein_id, ligand.filename)
+            ligand.write(file_name = f"{Protein.protein_id}_lgand{i}.pdb", struct_type = 'prody')
+            ligand.structure = p.get_structure(Protein.protein_id, ligand.pdb_file)
             ligand_structures.append(ligand.structure)
 
         return Protein.structure, ligand_structures
@@ -393,7 +393,7 @@ class Orient(object):
         atom_number = []
         resname = []
 
-        with open(Protein.filename, 'r') as f:
+        with open(Protein.pdb_file, 'r') as f:
             for line in f:
                 if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
 
@@ -404,7 +404,7 @@ class Orient(object):
         ligand_resnames = []
 
         for ligand in pipeline_functions.get_iterable(Ligand):
-            ligand_resnames.append(ligand.ligand_resname)
+            ligand_resnames.append(ligand.resname)
         
         ligand_atoms = []
 
@@ -432,7 +432,7 @@ class Orient(object):
 
             for n, i in enumerate(atom_number):
 
-                if resname[n] == ligand.ligand_resname:
+                if resname[n] == ligand.resname:
                     M_l = max(int(i), M_l)
                     m_l = min(int(i), m_l)
             
@@ -442,7 +442,7 @@ class Orient(object):
 
     def atom_numbers(self, Protein = None, residue_id = None):
         """takes the first and last atom number of the residue number
-        residue_id of the given Protein.filename
+        residue_id of the given Protein.pdb_file
         
         must be a pdb file
         
@@ -456,7 +456,7 @@ class Orient(object):
 
         atom_number = []
 
-        with open(Protein.filename, 'r') as f:
+        with open(Protein.pdb_file, 'r') as f:
             for line in f:
                 if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
                     if line[22:26].strip() == str(residue_id):
@@ -546,8 +546,8 @@ class Orient(object):
         else:
             raise TypeError(f'"{Protein.file_type}" is not a valid type\n only "cif" and "pdb"')
 
-        structure = p.get_structure(Protein.protein_id, Protein.filename)
-        structure2 = p.get_structure(Protein.protein_id, Protein.filename)
+        structure = p.get_structure(Protein.protein_id, Protein.pdb_file)
+        structure2 = p.get_structure(Protein.protein_id, Protein.pdb_file)
 
         try:
             structure = structure[Protein.model][Protein.chain]
@@ -558,9 +558,9 @@ class Orient(object):
         #I refresh the ligand's residue id
         Sub_Parser = file_manipulation.SubstitutionParser()
         TMP_list = Sub_Parser.get_ligand_resnum(Protein = Protein,
-                                                    ligand_resnames = Ligand.ligand_resname,
+                                                    ligand_resnames = Ligand.resname,
                                                     chain_model_selection = True)
-        Ligand.res_number = TMP_list[0][1]
+        Ligand.resnum = TMP_list[0][1]
 
         output_list = []
 
@@ -571,7 +571,7 @@ class Orient(object):
         #residues then for the nearest atom of the residue, if it's distance is <= cutoff
         #it is a hot residue
         for res in structure:
-            if res.id[1] == Ligand.res_number:
+            if res.id[1] == Ligand.resnum:
                 for atom in res:
                     
                     for residue in structure2:
@@ -579,7 +579,7 @@ class Orient(object):
                         #checking if I didn't already count it (dont't want to count a residue twice)
                         if residue.id[1] not in already_counted_list:
                             #checking if it's a valid residue
-                            is_valid_residue = residue.id[1] != Ligand.res_number and residue.resname not in important_lists.metals and residue.resname not in important_lists.trash and residue.id[0].strip() == ''
+                            is_valid_residue = residue.id[1] != Ligand.resnum and residue.resname not in important_lists.metals and residue.resname not in important_lists.trash and residue.id[0].strip() == ''
                             if is_valid_residue:
 
                                 COM_ligand_atom, COM_residue, distance = self.center_mass_distance(pipeline_functions.get_iterable(atom), residue)

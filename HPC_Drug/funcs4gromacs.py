@@ -45,7 +45,7 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
         raise NotImplementedError(substitution)
 
     p = Bio.PDB.PDBParser()
-    struct = p.get_structure(Protein.protein_id, Protein.filename)
+    struct = p.get_structure(Protein.protein_id, Protein.pdb_file)
 
     #I iterate through the structure
     for model in struct:
@@ -80,7 +80,7 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
 
 
     Protein.structure = struct
-    Protein.filename = Protein.write_PDB(Protein.filename, 'biopython')
+    Protein.write(file_name = Protein.pdb_file, struct_type = 'biopython')
 
     return Protein
 
@@ -280,8 +280,8 @@ class GromacsInput(object):
 
         try:
             #make a pdb file from the gro file
-            self.Protein.filename = gro2pdb(gro_file = output_file,
-                                            pdb_file = self.Protein.filename,
+            self.Protein.pdb_file = gro2pdb(gro_file = output_file,
+                                            pdb_file = self.Protein.pdb_file,
                                             chain = self.Protein.chain,
                                             gromacs_path = self.MD_program_path)
 
@@ -312,7 +312,7 @@ class GromacsMakeProteinGroTop(GromacsInput):
                 solvent_model = solvent_model)
         #protein_tpg_file is actually the protein model chosen through choices_file
         
-        self.command_string = f"{self.MD_program_path} pdb2gmx -f {self.Protein.filename} -o {self.Protein.protein_id}.gro -p {self.Protein.protein_id}.top < {self.output_filename}"
+        self.command_string = f"{self.MD_program_path} pdb2gmx -f {self.Protein.pdb_file} -o {self.Protein.protein_id}.gro -p {self.Protein.protein_id}.top < {self.output_filename}"
 
     
         self.template = [
@@ -368,7 +368,7 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
             self.output_filename = f"{Protein.protein_id}_joined.pdb"
         
         #make pdb for the protein from the gro file (in order to get the hidrogens)
-        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.gro_file} -o {Protein.filename}')
+        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.gro_file} -o {Protein.pdb_file}')
 
         #join the protein and ligand pdb
         Protein = funcs4orac.join_ligand_and_protein_pdb(Protein = self.Protein,
@@ -376,11 +376,11 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
                                                         output_filename = self.output_filename)
 
         #Create the joined gro file
-        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.filename} -d 1 -bt triclinic -angles 90 90 90 -o {Protein.protein_id}_joined.gro')
+        self.interact_with_gromacs(string = f'{MD_program_path} editconf -f {Protein.pdb_file} -d 1 -bt triclinic -angles 90 90 90 -o {Protein.protein_id}_joined.gro')
                                                         
         Protein.gro_file = f"{Protein.protein_id}_joined.gro"
 
-        Protein.filename = self.output_filename
+        Protein.pdb_file = self.output_filename
 
         #edit and rename the top file
         Protein = self._edit_top_file(Protein = Protein, Ligand = Ligand)
@@ -398,7 +398,7 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
         itp_insertion_string = ''
         for ligand in pipeline_functions.get_iterable(Ligand):
             itp_insertion_string = itp_insertion_string + f'#include "{ligand.itp_file}"\n'
-            compound_string = f'{ligand.ligand_resname}              1'
+            compound_string = f'{ligand.resname}              1'
             top.append(compound_string)
 
         for i in range(len(top)):
@@ -695,8 +695,8 @@ class GromacsSolvBoxInput(GromacsInput):
             self.interact_with_gromacs(string = string)
 
         #make a pdb file from the gro file
-        self.Protein.filename = gro2pdb(gro_file = output_file,
-                                        pdb_file = self.Protein.filename,
+        self.Protein.pdb_file = gro2pdb(gro_file = output_file,
+                                        pdb_file = self.Protein.pdb_file,
                                         chain = self.Protein.chain,
                                         gromacs_path = self.MD_program_path)
  
@@ -974,7 +974,7 @@ class GromacsREMInput(GromacsInput):
 
         for ligand in self.Ligand:
             hot_ids.append(str(Sub_Parser.get_ligand_resnum(Protein = self.Protein,
-                                                    ligand_resnames = ligand.ligand_resname,
+                                                    ligand_resnames = ligand.resname,
                                                     chain_model_selection = True)[0][1]))
 
         with open(self.Protein.top_file, 'r') as f:

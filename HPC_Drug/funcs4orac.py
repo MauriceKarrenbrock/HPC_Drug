@@ -48,7 +48,7 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
         raise NotImplementedError(substitution)
     
     p = Bio.PDB.PDBParser()
-    struct = p.get_structure(Protein.protein_id, Protein.filename)
+    struct = p.get_structure(Protein.protein_id, Protein.pdb_file)
 
     #I iterate through the structure
     for model in struct:
@@ -75,7 +75,7 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
                         residue.resname = 'HSD'
 
     Protein.structure = struct
-    Protein.filename = Protein.write_PDB(Protein.filename, 'biopython')
+    Protein.write(file_name = Protein.pdb_file, struct_type = 'biopython')
 
     return Protein
 
@@ -136,7 +136,7 @@ def custom_orac_seqres_from_PDB(Protein):
     param:: a Protein instance"""
 
     p = Bio.PDB.PDBParser()
-    struct = p.get_structure(Protein.protein_id, Protein.filename)
+    struct = p.get_structure(Protein.protein_id, Protein.pdb_file)
 
     Protein.seqres = []
     tmp_metals = []
@@ -198,7 +198,7 @@ def _get_protein_resnumber_cutoff(Protein = None):
     returns the cutoff to apply to start from one"""
 
     p = Bio.PDB.PDBParser()
-    s = p.get_structure(Protein.protein_id, Protein.filename)
+    s = p.get_structure(Protein.protein_id, Protein.pdb_file)
     r = s.get_residues()
 
     for i in r:
@@ -211,7 +211,7 @@ def _get_protein_resnumber_cutoff(Protein = None):
 def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename = None):
     """Puts the ligand and the protein together again in a pdb
     
-    returns a Protein istance with a updated Protein.filename"""
+    returns a Protein istance with a updated Protein.pdb_file"""
 
     if Protein == None:
         raise Exception('Protein cannot be None type')
@@ -228,7 +228,7 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
     #Shall implement something better in the future
     with open(output_filename, 'w') as joined:
                 
-        with open(Protein.filename, 'r') as prot:
+        with open(Protein.pdb_file, 'r') as prot:
             for line in prot:
 
                 line = line.strip().upper()
@@ -247,7 +247,7 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
    
                         joined.write(f"{line}\n")
 
-    Protein.filename = output_filename
+    Protein.pdb_file = output_filename
 
     return Protein
 
@@ -272,10 +272,10 @@ class OracInput(object):
 
         #input filename is the cleaned pdb with both protein and ligand
         #but no solvent or trash HETATMS
-        #if not explicitly given it is considered Protein.filename (standard behaviour)
+        #if not explicitly given it is considered Protein.pdb_file (standard behaviour)
         self.input_filename = input_filename
         if self.input_filename == None:
-            self.input_filename = self.Protein.filename
+            self.input_filename = self.Protein.pdb_file
         
         self.output_filename = output_filename
 
@@ -315,7 +315,7 @@ class OracInput(object):
 
         self.Protein.structure = self.orient.base_change_structure()
 
-        self.Protein.filename = self.Protein.write_PDB(filename = self.Protein.filename,
+        self.Protein.write(filename = self.Protein.pdb_file,
                                                     struct_type = 'biopython')
         
         lx, ly, lz = self.orient.create_box(self.Protein.structure)
@@ -355,7 +355,7 @@ class OracInput(object):
         returns the cutoff to apply to start from one"""
 
         p = Bio.PDB.PDBParser()
-        s = p.get_structure(Protein.protein_id, Protein.filename)
+        s = p.get_structure(Protein.protein_id, Protein.pdb_file)
         r = s.get_residues()
 
         for i in r:
@@ -376,7 +376,7 @@ class OracInput(object):
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
 
-            string = f"   READ_TPG_ASCII {ligand.topology_file} !! ligand"
+            string = f"   READ_TPG_ASCII {ligand.tpg_file} !! ligand"
 
             tmp.append(string)
 
@@ -395,7 +395,7 @@ class OracInput(object):
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
 
-            string = f"   READ_PRM_ASCII {ligand.param_file}  !! ligand"
+            string = f"   READ_PRM_ASCII {ligand.prm_file}  !! ligand"
 
             tmp.append(string)
 
@@ -415,7 +415,7 @@ class OracInput(object):
         residue_strings = []
 
         for ligand in pipeline_functions.get_iterable(Ligand):
-            with open(ligand.topology_file, 'r') as f:
+            with open(ligand.tpg_file, 'r') as f:
 
                 for line in f:
 
@@ -428,7 +428,7 @@ class OracInput(object):
                         break
 
                 else:
-                    raise Exception(f'Could not find the residue name in {Ligand.topology_file}') 
+                    raise Exception(f'Could not find the residue name in {Ligand.tpg_file}') 
 
         return '\n'.join(residue_strings)
 
@@ -638,7 +638,7 @@ class OracFirstOptimization(OracInput):
             
             self.write_box(), #"   CRYSTAL  150.0 150.0 150.0 90.0 90.0 90.0",
 
-            f"   READ_PDB  {self.Protein.filename}",
+            f"   READ_PDB  {self.Protein.pdb_file}",
 
             "&END",
             "",
@@ -805,7 +805,7 @@ class OracSolvBoxInput(OracInput):
             "&END",
             "&SOLUTE  !reads complex pdb file",
 
-            f"   COORDINATES {self.Protein.filename}",
+            f"   COORDINATES {self.Protein.pdb_file}",
 
             "&END",
             "&SOLVENT    !! generates solvent grid",
@@ -943,7 +943,7 @@ class OracREMInput(OracInput):
 
             self.write_box(),
 
-            f"READ_PDB {self.Protein.filename.rsplit('/', 1)[-1].strip()}",
+            f"READ_PDB {self.Protein.pdb_file.rsplit('/', 1)[-1].strip()}",
 
             "&END",
             "&PARAMETERS",
@@ -1050,7 +1050,7 @@ class OracREMInput(OracInput):
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
 
-            string = f"   READ_TPG_ASCII ../{ligand.topology_file.rsplit('/', 1)[-1].strip()} !! ligand"
+            string = f"   READ_TPG_ASCII ../{ligand.tpg_file.rsplit('/', 1)[-1].strip()} !! ligand"
 
             tmp.append(string)
 
@@ -1070,7 +1070,7 @@ class OracREMInput(OracInput):
         tmp = []
         for ligand in pipeline_functions.get_iterable(Ligand):
 
-            string = f"   READ_PRM_ASCII ../{ligand.param_file.rsplit('/', 1)[-1].strip()}  !! ligand"
+            string = f"   READ_PRM_ASCII ../{ligand.prm_file.rsplit('/', 1)[-1].strip()}  !! ligand"
 
             tmp.append(string)
 
@@ -1243,9 +1243,9 @@ class OracREMInput(OracInput):
         #for any existing ligand
         for ligand in pipeline_functions.get_iterable(self.Ligand):
             #copy the ligand topology file to the new directory
-            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.topology_file))), f"{self.Protein.protein_id}_REM")
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.tpg_file))), f"{self.Protein.protein_id}_REM")
             #copy the ligand parameter file to the new directory
-            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.param_file))), f"{self.Protein.protein_id}_REM")
+            shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.prm_file))), f"{self.Protein.protein_id}_REM")
 
         #copy the protein topology file to the new directory
         shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_tpg_file))), f"{self.Protein.protein_id}_REM")
@@ -1253,7 +1253,7 @@ class OracREMInput(OracInput):
         shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.protein_prm_file))), f"{self.Protein.protein_id}_REM")
 
         #copy the protein pdb file to the new directory
-        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.Protein.filename))), f"{self.Protein.protein_id}_REM")
+        shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(self.Protein.pdb_file))), f"{self.Protein.protein_id}_REM")
 
 
         #writes the orac input

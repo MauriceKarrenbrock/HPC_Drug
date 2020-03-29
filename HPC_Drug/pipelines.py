@@ -177,8 +177,8 @@ class NoLigand_Pipeline(Pipeline):
         
 
         #Declaring protein instance
-        Protein = structures.Protein(protein_id = self.protein_id,
-                                    filename = self.protein_filename,
+        Protein = structures.protein.Protein(protein_id = self.protein_id,
+                                    pdb_file = self.protein_filename,
                                     model = self.model,
                                     chain = self.chain,
                                     file_type = self.protein_filetype)
@@ -197,21 +197,21 @@ class NoLigand_Pipeline(Pipeline):
         elif self.protein_filetype == 'pdb':
 
             Protein.substitutions_dict = file_manipulation.get_metal_binding_residues_with_no_header(protein_id = Protein.protein_id,
-                                                                                                pdb_file = Protein.filename,
+                                                                                                pdb_file = Protein.pdb_file,
                                                                                                 mmcif_file = None,
                                                                                                 substitutions_dict = {},
                                                                                                 protein_chain = Protein.chain,
                                                                                                 protein_model = Protein.model)
 
             Protein.substitutions_dict, Protein.sulf_bonds = file_manipulation.get_disulf_bonds_with_no_header(protein_id = Protein.protein_id,
-                                                                                                pdb_file = Protein.filename,
+                                                                                                pdb_file = Protein.pdb_file,
                                                                                                 mmcif_file = None,
                                                                                                 substitutions_dict = Protein.substitutions_dict,
                                                                                                 protein_chain = Protein.chain,
                                                                                                 protein_model = Protein.model)
 
             ligand_resnames = file_manipulation.get_organic_ligands_with_no_header(protein_id = Protein.protein_id,
-                                                                                pdb_file = Protein.filename,
+                                                                                pdb_file = Protein.pdb_file,
                                                                                 mmcif_file = None,
                                                                                 protein_chain = Protein.chain,
                                                                                 protein_model = Protein.model)
@@ -223,9 +223,9 @@ class NoLigand_Pipeline(Pipeline):
         #changes non standard residues to standard ones
         #takes a PDBx/mmCIF and returns a PDBx/mmCIF
         #Or a PDB and returns a PDB
-        Protein.filename = repairer.add_missing_atoms(pdb_id = Protein.protein_id,
+        Protein.pdb_file = repairer.add_missing_atoms(pdb_id = Protein.protein_id,
                                                     file_type = Protein.file_type,
-                                                    input_filename = Protein.filename,
+                                                    input_filename = Protein.pdb_file,
                                                     repairing_method = self.repairing_method,
                                                     output_filename = None,
                                                     ph = self.ph,
@@ -250,17 +250,17 @@ class NoLigand_Pipeline(Pipeline):
         #gets the protein's structure from the pdb
         #The only HETATM remaining are the metal ions
         Protein.structure = cruncer.get_protein(protein_id = Protein.protein_id,
-                                                filename = Protein.filename,
+                                                filename = Protein.pdb_file,
                                                 structure = None)
 
         #Temporarely save th filename that contains the ligand in order to extract it later
-        tmp_pdb_file = Protein.filename
+        tmp_pdb_file = Protein.pdb_file
 
         #Write Protein only pdb
-        Protein.filename = Protein.write_PDB(f"{Protein.protein_id}_protein.pdb")
+        Protein.write(file_name = f"{Protein.protein_id}_protein.pdb", struct_type = 'prody')
 
         #removes the remaining trash ions
-        Protein.filename = file_manipulation.remove_trash_metal_ions(pdb_file = Protein.filename)
+        Protein.pdb_file = file_manipulation.remove_trash_metal_ions(pdb_file = Protein.pdb_file)
         
         #extracts the ligands structures (if any) from the pdb
         #creates a ligand structure and writes a pdb
@@ -276,27 +276,27 @@ class NoLigand_Pipeline(Pipeline):
             for i, ligand_res in enumerate(pipeline_functions.get_iterable(ligand_resnames)):
                 Ligand.append(None)
 
-                Ligand[i] = structures.Ligand(ligand_resname = ligand_res[0],
-                                            filename = None,
+                Ligand[i] = structures.ligand.Ligand(resname = ligand_res[0],
+                                            pdb_file = None,
                                             structure = None,
                                             file_type = 'pdb',
-                                            topology_file = None,
-                                            param_file = None,
-                                            res_number= ligand_res[1])
+                                            tpg_file = None,
+                                            prm_file = None,
+                                            resnum = ligand_res[1])
                                             
                 Ligand[i].structure = cruncer.get_ligand(protein_id = Protein.protein_id,
                                                         filename = tmp_pdb_file,
-                                                        ligand_name = Ligand[i].ligand_resname,
+                                                        ligand_name = Ligand[i].resname,
                                                         structure = None,
-                                                        ligand_resnumber = Ligand[i].res_number)
+                                                        ligand_resnumber = Ligand[i].resnum)
 
                 #tries to write the ligand pdb
                 try:
-                    Ligand[i].ligand_filename = Ligand[i].write_PDB(f'{Ligand[i].ligand_resname}_{Protein.protein_id}_lgand{i}.pdb')
+                    Ligand[i].write(file_name = f'{Ligand[i].resname}_{Protein.protein_id}_lgand{i}.pdb', struct_type = 'prody')
                 except TypeError as err:
-                    raise TypeError(f'{err.args}\ncannot make ligand pdb file for {Ligand[i].ligand_resname}')
+                    raise TypeError(f'{err.args}\ncannot make ligand pdb file for {Ligand[i].resname}')
                 except Exception as err:
-                    raise Exception(f'{err} {err.args}\ncannot make ligand pdb file for {Ligand[i].ligand_resname}')
+                    raise Exception(f'{err} {err.args}\ncannot make ligand pdb file for {Ligand[i].resname}')
         else:
             Ligand = None
 
@@ -309,15 +309,15 @@ class NoLigand_Pipeline(Pipeline):
                                                         primadorac_path = self.ligand_elaboration_program_path,
                                                         ph = self.ph)
                 
-                #As primadorac renames th ligand resnumber as 1
+                #As primadorac renames the ligand resnumber as 1
                 #and it could create problems they are renamed as -(i + 1)
                 #with maximum number -9
                 #Not very robust, for sure not the best solution
                 for i, ligand in enumerate(pipeline_functions.get_iterable(Ligand)):
-                    with open(ligand.ligand_filename, 'r') as f:
+                    with open(ligand.pdb_file, 'r') as f:
                         lines = f.readlines()
                     
-                    with open(ligand.ligand_filename, 'w') as f:
+                    with open(ligand.pdb_file, 'w') as f:
                         for line in lines:
                             line = list(line)
                             line[24] = '-'
@@ -343,10 +343,10 @@ class NoLigand_Pipeline(Pipeline):
             #a patch to add possible missing TER lines in pdb files
             #adressing issues #2733 and #2736 on biopython github
             #Will be removed when the issues will be solved
-            with open(Protein.filename, 'r') as f:
+            with open(Protein.pdb_file, 'r') as f:
                 lines = f.readlines()
 
-            with open(Protein.filename, 'w') as f:
+            with open(Protein.pdb_file, 'w') as f:
                 for i in range(len(lines)-1):
                     if lines[i][0:4] == 'ATOM' and lines[i + 1][0:6] == 'HETATM':
                         #writes a TER line on the last ATOM of each chain (not robust for not natural AA)
@@ -449,7 +449,7 @@ class NoLigand_Pipeline(Pipeline):
                                                         MD_program_path = self.MD_program_path)
 
 
-            Protein.filename = first_opt.execute()
+            Protein.pdb_file = first_opt.execute()
 
             if Ligand == None:
                 raise TypeError('I could not find organic ligands in the structure\n\
@@ -467,7 +467,7 @@ class NoLigand_Pipeline(Pipeline):
                                                 MD_program_path = self.MD_program_path,
                                                 solvent_pdb = self.solvent_pdb)
             
-            Protein.filename = solv_box.execute()
+            Protein.pdb_file = solv_box.execute()
 
 
             #Create the REM input

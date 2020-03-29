@@ -20,7 +20,7 @@ def parse_mmcif(Protein):
     the residues binding a metal, the organic ligand resname (if present)
     the sulfidic bonds and the seqres
 
-    takes and resturns a structures.Protein instance and a list of
+    takes and resturns a structures.protein.Protein instance and a list of
     ligand resnames and resnumbers [[resname, resnumber], [..., ...], ...]
 
     parses the seqres from the mmcif header if possible
@@ -30,7 +30,7 @@ def parse_mmcif(Protein):
     subst_parser = file_manipulation.SubstitutionParser()
 
     Protein.substitutions_dict, Protein.sulf_bonds, ligand_resnames =\
-        subst_parser.parse_substitutions_PDB(file_name = Protein.filename,
+        subst_parser.parse_substitutions_PDB(file_name = Protein.pdb_file,
                                             protein_chain = Protein.chain)
     
     ligand_resnames = subst_parser.get_ligand_resnum(Protein = Protein,
@@ -38,7 +38,7 @@ def parse_mmcif(Protein):
                                                     chain_model_selection = True)
 
     try:
-        Protein.seqres = get_seqres_mmcif_header(filename = Protein.filename)
+        Protein.seqres = get_seqres_mmcif_header(filename = Protein.pdb_file)
     
     except:
         Protein.seqres = None
@@ -54,7 +54,7 @@ def get_seqres_mmcif_header(Protein = None, filename = None):
     and a list if given a filename"""
 
     if Protein != None:
-        cif_dict = Bio.PDB.MMCIF2Dict.MMCIF2Dict(Protein.filename)
+        cif_dict = Bio.PDB.MMCIF2Dict.MMCIF2Dict(Protein.pdb_file)
         Protein.seqres = cif_dict['_pdbx_poly_seq_scheme.mon_id']
         return Protein
 
@@ -84,7 +84,7 @@ def update_sulf_bonds(Protein = None):
         p = Bio.PDB.MMCIFParser()
 
     #parsing the new pdb to check the new cys resnums
-    struct = p.get_structure(Protein.protein_id, Protein.filename)
+    struct = p.get_structure(Protein.protein_id, Protein.pdb_file)
 
     residues = struct.get_residues()
 

@@ -55,18 +55,18 @@ def run_primadorac(ligand_list = None, primadorac_path = None, ph = 7.0):
                 prefix = prefix + '-p'
 
                 ligand_list[i].ligand_filename = prefix + '.pdb'
-                ligand_list[i].topology_file = prefix + '.tpg'
-                ligand_list[i].param_file = prefix + '.prm'
+                ligand_list[i].tpg_file = prefix + '.tpg'
+                ligand_list[i].prm_file = prefix + '.prm'
                 ligand_list[i].itp_file = prefix + '.itp'
 
                 #some old versions of primadorac do mess up the itp names
                 if not os.path.exists(ligand_list[i].itp_file):
-                    ligand_list[i].itp_file = rename_itp(ligand_resname = ligand_list[i].ligand_resname)
+                    ligand_list[i].itp_file = rename_itp(ligand_resname = ligand_list[i].resname)
 
                 #primadorac calls all ligands LIG inside the itp
                 #this functions renames it to the right name
                 ligand_list[i].itp_file = edit_itp(
-                                                    ligand_resname = ligand_list[i].ligand_resname,
+                                                    ligand_resname = ligand_list[i].resname,
                                                     itp_file = ligand_list[i].itp_file)
 
     return ligand_list
