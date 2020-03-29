@@ -14,7 +14,8 @@ import os
 
 
 def download(protein_id, file_type = 'cif', pdir = None):
-    """The function downloads a PDB or a mmCIF from wwwPDB in a selected directory
+    """
+    The function downloads a PDB or a mmCIF from wwwPDB in a selected directory
     the default directory is the working directory
     it returns the filename (str)
     
@@ -26,7 +27,8 @@ def download(protein_id, file_type = 'cif', pdir = None):
     
     return file_name , string
     
-    raises a FileNotFoundError if the file is not downloaded correctly"""
+    raises a FileNotFoundError if the file is not downloaded correctly
+    """
     
 
     if file_type == 'cif':
