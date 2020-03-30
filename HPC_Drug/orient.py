@@ -316,9 +316,9 @@ class Orient(object):
                 return None
 
             ligand_resnames = []
-            for ligand in pipeline_functions.get_iterable(Ligand):
-                if ligand.resname not in ligand_resnames:
-                    ligand_resnames.append(ligand.resname)
+            for lgand in pipeline_functions.get_iterable(Ligand):
+                if lgand.resname not in ligand_resnames:
+                    ligand_resnames.append(lgand.resname)
 
             c = file_manipulation.SubstitutionParser()
             ligand_resnames = c.get_ligand_resnum(Protein = Protein,
@@ -329,14 +329,14 @@ class Orient(object):
             #Creating a completely new Ligand list
             Ligand = []
 
-            for ligand in ligand_resnames:
-                Ligand.append(ligand.Ligand(resname = ligand[0],
+            for lgand in ligand_resnames:
+                Ligand.append(ligand.Ligand(resname = lgand[0],
                                                 pdb_file = None,
                                                 structure = None,
                                                 file_type = 'pdb',
                                                 tpg_file = None,
                                                 prm_file = None,
-                                                resnum = ligand[1]))
+                                                resnum = lgand[1]))
 
             return Ligand
 
@@ -352,9 +352,9 @@ class Orient(object):
         #Extract the protein with ProDy, write a new pdb
         #and then get the Biopython protein structure
         c = file_manipulation.PDBCruncer()
-        tmp_protein = protein.Protein(protein_id= Protein.protein_id)
+        tmp_protein = protein.Protein(protein_id= Protein.protein_id, file_type = 'pdb')
         tmp_protein.structure = c.get_protein(Protein.protein_id, Protein.pdb_file)
-        tmp_protein.write(file_name = f"{Protein.protein_id}_protein.pdb", struct_type = 'biopython')
+        tmp_protein.write(file_name = f"{Protein.protein_id}_protein.pdb", struct_type = 'prody')
 
         p = Bio.PDB.PDBParser()
         
@@ -362,15 +362,15 @@ class Orient(object):
 
         #doing the same thing for every ligand
         ligand_structures = []
-        for i, ligand in enumerate(pipeline_functions.get_iterable(Ligand)):
-            ligand.structure = c.get_ligand(protein_id = Protein.protein_id,
+        for i, lgand in enumerate(pipeline_functions.get_iterable(Ligand)):
+            lgand.structure = c.get_ligand(protein_id = Protein.protein_id,
                                             filename = Protein.pdb_file,
-                                            ligand_name =ligand.resname,
-                                            ligand_resnumber = ligand.resnum)
+                                            ligand_name =lgand.resname,
+                                            ligand_resnumber = lgand.resnum)
 
-            ligand.write(file_name = f"{Protein.protein_id}_lgand{i}.pdb", struct_type = 'prody')
-            ligand.structure = p.get_structure(Protein.protein_id, ligand.pdb_file)
-            ligand_structures.append(ligand.structure)
+            lgand.write(file_name = f"{Protein.protein_id}_lgand{i}.pdb", struct_type = 'prody')
+            lgand.structure = p.get_structure(Protein.protein_id, lgand.pdb_file)
+            ligand_structures.append(lgand.structure)
 
         return Protein.structure, ligand_structures
     
@@ -404,8 +404,8 @@ class Orient(object):
         #getting a list of the resnames of the ligands
         ligand_resnames = []
 
-        for ligand in pipeline_functions.get_iterable(Ligand):
-            ligand_resnames.append(ligand.resname)
+        for lgand in pipeline_functions.get_iterable(Ligand):
+            ligand_resnames.append(lgand.resname)
         
         ligand_atoms = []
 
@@ -429,11 +429,11 @@ class Orient(object):
         m_l = int(1E10)
 
 
-        for ligand in pipeline_functions.get_iterable(Ligand):
+        for lgand in pipeline_functions.get_iterable(Ligand):
 
             for n, i in enumerate(atom_number):
 
-                if resname[n] == ligand.resname:
+                if resname[n] == lgand.resname:
                     M_l = max(int(i), M_l)
                     m_l = min(int(i), m_l)
             
@@ -492,10 +492,10 @@ class Orient(object):
             M_l = ligand_atoms[0][0]
             m_l = ligand_atoms[0][1]
 
-            for ligand in ligand_atoms:
+            for lgand in ligand_atoms:
 
-                M_l = max(ligand[0], M_l)
-                m_l = min(ligand[1], m_l)
+                M_l = max(lgand[0], M_l)
+                m_l = min(lgand[1], m_l)
 
             M_l = max(protein_atoms[0], M_l)
             m_l = min(protein_atoms[1], m_l)

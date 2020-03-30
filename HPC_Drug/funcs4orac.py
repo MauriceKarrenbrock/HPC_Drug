@@ -239,7 +239,7 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
                     joined.write(f"{line}\n")
 
         for ligand in pipeline_functions.get_iterable(Ligand):
-            with open(ligand.ligand_filename, 'r') as lig:
+            with open(ligand.pdb_file, 'r') as lig:
                 for line in lig:
 
                     line = line.strip()
@@ -316,8 +316,7 @@ class OracInput(object):
 
         self.Protein.structure = self.orient.base_change_structure()
 
-        self.Protein.write(filename = self.Protein.pdb_file,
-                                                    struct_type = 'biopython')
+        self.Protein.write(file_name = self.Protein.pdb_file, struct_type = 'biopython')
         
         lx, ly, lz = self.orient.create_box(self.Protein.structure)
 

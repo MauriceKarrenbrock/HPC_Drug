@@ -30,18 +30,10 @@ class test_write_pdb(unittest.TestCase):
     def test_with_correct_input(self):
 
         with mock.patch("HPC_Drug.PDB.prody.prody.writePDB", autospec=True) as mocked_function:
-
-            with mock.patch("HPC_Drug.PDB.prody.isinstance", return_value = True):
                 
-                prody.write_pdb(structure = "dummy", file_name = 'file.pdb')
-
-                mocked_function.assert_called_once_with('file.pdb', "dummy")
-
-    def test_with_wrong_structure_type(self):
-
-        with self.assertRaises(TypeError):
-
             prody.write_pdb(structure = "dummy", file_name = 'file.pdb')
+
+            mocked_function.assert_called_once_with('file.pdb', "dummy")
 
 
 class test_select(unittest.TestCase):
@@ -64,11 +56,9 @@ class test_ProdySelect(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        with mock.patch("HPC_Drug.PDB.prody.isinstance", return_value = True):
-
-            cls.structure  = "structure"
-
-            cls.ProdySelect = prody.ProdySelect(cls.structure)
+        cls.structure = "test"
+        
+        cls.ProdySelect = prody.ProdySelect(cls.structure)
 
 
     def test_only_protein_with_correct_input(self):

@@ -12,7 +12,7 @@ A copy of the license must be included with any copy of the program or part of i
 import subprocess
 import os
 
-from HPC_Drug import PDB
+from HPC_Drug.PDB import download_pdb
 
 from HPC_Drug import file_manipulation
 from HPC_Drug.structures import ligand
@@ -111,7 +111,7 @@ class Pipeline(object):
          
         self.repairing_method = repairing_method
         
-        #ligand can be a pdb file or a smiles
+        #ligand can be a pdb file or a mmcif file
         self.ligand_filename = ligand
         self.ligand_elaboration_program = ligand_elaboration_program
         self.ligand_elaboration_program_path = ligand_elaboration_program_path
@@ -150,7 +150,7 @@ class Pipeline(object):
         if self.local == 'no' or self.local == None:
             
             #downloads the pdb or mmcif returning it's name
-            return PDB.download_pdb.download(protein_id = self.protein_id, file_type = self.protein_filetype, pdir = None)
+            return download_pdb.download(protein_id = self.protein_id, file_type = self.protein_filetype, pdir = None)
 
         elif self.local == 'yes' and (not os.path.exists(self.protein_filename)):
 

@@ -33,9 +33,6 @@ def write_pdb(structure, file_name = "file.pdb"):
 
     returns nothing
     """
-    
-    if not isinstance(structure, prody.AtomGroup):
-        raise TypeError("The strucure must be a prody.Atomgroup instance")
 
     prody.writePDB(file_name, structure)
 
@@ -60,11 +57,7 @@ class ProdySelect(object):
 
     def __init__(self, structure):
 
-        if not isinstance(structure, prody.AtomGroup):
-            raise TypeError("Need a prody.AtomGroup")
-
-        else:
-            self._structure = structure
+        self._structure = structure
 
     def only_protein(self):
         """
