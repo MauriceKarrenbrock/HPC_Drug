@@ -66,12 +66,12 @@ class Protein(structure.Structure):
         self._ligands = []
 
     def add_ligand(self, Ligand):
-        """adds a Ligand instance to _ligands"""
+        """adds a Ligand instance to self._ligands"""
 
         self._ligands.append(Ligand)
 
     def get_ligand_list(self):
-        """returns the list of ligands already stored
+        """returns the list of ligands (self._ligands) already stored
         it is a pointer to it, not a copy, so pay attention"""
 
         return self._ligands
