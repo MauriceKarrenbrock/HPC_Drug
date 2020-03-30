@@ -9,7 +9,8 @@ A copy of the license must be included with any copy of the program or part of i
 
 #contains classes and functions for primadorac
 
-from HPC_Drug import structures
+from HPC_Drug.structures import ligand
+from HPC_Drug.structures import protein
 from HPC_Drug import pipeline_functions
 
 import subprocess

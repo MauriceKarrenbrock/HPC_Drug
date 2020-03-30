@@ -7,12 +7,12 @@ GNU Affero General Public License v3 (agpl v3) license
 A copy of the license must be included with any copy of the program or part of it
 """
 
-#This is the Protein class
+# This is the Protein class
 
 from HPC_Drug.structures import structure
 
 class Protein(structure.Structure):
-    """The general Protein class"""
+    """The Protein class"""
 
     def __init__(self,
                 protein_id = None,

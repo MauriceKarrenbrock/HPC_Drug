@@ -15,7 +15,8 @@ import os
 from HPC_Drug import PDB
 
 from HPC_Drug import file_manipulation
-from HPC_Drug import structures
+from HPC_Drug.structures import ligand
+from HPC_Drug.structures import protein
 from HPC_Drug import pipeline_functions
 from HPC_Drug import funcs4primadorac
 from HPC_Drug import funcs4gromacs
@@ -177,7 +178,7 @@ class NoLigand_Pipeline(Pipeline):
         
 
         #Declaring protein instance
-        Protein = structures.protein.Protein(protein_id = self.protein_id,
+        Protein = protein.Protein(protein_id = self.protein_id,
                                     pdb_file = self.protein_filename,
                                     model = self.model,
                                     chain = self.chain,
@@ -276,7 +277,7 @@ class NoLigand_Pipeline(Pipeline):
             for i, ligand_res in enumerate(pipeline_functions.get_iterable(ligand_resnames)):
                 Ligand.append(None)
 
-                Ligand[i] = structures.ligand.Ligand(resname = ligand_res[0],
+                Ligand[i] = ligand.Ligand(resname = ligand_res[0],
                                             pdb_file = None,
                                             structure = None,
                                             file_type = 'pdb',
@@ -313,11 +314,11 @@ class NoLigand_Pipeline(Pipeline):
                 #and it could create problems they are renamed as -(i + 1)
                 #with maximum number -9
                 #Not very robust, for sure not the best solution
-                for i, ligand in enumerate(pipeline_functions.get_iterable(Ligand)):
-                    with open(ligand.pdb_file, 'r') as f:
+                for i, lgand in enumerate(pipeline_functions.get_iterable(Ligand)):
+                    with open(lgand.pdb_file, 'r') as f:
                         lines = f.readlines()
                     
-                    with open(ligand.pdb_file, 'w') as f:
+                    with open(lgand.pdb_file, 'w') as f:
                         for line in lines:
                             line = list(line)
                             line[24] = '-'

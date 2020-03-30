@@ -23,7 +23,8 @@ import prody
 from HPC_Drug import important_lists
 from HPC_Drug import pipeline_functions
 from HPC_Drug import file_manipulation
-from HPC_Drug import structures
+from HPC_Drug.structures import ligand
+from HPC_Drug.structures import protein
 
 #deactivating all
 #BiopythonWarning
@@ -329,7 +330,7 @@ class Orient(object):
             Ligand = []
 
             for ligand in ligand_resnames:
-                Ligand.append(structures.ligand.Ligand(resname = ligand[0],
+                Ligand.append(ligand.Ligand(resname = ligand[0],
                                                 pdb_file = None,
                                                 structure = None,
                                                 file_type = 'pdb',
@@ -351,7 +352,7 @@ class Orient(object):
         #Extract the protein with ProDy, write a new pdb
         #and then get the Biopython protein structure
         c = file_manipulation.PDBCruncer()
-        tmp_protein = structures.protein.Protein(protein_id= Protein.protein_id)
+        tmp_protein = protein.Protein(protein_id= Protein.protein_id)
         tmp_protein.structure = c.get_protein(Protein.protein_id, Protein.pdb_file)
         tmp_protein.write(file_name = f"{Protein.protein_id}_protein.pdb", struct_type = 'biopython')
 

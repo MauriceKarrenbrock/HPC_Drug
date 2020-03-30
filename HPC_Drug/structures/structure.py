@@ -46,10 +46,12 @@ class Structure(object):
 
         if struct_type == 'prody':
 
-            if self.file_type != 'pdb':
-                raise TypeError("Prody can only write pdb files not mmcif files, change Protein.file_type to pdb before you call this method")
+            if self.file_type == 'pdb':
 
-            prody.write_pdb(structure = self.structure, file_name = file_name)
+                prody.write_pdb(structure = self.structure, file_name = file_name)
+
+            else:
+                raise TypeError("Prody can only write pdb files not mmcif files, change Protein.file_type to pdb before you call this method")
 
         elif struct_type == 'biopython':
 
@@ -57,7 +59,7 @@ class Structure(object):
 
         self.pdb_file = file_name
 
-    def update_structure(self, structure_type = "biopython"):
+    def update_structure(self, struct_type = "biopython"):
         """
         Parses the self.pdb_file file with the selected tool (biopython (default), mmcif2dict or prody) and updates self.structure
         prody can only parse pdb files, if you try to parse a cif with prody a TypeError will be raised
@@ -66,20 +68,20 @@ class Structure(object):
         structure_type :: string, values: biopython (default), prody, mmcif2dict
         """
 
-        if structure_type == "biopython":
+        if struct_type == "biopython":
 
             self.structure = biopython.structure_factory(Protein = self)
 
-        elif structure_type == "prody":
+        elif struct_type == "prody":
 
             if self.file_type != "pdb":
                 raise TypeError("Prody can only parse pdb files")
             
             self.structure = prody.parse_pdb(file_name = self.pdb_file)
 
-        elif structure_type == "mmcif2dict":
+        elif struct_type == "mmcif2dict":
 
             self.structure = biopython.mmcif2dict(file_name = self.pdb_file)
 
         else:
-            raise ValueError(f"Structure_type can be biopython, mmcif2dict or prody not {structure_type}")
+            raise ValueError(f"Structure_type can be biopython, mmcif2dict or prody not {struct_type}")

@@ -11,7 +11,8 @@ import unittest
 import unittest.mock
 
 import HPC_Drug.orient
-import HPC_Drug.structures
+import HPC_Drug.structures.ligand
+import HPC_Drug.structures.protein
 
 
 class TestOrient(unittest.TestCase):

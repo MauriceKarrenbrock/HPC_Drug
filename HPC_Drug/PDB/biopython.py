@@ -13,7 +13,6 @@ import Bio.PDB
 import Bio.PDB.Entity
 import Bio.PDB.MMCIF2Dict
 
-from HPC_Drug import structures
 
 ######################################
 # Parsers

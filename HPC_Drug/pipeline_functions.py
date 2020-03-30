@@ -8,8 +8,11 @@ A copy of the license must be included with any copy of the program or part of i
 """
 
 from HPC_Drug import file_manipulation
-from HPC_Drug import structures
+from HPC_Drug.structures import ligand
+from HPC_Drug.structures import protein
 from HPC_Drug import important_lists
+
+
 import Bio.PDB
 import Bio.PDB.MMCIF2Dict
 import collections

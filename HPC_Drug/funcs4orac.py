@@ -8,7 +8,8 @@ A copy of the license must be included with any copy of the program or part of i
 """
 
 #contains all the classes and functions needed fot the orac MD program
-from HPC_Drug import structures
+from HPC_Drug.structures import ligand
+from HPC_Drug.structures import protein
 from HPC_Drug import orient
 from HPC_Drug import file_manipulation
 from HPC_Drug import important_lists

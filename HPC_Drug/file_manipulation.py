@@ -10,7 +10,8 @@ A copy of the license must be included with any copy of the program or part of i
 # Contains the classes for file manipulation like PDB & mmCIF
 
 from HPC_Drug import pipeline_functions
-from HPC_Drug import structures
+from HPC_Drug.structures import ligand
+from HPC_Drug.structures import protein
 from HPC_Drug import important_lists
 from HPC_Drug import orient
 

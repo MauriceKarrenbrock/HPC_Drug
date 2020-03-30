@@ -11,8 +11,9 @@ A copy of the license must be included with any copy of the program or part of i
 
 from HPC_Drug.structures import structure
 
+
 class Ligand(structure.Structure):
-    """The general Ligand class"""
+    """The Ligand class"""
 
     def __init__(self,
                 resname = None,
