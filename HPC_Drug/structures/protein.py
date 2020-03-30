@@ -30,7 +30,10 @@ class Protein(structure.Structure):
                 tpg_file = None,
                 prm_file = None):
                 
-        self.protein_id = protein_id.strip()
+        if protein_id == None:
+            raise ValueError('need a protein id')
+        else:
+            self.protein_id = protein_id.strip()
 
         self.model = model
         if type(self.model) == str:
@@ -42,10 +45,9 @@ class Protein(structure.Structure):
 
         self.pdb_file = pdb_file
 
-        if protein_id == None:
-            raise Exception('need a protein id')
-        elif self.pdb_file == None:
-            self.pdb_file = protein_id + '.' + file_type
+        
+        if self.pdb_file == None:
+            self.pdb_file = self.protein_id + '.' + self.file_type
         
         self.structure = structure
 

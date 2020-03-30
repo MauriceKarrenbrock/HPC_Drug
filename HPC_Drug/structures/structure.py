@@ -17,16 +17,13 @@ class Structure(object):
     """Raises an Exception for not implemented structure type
     and contains some common methods"""
 
-    def __init__(self,
-                pdb_file = None,
-                structure = None,
-                file_type = 'cif'):
+    def __init__(self):
                 
-        self.file_type = file_type.strip().lower()
+        self.file_type = None
 
-        self.pdb_file = pdb_file
+        self.pdb_file = None
         
-        self.structure = structure
+        self.structure = None
 
         raise NotImplementedError('This structure was not implemented yet')
 
