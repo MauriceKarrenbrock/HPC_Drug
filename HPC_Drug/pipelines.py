@@ -129,7 +129,7 @@ class Pipeline(object):
         self.number_of_cores_per_node = number_of_cores_per_node
 
         #gromacs has various options to use gpu
-        #auto (default) that will use all the available ones automaticly
+        #auto (default) that will use all the available ones automatically
         #cpu uses no GPU even if available
         #gpu forces the use of GPU (but in case you want to use a gpu auto would be safer and more robust)
         self.use_gpu = use_gpu.lower().strip()
