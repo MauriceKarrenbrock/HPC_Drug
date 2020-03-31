@@ -67,7 +67,7 @@ def get_seqres_mmcif_header(Protein = None, filename = None):
         return seqres
     
     else:
-        raise TypeError("Need a valid Protein or a valid filename")
+        raise ValueError("Need a valid Protein or a valid filename")
 
 def update_sulf_bonds(Protein = None):
     """Updates Protein.sulf_bonds using Protein.cys_dict
@@ -83,7 +83,7 @@ def update_sulf_bonds(Protein = None):
     if Protein.file_type == 'pdb':
         p = Bio.PDB.PDBParser()
     
-    elif Protein.file_type == 'cid':
+    elif Protein.file_type == 'cif':
         p = Bio.PDB.MMCIFParser()
 
     #parsing the new pdb to check the new cys resnums

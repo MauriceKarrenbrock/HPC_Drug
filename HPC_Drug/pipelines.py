@@ -13,7 +13,8 @@ import subprocess
 import os
 
 from HPC_Drug.PDB import download_pdb
-
+import HPC_Drug.auxiliary_functions.path as auxiliary_functions_path
+from HPC_Drug.auxiliary_functions import get_iterable
 from HPC_Drug import file_manipulation
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
@@ -21,6 +22,7 @@ from HPC_Drug import pipeline_functions
 from HPC_Drug import funcs4primadorac
 from HPC_Drug import funcs4gromacs
 from HPC_Drug import funcs4orac
+
 
 def choose_pipeline(*args, **kwargs):
     """Takes the parsed program input
@@ -140,7 +142,9 @@ class Pipeline(object):
 
         """If requested in input will download pdb (or mmCIF) file
         If the given local file doesn't exist will download pdb (or mmCIF)
-        otherwise returns the given path without modifying it"""
+        otherwise returns the given path without modifying it
+        
+        all the paths are converted to absolute paths!"""
 
         #checks if I got a wrong input
         if self.local != 'no' and self.local != 'yes':
@@ -150,17 +154,20 @@ class Pipeline(object):
         if self.local == 'no' or self.local == None:
             
             #downloads the pdb or mmcif returning it's name
-            return download_pdb.download(protein_id = self.protein_id, file_type = self.protein_filetype, pdir = None)
+            path = download_pdb.download(protein_id = self.protein_id, file_type = self.protein_filetype, pdir = None)
 
-        elif self.local == 'yes' and (not os.path.exists(self.protein_filename)):
+            #the absolute path of the downloaded file is given to self.protein_filename
+            self.protein_filename = auxiliary_functions_path.absolute_filepath(path = path)
 
-            raise FileNotFoundError(f"File {self.protein_filename} does not exist")
+        elif self.local == 'yes':
+
+            #protein filename points to an existing file (if it doesn't auxiliary_functions_path.absolute_filepath will raise a FileNotFoundError)
+            #the path is updated as absolute path
+            self.protein_filename = auxiliary_functions_path.absolute_filepath(path =self.protein_filename)
 
         else:
-            #protein filename points to an existing file
-            #nothing is done
-            return self.protein_filename
-
+            
+            raise ValueError(f"local can only be 'yes' or 'no' not {self.local}")
         
 
 
@@ -173,11 +180,12 @@ class NoLigand_Pipeline(Pipeline):
 
         #If requested in input will download pdb file
         #If the given local file doesn't exist raises FileNotFounfError
-        #otherwise returns the given path without modifying it
-        self.protein_filename = self.get_protein_file()
+        #otherwise updates self.protein_filename with the given path
+        #all the paths are converted to absolute paths
+        self.get_protein_file()
         
 
-        #Declaring protein instance
+        # creating protein instance
         Protein = protein.Protein(protein_id = self.protein_id,
                                     pdb_file = self.protein_filename,
                                     model = self.model,
@@ -274,7 +282,7 @@ class NoLigand_Pipeline(Pipeline):
             Ligand = []
 
             #ligand res is: [resname, resnumber]
-            for i, ligand_res in enumerate(pipeline_functions.get_iterable(ligand_resnames)):
+            for i, ligand_res in enumerate(get_iterable.get_iterable(ligand_resnames)):
                 Ligand.append(None)
 
                 Ligand[i] = ligand.Ligand(resname = ligand_res[0],
@@ -314,7 +322,7 @@ class NoLigand_Pipeline(Pipeline):
                 #and it could create problems they are renamed as -(i + 1)
                 #with maximum number -9
                 #Not very robust, for sure not the best solution
-                for i, lgand in enumerate(pipeline_functions.get_iterable(Ligand)):
+                for i, lgand in enumerate(get_iterable.get_iterable(Ligand)):
                     with open(lgand.pdb_file, 'r') as f:
                         lines = f.readlines()
                     

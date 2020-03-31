@@ -9,6 +9,7 @@ A copy of the license must be included with any copy of the program or part of i
 
 #Contains the functions to make a slurm input (workload manager)
 from HPC_Drug import pipeline_functions
+from HPC_Drug.auxiliary_functions import get_iterable
 
 import collections
 import math
@@ -194,7 +195,7 @@ class SlurmInput(object):
 
             string = ""
             
-            for i in pipeline_functions.get_iterable(self.MD_input_file):
+            for i in get_iterable.get_iterable(self.MD_input_file):
                 string = string + f"mpirun 	  {self.MD_program_path} < {i}\n"
 
         return string

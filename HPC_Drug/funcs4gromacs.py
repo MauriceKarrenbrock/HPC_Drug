@@ -23,6 +23,7 @@ from HPC_Drug import pipeline_functions
 from HPC_Drug import orient
 from HPC_Drug import funcs4pbs
 from HPC_Drug import funcs4slurm
+from HPC_Drug.auxiliary_functions import get_iterable
 
 def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
     """Takes a protein instance, and returns one
@@ -397,7 +398,7 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
             top = f.readlines()
 
         itp_insertion_string = ''
-        for ligand in pipeline_functions.get_iterable(Ligand):
+        for ligand in get_iterable.get_iterable(Ligand):
             itp_insertion_string = itp_insertion_string + f'#include "{ligand.itp_file}"\n'
             compound_string = f'{ligand.resname}              1'
             top.append(compound_string)

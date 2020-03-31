@@ -17,6 +17,7 @@ from HPC_Drug import pipeline_functions
 from HPC_Drug import lib
 from HPC_Drug import funcs4slurm
 from HPC_Drug import funcs4pbs
+from HPC_Drug.auxiliary_functions import get_iterable
 
 import os
 import importlib_resources
@@ -238,7 +239,7 @@ def join_ligand_and_protein_pdb(Protein = None, Ligand = None, output_filename =
  
                     joined.write(f"{line}\n")
 
-        for ligand in pipeline_functions.get_iterable(Ligand):
+        for ligand in get_iterable.get_iterable(Ligand):
             with open(ligand.pdb_file, 'r') as lig:
                 for line in lig:
 
@@ -374,7 +375,7 @@ class OracInput(object):
                 return ''
 
         tmp = []
-        for ligand in pipeline_functions.get_iterable(Ligand):
+        for ligand in get_iterable.get_iterable(Ligand):
 
             string = f"   READ_TPG_ASCII {ligand.tpg_file} !! ligand"
 
@@ -393,7 +394,7 @@ class OracInput(object):
                 return ''
 
         tmp = []
-        for ligand in pipeline_functions.get_iterable(Ligand):
+        for ligand in get_iterable.get_iterable(Ligand):
 
             string = f"   READ_PRM_ASCII {ligand.prm_file}  !! ligand"
 
@@ -414,7 +415,7 @@ class OracInput(object):
 
         residue_strings = []
 
-        for ligand in pipeline_functions.get_iterable(Ligand):
+        for ligand in get_iterable.get_iterable(Ligand):
             with open(ligand.tpg_file, 'r') as f:
 
                 for line in f:
@@ -475,7 +476,7 @@ class OracInput(object):
 
         #get the distance of the centers of mass of the protein and the ligands
         #and create the string
-        for i, ligand in enumerate(pipeline_functions.get_iterable(ligand_structures)):
+        for i, ligand in enumerate(get_iterable.get_iterable(ligand_structures)):
 
             COM_Protein, COM_ligand, distance = self.orient.center_mass_distance(self.Protein.structure, ligand)
             
@@ -1048,7 +1049,7 @@ class OracREMInput(OracInput):
                 return ''
 
         tmp = []
-        for ligand in pipeline_functions.get_iterable(Ligand):
+        for ligand in get_iterable.get_iterable(Ligand):
 
             string = f"   READ_TPG_ASCII ../{ligand.tpg_file.rsplit('/', 1)[-1].strip()} !! ligand"
 
@@ -1068,7 +1069,7 @@ class OracREMInput(OracInput):
                 return ''
 
         tmp = []
-        for ligand in pipeline_functions.get_iterable(Ligand):
+        for ligand in get_iterable.get_iterable(Ligand):
 
             string = f"   READ_PRM_ASCII ../{ligand.prm_file.rsplit('/', 1)[-1].strip()}  !! ligand"
 
@@ -1241,7 +1242,7 @@ class OracREMInput(OracInput):
         os.makedirs(f"{self.Protein.protein_id}_REM/RESTART", exist_ok=True)
 
         #for any existing ligand
-        for ligand in pipeline_functions.get_iterable(self.Ligand):
+        for ligand in get_iterable.get_iterable(self.Ligand):
             #copy the ligand topology file to the new directory
             shutil.copy(os.path.abspath(os.path.expanduser(os.path.expandvars(ligand.tpg_file))), f"{self.Protein.protein_id}_REM")
             #copy the ligand parameter file to the new directory

@@ -25,6 +25,7 @@ from HPC_Drug import pipeline_functions
 from HPC_Drug import file_manipulation
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
+from HPC_Drug.auxiliary_functions import get_iterable
 
 #deactivating all
 #BiopythonWarning
@@ -311,12 +312,12 @@ class Orient(object):
             """Updates the ligand resnumbers that may be changed
             because of previous calculations"""
 
-            if Ligand == None or len(pipeline_functions.get_iterable(Ligand)) == 0:
+            if Ligand == None or len(get_iterable.get_iterable(Ligand)) == 0:
                 print("I found no ligand, returning None")
                 return None
 
             ligand_resnames = []
-            for lgand in pipeline_functions.get_iterable(Ligand):
+            for lgand in get_iterable.get_iterable(Ligand):
                 if lgand.resname not in ligand_resnames:
                     ligand_resnames.append(lgand.resname)
 
@@ -362,7 +363,7 @@ class Orient(object):
 
         #doing the same thing for every ligand
         ligand_structures = []
-        for i, lgand in enumerate(pipeline_functions.get_iterable(Ligand)):
+        for i, lgand in enumerate(get_iterable.get_iterable(Ligand)):
             lgand.structure = c.get_ligand(protein_id = Protein.protein_id,
                                             filename = Protein.pdb_file,
                                             ligand_name =lgand.resname,
@@ -404,7 +405,7 @@ class Orient(object):
         #getting a list of the resnames of the ligands
         ligand_resnames = []
 
-        for lgand in pipeline_functions.get_iterable(Ligand):
+        for lgand in get_iterable.get_iterable(Ligand):
             ligand_resnames.append(lgand.resname)
         
         ligand_atoms = []
@@ -429,7 +430,7 @@ class Orient(object):
         m_l = int(1E10)
 
 
-        for lgand in pipeline_functions.get_iterable(Ligand):
+        for lgand in get_iterable.get_iterable(Ligand):
 
             for n, i in enumerate(atom_number):
 
@@ -533,7 +534,7 @@ class Orient(object):
             Ligand = self.Ligand
 
         #as Ligand is often a list I check that there is only one
-        Ligand = pipeline_functions.get_iterable(Ligand)
+        Ligand = get_iterable.get_iterable(Ligand)
         if len(Ligand) != 1:
             raise ValueError(f"Can process only a Ligand at the time not {len(Ligand)}")
         Ligand = Ligand[0]
@@ -583,7 +584,7 @@ class Orient(object):
                             is_valid_residue = residue.id[1] != Ligand.resnum and residue.resname not in important_lists.metals and residue.resname not in important_lists.trash and residue.id[0].strip() == ''
                             if is_valid_residue:
 
-                                COM_ligand_atom, COM_residue, distance = self.center_mass_distance(pipeline_functions.get_iterable(atom), residue)
+                                COM_ligand_atom, COM_residue, distance = self.center_mass_distance(get_iterable.get_iterable(atom), residue)
 
                                 if distance <= residue_dist:
 

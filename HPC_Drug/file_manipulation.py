@@ -14,6 +14,7 @@ from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
 from HPC_Drug import important_lists
 from HPC_Drug import orient
+from HPC_Drug.auxiliary_functions import get_iterable
 
 
 import Bio.PDB
@@ -386,7 +387,7 @@ class SubstitutionParser(FileCruncer):
         #trasforms all the not iterable values of the dictionary in
         #iterable tuples
         for key in cif_dict.keys():
-            cif_dict[key] = pipeline_functions.get_iterable(cif_dict[key])
+            cif_dict[key] = get_iterable.get_iterable(cif_dict[key])
 
         ligand = self.parse_ligands_from_header(cif_dict = cif_dict, metals = metals, trash = trash, protein_chain = protein_chain)         
     
@@ -498,7 +499,7 @@ class SubstitutionParser(FileCruncer):
             raise TypeError('Need a valid file and ligand_resnames, None is not valid')
         
         # If the ligand resname is a single string I transform it in an iterable object
-        ligand_resnames = pipeline_functions.get_iterable(ligand_resnames)
+        ligand_resnames = get_iterable.get_iterable(ligand_resnames)
 
         if len(ligand_resnames) == 0:
             print("The list of ligands is empty, going on returning a None item")

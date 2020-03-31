@@ -12,6 +12,7 @@ A copy of the license must be included with any copy of the program or part of i
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
 from HPC_Drug import pipeline_functions
+from HPC_Drug.auxiliary_functions import get_iterable
 
 import subprocess
 import os
@@ -35,8 +36,8 @@ def run_primadorac(ligand_list = None, primadorac_path = None, ph = 7.0):
         return None
 
     print("Running primadorac")
-    ligand_list = pipeline_functions.get_iterable(ligand_list)
-    for i, ligand in enumerate(pipeline_functions.get_iterable(ligand_list)):
+    ligand_list = get_iterable.get_iterable(ligand_list)
+    for i, ligand in enumerate(get_iterable.get_iterable(ligand_list)):
                 #calls primadorac in order to get ligand's prm and tpg files
                 #the -gp option means "don't optimize the structure but ad hydrogens for pH 7"
                 #in the future primadorac should be able to add them at different pH too
