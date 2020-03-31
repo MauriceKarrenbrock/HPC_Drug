@@ -176,9 +176,16 @@ class SlurmInput(object):
     def write_orac_mpirun_string(self):
         """private"""
 
-        string = ""
-        for i in pipeline_functions.get_iterable(self.MD_input_file):
-            string = string + f"mpirun 	  {self.MD_program_path} < {i}\n"
+        if type(self.MD_input_file) == str:
+            
+            string = f"mpirun 	  {self.MD_program_path} < {self.MD_input_file}\n"
+
+        else :
+
+            string = ""
+
+            for i in pipeline_functions.get_iterable(self.MD_input_file):
+                string = string + f"mpirun 	  {self.MD_program_path} < {i}\n"
 
         return string
 
