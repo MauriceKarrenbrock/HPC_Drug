@@ -162,7 +162,7 @@ class test_get_ligand_resnum(unittest.TestCase):
 
     def test_with_wrong_structure_type(self):
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
 
             mmcif_header.get_ligand_resnum(structure = "test_wrong", ligand_resnames = ["aa", "bb"])
 
@@ -185,7 +185,10 @@ class test_get_ligand_resnum(unittest.TestCase):
         structure.return_value = structure
         structure.return_value.get_residues.return_value = residues
 
-        output = mmcif_header.get_ligand_resnum(structure = structure, ligand_resnames = input_ligand_resnames)
+        output = mmcif_header.get_ligand_resnum(structure = structure,
+                                            ligand_resnames = input_ligand_resnames,
+                                            protein_chain = None,
+                                            protein_model = None)
 
         self.assertEqual(output, [["LIGAND", 1]])
 

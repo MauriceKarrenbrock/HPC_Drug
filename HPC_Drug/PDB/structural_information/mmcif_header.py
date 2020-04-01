@@ -7,7 +7,7 @@ GNU Affero General Public License v3 (agpl v3) license
 A copy of the license must be included with any copy of the program or part of it
 """
 
-#This file contains the files necessary to parse the header of a mmCIF file
+#This file contains the functions necessary to parse the header of a mmCIF file
 
 from HPC_Drug import important_lists
 from HPC_Drug.auxiliary_functions import get_iterable
@@ -23,7 +23,7 @@ def get_ligand_binding_residues(mmcif2dict, metals = important_lists.metals):
     mmcif2dict :: a dictionary of the type you obtain with HPC_Drug.PDB.biopython.mmcif2dict function
 
     metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for,
-    default HPC_Drug.importatn_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+    default HPC_Drug.important_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
 
     return {resnum : (resname, binding atom, metal), ...}
     """
@@ -154,10 +154,10 @@ def get_organic_ligands(mmcif2dict, protein_chain = None, trash = important_list
     protein_chain :: string, default None, the chain id of the chain you want to analize in capital letters (es A)
 
     trash :: a list (or tuple etc) that contains all the resnames (in capital letters) of trash ligands to avoid listing,
-    default HPC_Drug.importatn_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
+    default HPC_Drug.important_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
 
     metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for,
-    default HPC_Drug.importatn_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+    default HPC_Drug.important_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
 
     return [resname, resname, ...]
     """
@@ -195,7 +195,7 @@ def get_organic_ligands(mmcif2dict, protein_chain = None, trash = important_list
     return ligand_resnames
 
 
-def get_ligand_resnum(structure, ligand_resnames = None, protein_chain = None, protein_model = 0):
+def get_ligand_resnum(structure, ligand_resnames = None, protein_chain = 'A', protein_model = 0):
     """
     This function is called from get_metalbinding_disulf_ligands
 
@@ -206,9 +206,9 @@ def get_ligand_resnum(structure, ligand_resnames = None, protein_chain = None, p
     ligand_resnames :: list, it is a list containing the organic ligand resnames (capital letters) to look for
     if it is == None or empty will return None
 
-    protein_chain :: string, default None, the chain id of the chain you want to analize in capital letters (es A)
+    protein_chain :: string, default A, the chain id of the chain you want to analize in capital letters (es A), if == None no chain selection will be done
     
-    protein_model :: integer, default 0, it is only used if protein_chain != None it is the model that will be used to get the protein chain
+    protein_model :: integer, default 0, the model to check, if == None no chain and no model selection will be done
 
     return [[resname, resnumber], [.., ...], ...]
     """
@@ -220,12 +220,21 @@ def get_ligand_resnum(structure, ligand_resnames = None, protein_chain = None, p
         print("The list of ligands is empty, going on returning a None item")
         return None
 
-    if protein_chain != None:
+    if protein_model != None:
+
         try:
-            #Taking only the right chain and model
-            _structure = structure[protein_model][protein_chain]
+
+            _structure = structure[protein_model]
+
         except KeyError:
-            _structure = structure
+                _structure = structure
+
+        if protein_chain != None:
+            try:
+                #Taking only the right chain and model
+                _structure = _structure[protein_chain]
+            except KeyError:
+                _structure = structure
     
     else:
         _structure = structure
@@ -257,10 +266,10 @@ def get_metalbinding_disulf_ligands(Protein, trash = important_lists.trash, meta
     Protein :: a HPC_Drug.structures.protein.Protein instance
 
     trash :: a list (or tuple etc) that contains all the resnames (in capital letters) of trash ligands to avoid listing,
-    default HPC_Drug.importatn_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
+    default HPC_Drug.important_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
 
     metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for,
-    default HPC_Drug.importatn_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+    default HPC_Drug.important_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
 
     return Protein, [[lig_resname, lig_resnum], ...]
     """
