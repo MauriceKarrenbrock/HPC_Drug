@@ -339,7 +339,7 @@ class OracInput(object):
 
             #Correcting with the right cutoff
             bound_1 = int(bond[0].strip()) + cutoff
-            bound_2 = int(bond[0].strip()) + cutoff
+            bound_2 = int(bond[1].strip()) + cutoff
 
             string = f"   bond 1sg 2sg residue   {bound_1}  {bound_2}"
             tmp_sulf.append(string)
