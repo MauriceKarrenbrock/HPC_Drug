@@ -13,6 +13,7 @@ import subprocess
 import os
 
 from HPC_Drug.PDB import download_pdb
+from HPC_Drug.PDB import mmcif2pdb
 import HPC_Drug.auxiliary_functions.path as auxiliary_functions_path
 from HPC_Drug.auxiliary_functions import get_iterable
 from HPC_Drug.PDB import structural_information_and_repair
@@ -206,7 +207,7 @@ class NoLigand_Pipeline(Pipeline):
         #selects only a selected model and chain, and keeps only one conformation for any disordered atom
         Protein = file_manipulation.select_model_chain_custom(Protein = Protein)
 
-        Protein = file_manipulation.mmcif2pdb(Protein = Protein)
+        Protein = mmcif2pdb.mmcif2pdb(Protein = Protein)
 
         cruncer = file_manipulation.ProteinCruncer(Protein.file_type)
         

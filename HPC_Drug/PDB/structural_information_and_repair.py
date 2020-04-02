@@ -75,6 +75,8 @@ class InfoRepair(object):
     def get_info_and_repair(self):
         """
         Returns Protein and organic_ligand_list
+        
+        Protein.pdb_file is a repaired PDB or mmCIF file
 
         return Protein, organic_ligand_list
         """
