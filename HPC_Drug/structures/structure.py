@@ -11,6 +11,7 @@ A copy of the license must be included with any copy of the program or part of i
 
 from HPC_Drug.PDB import biopython
 from HPC_Drug.PDB import prody
+from HPC_Drug.auxiliary_functions import path
 
 
 class Structure(object):
@@ -31,7 +32,7 @@ class Structure(object):
         """
         This method writes self.structure on a {self.file_type} file (pdb, cif) using biopython (default) or prody (can only write pdb files)
         If no file_name is given self.pdb_file file will be overwritten otherwise a new file called file_name will be created and
-        self.pdb_file will be updated with the new file_name
+        self.pdb_file will be updated with the new file_name (absolute path)
 
         file_name :: string, default self.pdb_file
 
@@ -54,7 +55,7 @@ class Structure(object):
 
             biopython.write(structure = self.structure, file_type = self.file_type, file_name = file_name)
 
-        self.pdb_file = file_name
+        self.pdb_file = path.absolute_filepath(path = file_name)
 
     def update_structure(self, struct_type = "biopython"):
         """

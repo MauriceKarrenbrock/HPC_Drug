@@ -39,6 +39,9 @@ class test_Structure(unittest.TestCase):
 
             self.structure.write(struct_type = 'prody')
 
+    def _dummy_path(self, path):
+        return path
+
     def test_write_pdb_prody(self):
 
         self.structure.file_type = "pdb"
@@ -49,9 +52,11 @@ class test_Structure(unittest.TestCase):
 
         with mock.patch("HPC_Drug.PDB.prody.write_pdb", autospec = True) as mocked_function:
 
-            self.structure.write(struct_type = 'prody')
+            with mock.patch("HPC_Drug.auxiliary_functions.path.absolute_filepath", side_effect = self._dummy_path):
 
-            mocked_function.assert_called_once_with(structure = self.structure.structure, file_name = self.structure.pdb_file)
+                self.structure.write(struct_type = 'prody')
+
+                mocked_function.assert_called_once_with(structure = self.structure.structure, file_name = self.structure.pdb_file)
 
     def test_write_biopython(self):
 
@@ -63,9 +68,11 @@ class test_Structure(unittest.TestCase):
 
         with mock.patch("HPC_Drug.PDB.biopython.write", autospec = True) as mocked_function:
 
-            self.structure.write(struct_type = 'biopython')
+            with mock.patch("HPC_Drug.auxiliary_functions.path.absolute_filepath", side_effect = self._dummy_path):
 
-            mocked_function.assert_called_once_with(structure = self.structure.structure, file_type = self.structure.file_type, file_name = self.structure.pdb_file)
+                self.structure.write(struct_type = 'biopython')
+
+                mocked_function.assert_called_once_with(structure = self.structure.structure, file_type = self.structure.file_type, file_name = self.structure.pdb_file)
 
     
 
