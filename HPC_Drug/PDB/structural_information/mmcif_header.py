@@ -12,7 +12,7 @@ A copy of the license must be included with any copy of the program or part of i
 from HPC_Drug import important_lists
 from HPC_Drug.auxiliary_functions import get_iterable
 
-def get_ligand_binding_residues(mmcif2dict, metals = important_lists.metals):
+def get_metal_binding_residues(mmcif2dict, metals = important_lists.metals):
     """
     This function is called from get_metalbinding_disulf_ligands
 
@@ -277,24 +277,24 @@ def get_metalbinding_disulf_ligands(Protein, trash = important_lists.trash, meta
     Protein.update_structure(struct_type = "mmcif2dict")
 
     #metal binding residues
-    metal_binding_dict = get_ligand_binding_residues(mmcif2dict = Protein.structure)
+    metal_binding_dict = get_metal_binding_residues(mmcif2dict = Protein.structure, metals = metals)
 
     #disulf bonds
     disulf_binding_dict, Protein.sulf_bonds = get_disulf_bonds(mmcif2dict = Protein.structure)
 
     Protein.substitutions_dict = {**metal_binding_dict, **disulf_binding_dict}
 
-    ligand_resnames = get_organic_ligands(mmcif2dict = Protein.structure, protein_chain = Protein.chain)
+    ligand_resnames = get_organic_ligands(mmcif2dict = Protein.structure, protein_chain = Protein.chain, metals = metals, trash = trash)
 
     Protein.update_structure(struct_type = "biopython")
 
-    ligand_list = get_ligand_resnum(
+    organic_ligand_list = get_ligand_resnum(
                                     structure = Protein.structure,
                                     ligand_resnames = ligand_resnames,
                                     protein_chain = Protein.chain,
                                     protein_model = Protein.model)
 
-    return Protein, ligand_list
+    return Protein, organic_ligand_list
 
 
 

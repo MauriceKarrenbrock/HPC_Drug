@@ -13,11 +13,11 @@ import unittest.mock as mock
 from HPC_Drug.PDB.structural_information import mmcif_header
 
 
-class test_get_ligand_binding_residues(unittest.TestCase):
+class test_get_metal_binding_residues(unittest.TestCase):
 
     def test_empty_dictionary_input(self):
 
-        output = mmcif_header.get_ligand_binding_residues(mmcif2dict = {})
+        output = mmcif_header.get_metal_binding_residues(mmcif2dict = {})
 
         self.assertEqual(output, {})
 
@@ -30,14 +30,14 @@ class test_get_ligand_binding_residues(unittest.TestCase):
 
             with self.assertRaises(AttributeError):
 
-                mmcif_header.get_ligand_binding_residues(mmcif2dict = i)
+                mmcif_header.get_metal_binding_residues(mmcif2dict = i)
 
     def test_with_valid_dictionary(self):
 
         input_dict = {
             '_structure_conn.conn_type_id' : ['metalc', 'metalc', 'DUMMY'],
-            '_structure_conn.ptnr1_label_comp_id' : ['HYS', 'ZN', 'DUMMY'],
-            '_structure_conn.ptnr2_label_comp_id' : ['ZN', 'HYS', 'DUMMY'],
+            '_structure_conn.ptnr1_label_comp_id' : ['HIS', 'ZN', 'DUMMY'],
+            '_structure_conn.ptnr2_label_comp_id' : ['ZN', 'HIS', 'DUMMY'],
             '_structure_conn.ptnr1_label_atom_id' : ['E2', 'ZN', 'DUMMY'],
             '_structure_conn.ptnr2_label_atom_id' : ['ZN', 'E2', 'DUMMY'],
             '_structure_conn.ptnr1_auth_seq_id' : ['1', '2', '3'],
@@ -45,11 +45,11 @@ class test_get_ligand_binding_residues(unittest.TestCase):
         }
 
         expected_output_dict = {
-            1 : ('HYS', 'E2', 'ZN'),
-            5 : ('HYS', 'E2', 'ZN')
+            1 : ('HIS', 'E2', 'ZN'),
+            5 : ('HIS', 'E2', 'ZN')
         }
 
-        output = mmcif_header.get_ligand_binding_residues(mmcif2dict = input_dict)
+        output = mmcif_header.get_metal_binding_residues(mmcif2dict = input_dict, metals = ["ZN"])
 
         self.assertEqual(output, expected_output_dict)
 
@@ -59,7 +59,7 @@ class test_get_ligand_binding_residues(unittest.TestCase):
 
             input_dict = {
                 '_structure_conn.conn_type_id' : 'metalc',
-                '_structure_conn.ptnr1_label_comp_id' : 'HYS',
+                '_structure_conn.ptnr1_label_comp_id' : 'HIS',
                 '_structure_conn.ptnr2_label_comp_id' : 'UNKNOWN',
                 '_structure_conn.ptnr1_label_atom_id' : 'E2',
                 '_structure_conn.ptnr2_label_atom_id' : 'UNKNOWN',
@@ -69,7 +69,7 @@ class test_get_ligand_binding_residues(unittest.TestCase):
 
             expected_output_dict = {}
 
-            output = mmcif_header.get_ligand_binding_residues(mmcif2dict = input_dict)
+            output = mmcif_header.get_metal_binding_residues(mmcif2dict = input_dict, metals = ["ZN"])
 
             mocked_function.assert_called_once()
 
@@ -224,7 +224,7 @@ class test_get_metalbinding_disulf_ligands(unittest.TestCase):
 
     def test_with_correct_input(self):
 
-        with mock.patch("HPC_Drug.PDB.structural_information.mmcif_header.get_ligand_binding_residues", return_value = {"metalc" : "metalc"}):
+        with mock.patch("HPC_Drug.PDB.structural_information.mmcif_header.get_metal_binding_residues", return_value = {"metalc" : "metalc"}):
 
             with mock.patch("HPC_Drug.PDB.structural_information.mmcif_header.get_disulf_bonds", return_value = ({'disulf':'disulf'}, [(1,2)])):
 
