@@ -15,6 +15,7 @@ import os
 from HPC_Drug.PDB import download_pdb
 import HPC_Drug.auxiliary_functions.path as auxiliary_functions_path
 from HPC_Drug.auxiliary_functions import get_iterable
+from HPC_Drug.PDB import structural_information_and_repair
 from HPC_Drug import file_manipulation
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
@@ -193,61 +194,14 @@ class NoLigand_Pipeline(Pipeline):
                                     file_type = self.protein_filetype)
         
 
-        if self.protein_filetype == 'cif':
-            #Parses the mmcif for sulf bonds and organic ligands
-            #takes information about the residues binding metals
-            #
-            #parses the seqres from the mmcif file if possible
-            #
-            #ligand_resnames is a list containing the ligands
-            # resnames and resnumbers [[resname, resnumber], [..., ...], ...]
-            Protein, ligand_resnames = pipeline_functions.parse_mmcif(Protein)
+        #Get Protein.substitutions_dict Protein.sulf_bonds
+        #repairs the Protein.pdb_file
+        #returns a list containing the resnames and resnumbers of organic ligands
+        # [[resname, resnum], [...], ...]
+        #if there are none will be None item
+        Info_rep = structural_information_and_repair.InfoRepair(Protein = Protein, repairing_method = self.repairing_method)
 
-        elif self.protein_filetype == 'pdb':
-
-            Protein.substitutions_dict = file_manipulation.get_metal_binding_residues_with_no_header(protein_id = Protein.protein_id,
-                                                                                                pdb_file = Protein.pdb_file,
-                                                                                                mmcif_file = None,
-                                                                                                substitutions_dict = {},
-                                                                                                protein_chain = Protein.chain,
-                                                                                                protein_model = Protein.model)
-
-            Protein.substitutions_dict, Protein.sulf_bonds = file_manipulation.get_disulf_bonds_with_no_header(protein_id = Protein.protein_id,
-                                                                                                pdb_file = Protein.pdb_file,
-                                                                                                mmcif_file = None,
-                                                                                                substitutions_dict = Protein.substitutions_dict,
-                                                                                                protein_chain = Protein.chain,
-                                                                                                protein_model = Protein.model)
-
-            ligand_resnames = file_manipulation.get_organic_ligands_with_no_header(protein_id = Protein.protein_id,
-                                                                                pdb_file = Protein.pdb_file,
-                                                                                mmcif_file = None,
-                                                                                protein_chain = Protein.chain,
-                                                                                protein_model = Protein.model)
-
-        
-        repairer = file_manipulation.PDBRepair()
-        
-        #adds missing atoms and residues
-        #changes non standard residues to standard ones
-        #takes a PDBx/mmCIF and returns a PDBx/mmCIF
-        #Or a PDB and returns a PDB
-        Protein.pdb_file = repairer.add_missing_atoms(pdb_id = Protein.protein_id,
-                                                    file_type = Protein.file_type,
-                                                    input_filename = Protein.pdb_file,
-                                                    repairing_method = self.repairing_method,
-                                                    output_filename = None,
-                                                    ph = self.ph,
-                                                    add_H = False)
-        
-        ########
-        #WORK IN PROGRESS
-        ############
-        #Define the cys_dict (very useful for later when the resnumbers will be messed up)
-        #cys_dict = {resnum: cysteine_number}
-        # z = file_manipulation.SubstitutionParser()
-        # Protein = z.get_cysteine_dict(Protein = Protein)
-        # z = None
+        Protein, ligand_resnames = Info_rep.get_info_and_repair()
 
         #selects only a selected model and chain, and keeps only one conformation for any disordered atom
         Protein = file_manipulation.select_model_chain_custom(Protein = Protein)
