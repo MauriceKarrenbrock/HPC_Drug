@@ -362,6 +362,9 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
 
         if Ligand == None:
             Ligand = self.Ligand
+
+        if self.Ligand == None:
+            return Protein
         
         if MD_program_path == None:
             MD_program_path = self.MD_program_path
@@ -398,9 +401,9 @@ class GromacsMakeJoinedProteinLigandTopGro(GromacsInput):
             top = f.readlines()
 
         itp_insertion_string = ''
-        for ligand in get_iterable.get_iterable(Ligand):
-            itp_insertion_string = itp_insertion_string + f'#include "{ligand.itp_file}"\n'
-            compound_string = f'{ligand.resname}              1'
+        for lgand in get_iterable.get_iterable(Ligand):
+            itp_insertion_string = itp_insertion_string + f'#include "{lgand.itp_file}"\n'
+            compound_string = f'{lgand.resname}              1'
             top.append(compound_string)
 
         for i in range(len(top)):
@@ -974,9 +977,9 @@ class GromacsREMInput(GromacsInput):
         #add the ligand resnumber
         Sub_Parser = file_manipulation.SubstitutionParser()
 
-        for ligand in self.Ligand:
+        for lgand in self.Ligand:
             hot_ids.append(str(Sub_Parser.get_ligand_resnum(Protein = self.Protein,
-                                                    ligand_resnames = ligand.resname,
+                                                    ligand_resnames = lgand.resname,
                                                     chain_model_selection = True)[0][1]))
 
         with open(self.Protein.top_file, 'r') as f:

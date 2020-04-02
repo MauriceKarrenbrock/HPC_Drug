@@ -17,7 +17,7 @@ import Bio.PDB
 import Bio.PDB.vectors
 from math import sqrt
 from numpy import *
-import prody
+import prody as true_prody_module
 #import sys
 
 from HPC_Drug import important_lists
@@ -26,6 +26,7 @@ from HPC_Drug import file_manipulation
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
 from HPC_Drug.auxiliary_functions import get_iterable
+from HPC_Drug.PDB import prody
 
 #deactivating all
 #BiopythonWarning
@@ -34,7 +35,7 @@ import Bio
 warnings.simplefilter('ignore', Bio.BiopythonWarning)
 
 #deactivating all prody warnings
-prody.confProDy(verbosity='none')
+true_prody_module.confProDy(verbosity='none')
 
 class Orient(object):
     """This class contains the methods needed to 
@@ -352,25 +353,31 @@ class Orient(object):
 
         #Extract the protein with ProDy, write a new pdb
         #and then get the Biopython protein structure
-        c = file_manipulation.PDBCruncer()
-        tmp_protein = protein.Protein(protein_id= Protein.protein_id, file_type = 'pdb')
-        tmp_protein.structure = c.get_protein(Protein.protein_id, Protein.pdb_file)
-        tmp_protein.write(file_name = f"{Protein.protein_id}_protein.pdb", struct_type = 'prody')
+        tmp_protein = protein.Protein(protein_id= Protein.protein_id,
+                                    pdb_file = Protein.pdb_file,
+                                    file_type = Protein.file_type)
 
-        p = Bio.PDB.PDBParser()
+        tmp_protein.update_structure(struct_type = "prody")
+
+        prody_select = prody.ProdySelect(structure = tmp_protein.structure)
+
+        tmp_protein.structure = prody_select.protein_and_ions()
+
+        tmp_protein.write(file_name = f"{Protein.protein_id}_protein.pdb", struct_type = 'prody')
         
-        Protein.structure = p.get_structure(tmp_protein.protein_id, tmp_protein.pdb_file)
+        Protein.update_structure(struct_type = "biopython")
 
         #doing the same thing for every ligand
         ligand_structures = []
+
         for i, lgand in enumerate(get_iterable.get_iterable(Ligand)):
-            lgand.structure = c.get_ligand(protein_id = Protein.protein_id,
-                                            filename = Protein.pdb_file,
-                                            ligand_name =lgand.resname,
-                                            ligand_resnumber = lgand.resnum)
+
+            lgand.structure = prody_select.resnum(resnum = lgand.resnum)
 
             lgand.write(file_name = f"{Protein.protein_id}_lgand{i}.pdb", struct_type = 'prody')
-            lgand.structure = p.get_structure(Protein.protein_id, lgand.pdb_file)
+
+            lgand.update_structure(struct_type = "biopython")
+
             ligand_structures.append(lgand.structure)
 
         return Protein.structure, ligand_structures
