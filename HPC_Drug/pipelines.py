@@ -14,12 +14,15 @@ import os
 
 from HPC_Drug.PDB import download_pdb
 from HPC_Drug.PDB import mmcif2pdb
+from HPC_Drug.PDB import structural_information_and_repair
+from HPC_Drug.PDB import prody
+from HPC_Drug.PDB import remove_trash_metal_ions
 import HPC_Drug.auxiliary_functions.path as auxiliary_functions_path
 from HPC_Drug.auxiliary_functions import get_iterable
-from HPC_Drug.PDB import structural_information_and_repair
 from HPC_Drug import file_manipulation
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
+from HPC_Drug.structures import get_ligands
 from HPC_Drug import pipeline_functions
 from HPC_Drug import funcs4primadorac
 from HPC_Drug import funcs4gromacs
@@ -202,68 +205,31 @@ class NoLigand_Pipeline(Pipeline):
         #if there are none will be None item
         Info_rep = structural_information_and_repair.InfoRepair(Protein = Protein, repairing_method = self.repairing_method)
 
-        Protein, ligand_resnames = Info_rep.get_info_and_repair()
+        Protein, ligand_resnames_resnums = Info_rep.get_info_and_repair()
 
         #selects only a selected model and chain, and keeps only one conformation for any disordered atom
         Protein = file_manipulation.select_model_chain_custom(Protein = Protein)
 
         Protein = mmcif2pdb.mmcif2pdb(Protein = Protein)
 
-        cruncer = file_manipulation.ProteinCruncer(Protein.file_type)
+        Protein = get_ligands.get_ligands(Protein = Protein, ligand_resnames_resnums = ligand_resnames_resnums)
+        #Temporary
+        Ligand = Protein.get_ligand_list()
+
+        Protein.update_structure(struct_type = "prody")
+
+        prody_select = prody.ProdySelect(structure = Protein.structure)
         
         #gets the protein's structure from the pdb
         #The only HETATM remaining are the metal ions
-        Protein.structure = cruncer.get_protein(protein_id = Protein.protein_id,
-                                                filename = Protein.pdb_file,
-                                                structure = None)
-
-        #Temporarely save th filename that contains the ligand in order to extract it later
-        tmp_pdb_file = Protein.pdb_file
+        Protein.structure = prody_select.protein_and_ions()
 
         #Write Protein only pdb
         Protein.write(file_name = f"{Protein.protein_id}_protein.pdb", struct_type = 'prody')
 
         #removes the remaining trash ions
-        Protein.pdb_file = file_manipulation.remove_trash_metal_ions(pdb_file = Protein.pdb_file)
+        Protein = remove_trash_metal_ions.remove_trash_metal_ions(Protein = Protein)
         
-        #extracts the ligands structures (if any) from the pdb
-        #creates a ligand structure and writes a pdb
-        #for any found organic ligand
-        if ligand_resnames == None:
-            Ligand = None
-        
-        elif len(ligand_resnames) != 0:
-            #Ligand from now on is a list of Ligand objects
-            Ligand = []
-
-            #ligand res is: [resname, resnumber]
-            for i, ligand_res in enumerate(get_iterable.get_iterable(ligand_resnames)):
-                Ligand.append(None)
-
-                Ligand[i] = ligand.Ligand(resname = ligand_res[0],
-                                            pdb_file = None,
-                                            structure = None,
-                                            file_type = 'pdb',
-                                            tpg_file = None,
-                                            prm_file = None,
-                                            resnum = ligand_res[1])
-                                            
-                Ligand[i].structure = cruncer.get_ligand(protein_id = Protein.protein_id,
-                                                        filename = tmp_pdb_file,
-                                                        ligand_name = Ligand[i].resname,
-                                                        structure = None,
-                                                        ligand_resnumber = Ligand[i].resnum)
-
-                #tries to write the ligand pdb
-                try:
-                    Ligand[i].write(file_name = f'{Ligand[i].resname}_{Protein.protein_id}_lgand{i}.pdb', struct_type = 'prody')
-                except TypeError as err:
-                    raise TypeError(f'{err.args}\ncannot make ligand pdb file for {Ligand[i].resname}')
-                except Exception as err:
-                    raise Exception(f'{err} {err.args}\ncannot make ligand pdb file for {Ligand[i].resname}')
-        else:
-            Ligand = None
-
         #use primadorac to get topology and parameter files for any given ligand
         if self.ligand_elaboration_program == 'primadorac':
             if Ligand != None:
