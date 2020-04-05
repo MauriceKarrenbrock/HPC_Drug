@@ -41,7 +41,7 @@ def choose_pipeline(*args, **kwargs):
     if (input_dict['ligand_in_protein'] == None or input_dict['ligand_in_protein'] == 'yes'):
         #ligand will be taken from protein file (at your own risk)
         
-        return NoLigand_Pipeline(protein = input_dict['protein'],
+        return NoLigandPipeline(protein = input_dict['protein'],
                                 protein_filetype = input_dict['protein_filetype'],
                                 local = input_dict['local'],
                                 filepath = input_dict['filepath'],
@@ -65,7 +65,7 @@ def choose_pipeline(*args, **kwargs):
     else:
         # ligand is given
 
-        return Ligand_Pipeline()
+        return LigandPipeline()
         
 
 class Pipeline(object):
@@ -178,12 +178,24 @@ class Pipeline(object):
         
 
 
-class NoLigand_Pipeline(Pipeline):
-    """Protein is given as a mmcif or pdb
-    The ligand is already inside the protein file"""
-    
+class GetProteinLigandFilesPipeline(Pipeline):
+    """
+    A pipeline that returns a clean and repaired "protein and ions" PDB and
+    a PDB file for any not trash organic lingand
+    starting from both a PDB, an mmCIF file or a protein id
+
+    execute is the method to call
+    returns a Protein instance
+    """
+
     def execute(self):
-        """The execution of the pipeline"""
+        """
+        A pipeline that returns a clean and repaired "protein and ions" PDB and
+        a PDB file for any not trash organic lingand
+        starting from both a PDB, an mmCIF file or a protein id
+
+        returns a Protein instance
+        """
 
         #If requested in input will download pdb file
         #If the given local file doesn't exist raises FileNotFounfError
@@ -215,8 +227,6 @@ class NoLigand_Pipeline(Pipeline):
         Protein = mmcif2pdb.mmcif2pdb(Protein = Protein)
 
         Protein = get_ligands.get_ligands(Protein = Protein, ligand_resnames_resnums = ligand_resnames_resnums)
-        #Temporary
-        Ligand = Protein.get_ligand_list()
 
         Protein.update_structure(struct_type = "prody")
 
@@ -231,6 +241,41 @@ class NoLigand_Pipeline(Pipeline):
 
         #removes the remaining trash ions
         Protein = remove_trash_metal_ions.remove_trash_metal_ions(Protein = Protein)
+
+        return Protein
+        
+
+
+
+
+class NoLigandPipeline(Pipeline):
+    """Protein is given as a mmcif or pdb
+    The ligand is already inside the protein file"""
+    
+    def execute(self):
+        """The execution of the pipeline"""
+
+        #download the protein file if needed
+        #repair the file
+        #parse for disulf bonds, metal binding residues
+        #creates a file for the protein and ions
+        #and a file for any non trash organic ligand
+        get_protein_pipeline = GetProteinLigandFilesPipeline(
+            protein = self.protein_id,
+            protein_filetype = self.protein_filetype,
+            local = self.local,
+            filepath = self.protein_filename,
+            Protein_model = self.model,
+            Protein_chain = self.chain,
+            ph = self.ph,
+            repairing_method = self.repairing_method,
+            ligand = self.ligand_filename
+        )
+
+        Protein = get_protein_pipeline.execute()
+
+        #TEMPORARY
+        Ligand = Protein._ligands
         
         #use primadorac to get topology and parameter files for any given ligand
         if self.ligand_elaboration_program == 'primadorac':
@@ -422,7 +467,7 @@ class NoLigand_Pipeline(Pipeline):
         
 
 
-class Ligand_Pipeline(Pipeline):
+class LigandPipeline(Pipeline):
     """Protein is given as a mmcif
     The ligand is given as input"""
     pass

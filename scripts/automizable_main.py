@@ -35,7 +35,7 @@ for line in lines:
 
     try:
 
-        p = HPC_Drug.pipelines.NoLigand_Pipeline(protein = protein_id,
+        p = HPC_Drug.pipelines.NoLigandPipeline(protein = protein_id,
                                                 protein_filetype = 'cif',
                                                 local = 'no',
                                                 filepath = None,
