@@ -8,7 +8,7 @@
 ######################################################################################
 
 """
-This file contains a functions to run external programs
+This file contains the functions needed to run external programs
 """
 
 import subprocess
