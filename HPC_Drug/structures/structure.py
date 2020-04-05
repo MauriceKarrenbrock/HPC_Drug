@@ -1,14 +1,15 @@
+######################################################################################
+# Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+#                                                                                    #
+# This software is open-source and is distributed under the                          #
+# GNU Affero General Public License v3 (agpl v3 license)                             #
+#                                                                                    #
+# A copy of the license must be included with any copy of the program or part of it  #
+######################################################################################
+
 """
-Copyright (c) 2020-2020 Maurice Karrenbrock
-
-This software is open-source and is distributed under the
-GNU Affero General Public License v3 (agpl v3) license
-
-A copy of the license must be included with any copy of the program or part of it
+This file contains the super class for Protein and Ligand
 """
-
-# This is the super class for Protein and Ligand
-
 from HPC_Drug.PDB import biopython
 from HPC_Drug.PDB import prody
 from HPC_Drug.auxiliary_functions import path

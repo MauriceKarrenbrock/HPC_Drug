@@ -1,13 +1,15 @@
+######################################################################################
+# Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+#                                                                                    #
+# This software is open-source and is distributed under the                          #
+# GNU Affero General Public License v3 (agpl v3 license)                             #
+#                                                                                    #
+# A copy of the license must be included with any copy of the program or part of it  #
+######################################################################################
+
 """
-Copyright (c) 2020-2020 Maurice Karrenbrock
-
-This software is open-source and is distributed under the
-GNU Affero General Public License v3 (agpl v3) license
-
-A copy of the license must be included with any copy of the program or part of it
+The function in this file updates Protein._ligands
 """
-
-# The function in this file updates Protein._ligands
 
 from HPC_Drug.structures import ligand
 from HPC_Drug.PDB import prody

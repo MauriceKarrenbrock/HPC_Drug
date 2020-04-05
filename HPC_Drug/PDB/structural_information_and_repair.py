@@ -1,14 +1,17 @@
+######################################################################################
+# Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+#                                                                                    #
+# This software is open-source and is distributed under the                          #
+# GNU Affero General Public License v3 (agpl v3 license)                             #
+#                                                                                    #
+# A copy of the license must be included with any copy of the program or part of it  #
+######################################################################################
+
 """
-Copyright (c) 2020-2020 Maurice Karrenbrock
-
-This software is open-source and is distributed under the
-GNU Affero General Public License v3 (agpl v3) license
-
-A copy of the license must be included with any copy of the program or part of it
+This file contains a template to get the residues near a metallic ion, disulf bonds and organic ligand's renames and resnumbers
+from a Protein instance and repair the PDB (or mmCIF) file
 """
 
-#This file contains a template to get the residues near a metallic ion, disulf bonds and organic ligand's renames and resnumbers
-#from a Protein instance and repair the PDB (or mmCIF) file
 
 from HPC_Drug.PDB.structural_information import mmcif_header
 from HPC_Drug.PDB.structural_information import scan_structure

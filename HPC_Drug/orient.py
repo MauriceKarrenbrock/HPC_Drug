@@ -1,16 +1,18 @@
+######################################################################################
+# Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+#                                                                                    #
+# This software is open-source and is distributed under the                          #
+# GNU Affero General Public License v3 (agpl v3 license)                             #
+#                                                                                    #
+# A copy of the license must be included with any copy of the program or part of it  #
+######################################################################################
+
 """
-Copyright (c) 2020-2020 Maurice Karrenbrock
-
-This software is open-source and is distributed under the
-GNU Affero General Public License v3 (agpl v3) license
-
-A copy of the license must be included with any copy of the program or part of it
+This file ontains the classes and functions to orient
+the given strucutre along the inertia's tensor
+Create a box around it and do many other calculations needed to create
+the input for the orac optimization with solvent
 """
-
-# Contains the classes and functions to orient
-#the given strucutre along the inertia's tensor
-#Create a box around it and do many other calculations needed to create
-#the input for the orac optimization with solvent
 
 from Bio.PDB import Entity
 import Bio.PDB
