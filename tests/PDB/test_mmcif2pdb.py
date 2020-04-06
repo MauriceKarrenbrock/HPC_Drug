@@ -39,7 +39,7 @@ class test_mmcif2pdb(unittest.TestCase):
 
     def test_with_cif(self):
 
-        with mock.patch("HPC_Drug.PDB.biopython.write_mmcif") as mocked_mmcfi2pdb:
+        with mock.patch("HPC_Drug.PDB.biopython.write_pdb") as mocked_mmcfi2pdb:
 
             Protein = mock.Mock()
             Protein.file_type = "cif"

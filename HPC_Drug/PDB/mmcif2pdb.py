@@ -35,7 +35,7 @@ def mmcif2pdb(Protein):
 
         Protein.update_structure(struct_type = "biopython")
 
-        biopython.write_mmcif(structure = Protein.structure, file_name = new_name)
+        biopython.write_pdb(structure = Protein.structure, file_name = new_name)
 
         Protein.pdb_file = new_name
 

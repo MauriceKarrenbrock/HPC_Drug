@@ -364,7 +364,7 @@ class NoLigandPipeline(Pipeline):
 
             Protein.gro_file = first_opt.execute()
 
-            if Ligand == None:
+            if Ligand == None or Ligand == []:
                 raise TypeError('I could not find organic ligands in the structure\n\
                                 Maybe the ones you where looking for are in the important_lists.trash list\n\
                                 In any case I did some optimizations on your protein, hoping it will come in handy')
@@ -425,7 +425,7 @@ class NoLigandPipeline(Pipeline):
 
             Protein.pdb_file = first_opt.execute()
 
-            if Ligand == None:
+            if Ligand == None or Ligand == []:
                 raise TypeError('I could not find organic ligands in the structure\n\
                                 Maybe the ones you where looking for are in the important_lists.trash list\n\
                                 In any case I did some optimizations on your protein, hoping it will come in handy')
