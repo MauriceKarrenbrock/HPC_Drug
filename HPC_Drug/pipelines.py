@@ -19,6 +19,7 @@ from HPC_Drug.PDB import mmcif2pdb
 from HPC_Drug.PDB import structural_information_and_repair
 from HPC_Drug.PDB import prody
 from HPC_Drug.PDB import remove_trash_metal_ions
+from HPC_Drug.PDB.organic_ligand import get_ligand_topology
 import HPC_Drug.auxiliary_functions.path as auxiliary_functions_path
 from HPC_Drug.auxiliary_functions import get_iterable
 from HPC_Drug import file_manipulation
@@ -273,39 +274,35 @@ class NoLigandPipeline(Pipeline):
         )
 
         Protein = get_protein_pipeline.execute()
+        
+        #get .itp .tpg .prm ... files for any organic ligand
+        Protein = get_ligand_topology.get_topology(
+            Protein = Protein,
+            program_path = self.ligand_elaboration_program_path,
+            tool = self.ligand_elaboration_program,
+            ph = self.ph
+        )
 
         #TEMPORARY
         Ligand = Protein._ligands
-        
-        #use primadorac to get topology and parameter files for any given ligand
-        if self.ligand_elaboration_program == 'primadorac':
-            if Ligand != None:
-        
-                #runs primadorac and returns the Ligand list updated with the prm, tpg and new pdb files
-                Ligand = funcs4primadorac.run_primadorac(ligand_list = Ligand,
-                                                        primadorac_path = self.ligand_elaboration_program_path,
-                                                        ph = self.ph)
-                
-                #As primadorac renames the ligand resnumber as 1
-                #and it could create problems they are renamed as -(i + 1)
-                #with maximum number -9
-                #Not very robust, for sure not the best solution
-                for i, lgand in enumerate(get_iterable.get_iterable(Ligand)):
-                    with open(lgand.pdb_file, 'r') as f:
-                        lines = f.readlines()
+
+
+        #As primadorac renames the ligand resnumber as 1
+        #and it could create problems they are renamed as -(i + 1)
+        #with maximum number -9
+        #Not very robust, for sure not the best solution
+        for i, lgand in enumerate(get_iterable.get_iterable(Ligand)):
+            with open(lgand.pdb_file, 'r') as f:
+                lines = f.readlines()
+            
+            with open(lgand.pdb_file, 'w') as f:
+                for line in lines:
+                    line = list(line)
+                    line[24] = '-'
+                    line[25] = f'{(i + 1) % 10}'
+                    line = ''.join(line)
                     
-                    with open(lgand.pdb_file, 'w') as f:
-                        for line in lines:
-                            line = list(line)
-                            line[24] = '-'
-                            line[25] = f'{(i + 1) % 10}'
-                            line = ''.join(line)
-                            
-                            f.write(line)
-
-        else:
-            raise NotImplementedError(self.ligand_elaboration_program)
-
+                    f.write(line)
 
         if self.MD_program == None or self.MD_program_path == None:
             raise Exception('Need a MD program and a path')
