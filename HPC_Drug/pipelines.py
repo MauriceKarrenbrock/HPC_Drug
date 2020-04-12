@@ -19,14 +19,14 @@ from HPC_Drug.PDB import mmcif2pdb
 from HPC_Drug.PDB import structural_information_and_repair
 from HPC_Drug.PDB import prody
 from HPC_Drug.PDB import remove_trash_metal_ions
+from HPC_Drug.PDB import select_model_chain
+from HPC_Drug.PDB import remove_disordered_atoms
 from HPC_Drug.PDB.organic_ligand import get_ligand_topology
 import HPC_Drug.auxiliary_functions.path as auxiliary_functions_path
 from HPC_Drug.auxiliary_functions import get_iterable
-from HPC_Drug import file_manipulation
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
 from HPC_Drug.structures import get_ligands
-from HPC_Drug import pipeline_functions
 from HPC_Drug import funcs4primadorac
 from HPC_Drug import funcs4gromacs
 from HPC_Drug import funcs4orac
@@ -222,11 +222,16 @@ class GetProteinLigandFilesPipeline(Pipeline):
 
         Protein, ligand_resnames_resnums = Info_rep.get_info_and_repair()
 
-        #selects only a selected model and chain, and keeps only one conformation for any disordered atom
-        Protein = file_manipulation.select_model_chain_custom(Protein = Protein)
+        #remove still present disordered atoms (if any)
+        Protein = remove_disordered_atoms.remove_disordered_atoms(Protein = Protein)
 
+        #selects only a selected model and chain (Protein.model Protein.chain)
+        Protein = select_model_chain.select_model_chain(Protein = Protein)
+
+        #if the protein was a mmCIF I convert it to PDB
         Protein = mmcif2pdb.mmcif2pdb(Protein = Protein)
 
+        #create the Ligand instances and add them to Protein._ligands
         Protein = get_ligands.get_ligands(Protein = Protein, ligand_resnames_resnums = ligand_resnames_resnums)
 
         Protein.update_structure(struct_type = "prody")
