@@ -389,7 +389,7 @@ class NoLigandPipeline(Pipeline):
 
             Protein.gro_file = solv_box.execute()
 
-            #create the REM input
+            #create the REM input for Plumed patched gromacs
             rem_input = funcs4gromacs.GromacsREMInput(input_filename = f"{Protein.protein_id}_REM",
                                                     output_filename = f"{Protein.protein_id}_REM.mdp",
                                                     Protein = Protein,
@@ -402,6 +402,21 @@ class NoLigandPipeline(Pipeline):
                                                     use_gpu = self.use_gpu)
 
             gromacs_rem_input_file = rem_input.execute()
+
+
+            #create the REM input for native gromacs REM (tricking it in thinking it is doing a temperature REM)
+            native_rem_input = funcs4gromacs.GromacsNativeREMInput(input_filename = f"{Protein.protein_id}_REM",
+                                                    output_filename = f"{Protein.protein_id}_REM.mdp",
+                                                    Protein = Protein,
+                                                    Ligand = Ligand,
+                                                    protein_tpg_file = self.protein_tpg_file,
+                                                    MD_program_path = self.MD_program_path,
+                                                    solvent_model = self.solvent_pdb,
+                                                    kind_of_processor = self.kind_of_processor,
+                                                    number_of_cores_per_node = self.number_of_cores_per_node,
+                                                    use_gpu = self.use_gpu)
+
+            gromacs_nativerem_input_file = native_rem_input.execute()
 
         elif self.MD_program == 'orac':
 

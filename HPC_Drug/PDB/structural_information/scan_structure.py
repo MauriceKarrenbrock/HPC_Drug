@@ -346,13 +346,13 @@ def get_metalbinding_disulf_ligands(Protein, trash = important_lists.trash, meta
     #disulf bonds
     disulf_binding_dict, Protein.sulf_bonds = get_disulf_bonds_with_no_header(structure = Protein.structure,
                                                                             protein_chain = Protein.chain,
-                                                                            protein_model = Protein.main)
+                                                                            protein_model = Protein.model)
 
     Protein.substitutions_dict = {**metal_binding_dict, **disulf_binding_dict}
 
     organic_ligand_list = get_organic_ligands_with_no_header(structure = Protein.structure,
                                                             protein_chain = Protein.chain,
-                                                            protein_model = Protein.main,
+                                                            protein_model = Protein.model,
                                                             trash = trash,
                                                             metals = metals)
 

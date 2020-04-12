@@ -168,10 +168,10 @@ def get_organic_ligands(mmcif2dict, protein_chain = None, trash = important_list
 
     ligand_resnames = []
 
-    if '_structure_site.details' in get_iterable.get_iterable(mmcif2dict.keys()):
+    if '_struct_site.details' in mmcif2dict.keys():
 
         #record the ligands resname
-        for i in mmcif2dict['_structure_site.details']:
+        for i in mmcif2dict['_struct_site.details']:
             n = i.split()
 
             #if required

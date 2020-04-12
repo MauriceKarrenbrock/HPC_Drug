@@ -132,7 +132,7 @@ class test_get_organic_ligands(unittest.TestCase):
     def test_no_chain_selection(self):
 
         input_dict = {
-            '_structure_site.details' : ["LIGAND_A A DUMMY", "LIGAND_B B DUMMY", "LIGAND_A A DUMMY"]
+            '_struct_site.details' : ["LIGAND_A A DUMMY", "LIGAND_B B DUMMY", "LIGAND_A A DUMMY"]
         }
 
         expected_output = ["LIGAND_A", "LIGAND_B"]
@@ -144,7 +144,7 @@ class test_get_organic_ligands(unittest.TestCase):
     def test_with_chain_selection(self):
 
         input_dict = {
-            '_structure_site.details' : ["LIGAND_A A DUMMY", "LIGAND_B B DUMMY", "LIGAND_A A DUMMY"]
+            '_struct_site.details' : ["LIGAND_A A DUMMY", "LIGAND_B B DUMMY", "LIGAND_A A DUMMY"]
         }
 
         expected_output = ["LIGAND_A"]

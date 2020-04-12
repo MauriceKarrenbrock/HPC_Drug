@@ -53,3 +53,6 @@ class Ligand(structure.Structure):
         self.tpg_file = tpg_file
 
         self.prm_file = prm_file
+
+        #a dummy protein_id needed for the biopython parser
+        self.protein_id = "liga"

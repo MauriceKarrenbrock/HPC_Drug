@@ -21,7 +21,7 @@ protein_filetype = cif
 #default = 7.0
 ph = 7.0
 
-#with wich tool the pdb shall be fixed
+#with which tool the pdb shall be fixed
 #adding missing atoms, missing hydrogens and substituting
 #non standard residues with standard ones
 #default is pdbfixer (needs openmm and conda environment)
@@ -47,7 +47,7 @@ local = no
 ligand_in_protein = yes
 #ligand = ligand.pdb
 
-#The program with wich elaborate the ligand (optimization and potential)
+#The program with which elaborate the ligand (optimization and potential)
 #default primadorac (amber force field)
 
 ligand_elaboration_program = primadorac
@@ -74,3 +74,12 @@ solvent_pdb = water.pdb
 #default standard
 #standard, custom_zinc
 residue_substitution = standard
+
+#The kind of processor present on the HPC cluster
+#default skylake
+#other options broadwell knl (you can find them in the important_lists.py file)
+kind_of_processor = skylake
+
+# how many cores there are on the HPC cluster on each node
+#default 64
+number_of_cores_per_node = 64

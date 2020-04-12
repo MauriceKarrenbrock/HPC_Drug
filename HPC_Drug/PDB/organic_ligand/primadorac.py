@@ -13,6 +13,7 @@ This file contains the class to run primadorac
 
 import os
 import os.path
+import shutil
 
 from HPC_Drug.files_IO import read_file
 from HPC_Drug.files_IO import write_on_files
@@ -106,7 +107,7 @@ class Primadorac(object):
 
         write_on_files.write_file(lines = lines, file_name = itp_file)
 
-        return itp_file
+        return path.absolute_filepath(path = itp_file)
 
     
     def execute(self):
@@ -119,16 +120,24 @@ class Primadorac(object):
 
         ligand_list = self.Protein.get_ligand_list()
 
-        bash_path = path.absolute_programpath(program = "bash")
-
         for i in range(len(ligand_list)):
+
+            #primadorac can only work with files in it's workind directory, so if the file is somewhere else I copy it in the working directory
+            try:
+
+                current_pdb_file = shutil.copy(path.absolute_filepath(path = ligand_list[i].pdb_file), os.getcwd())
+
+            except:
+
+                current_pdb_file = os.path.relpath(ligand_list[i].pdb_file, os.getcwd())
             
 
-            self._run(string = [bash_path, self.primadorac_path, '-gp', path.absolute_filepath(path = ligand_list[i].pdb_file)])
+            self._run(string = [self.primadorac_path, '-gp', current_pdb_file])
 
 
 
             prefix = ligand_list[i].pdb_file.strip().rsplit('.', 1)[0] + '-p'
+            prefix = os.getcwd() + '/' + prefix.rsplit('/', 1)[-1]
 
             ligand_list[i].pdb_file = prefix + '.pdb'
             
@@ -141,17 +150,7 @@ class Primadorac(object):
                 ligand_resname = ligand_list[i].resname
             )
 
-
-
-            #get the absolute paths
-            ligand_list[i].pdb_file = path.absolute_filepath(path = ligand_list[i].pdb_file)
-            
-            ligand_list[i].tpg_file = path.absolute_filepath(path = ligand_list[i].tpg_file)
-            
-            ligand_list[i].prm_file = path.absolute_filepath(path = ligand_list[i].prm_file)
-
-            ligand_list[i].itp_file = path.absolute_filepath(path = ligand_list[i].itp_file)
-
+            #any file_name is an absolute path
 
 
             ligand_list[i].itp_file = self._edit_itp(

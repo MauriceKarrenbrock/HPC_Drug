@@ -316,7 +316,8 @@ class GromacsMakeProteinGroTop(GromacsInput):
                 solvent_model = solvent_model)
         #protein_tpg_file is actually the protein model chosen through choices_file
         
-        self.command_string = f"{self.MD_program_path} pdb2gmx -f {self.Protein.pdb_file} -o {self.Protein.protein_id}.gro -p {self.Protein.protein_id}.top < {self.output_filename}"
+        self.command_string = [f"{self.MD_program_path} pdb2gmx -f {self.Protein.pdb_file} -o {self.Protein.protein_id}.gro -p {self.Protein.protein_id}.top < {self.output_filename}",
+            f"{self.MD_program_path} pdb2gmx -ignh -f {self.Protein.pdb_file} -o {self.Protein.protein_id}.gro -p {self.Protein.protein_id}.top < {self.output_filename}"]
 
     
         self.template = [
@@ -327,7 +328,6 @@ class GromacsMakeProteinGroTop(GromacsInput):
             template = None,
             filename = None,
             output_file = None,
-            command_string = None,
             Protein = None):
 
         """Takes a protein instance and returns one"""
@@ -335,10 +335,20 @@ class GromacsMakeProteinGroTop(GromacsInput):
         if Protein == None:
             Protein = self.Protein
 
-        choices_file = super().execute(template = template,
-                        filename = filename,
-                        output_file = output_file,
-                        command_string = command_string)
+        #sometimes gromacs complains about some existing hydrogens, in case I tell it to ignore them -ignh
+        try:
+            choices_file = super().execute(template = template,
+                            filename = filename,
+                            output_file = output_file,
+                            command_string = self.command_string[0])
+
+        except:
+            choices_file = super().execute(template = template,
+                            filename = filename,
+                            output_file = output_file,
+                            command_string = self.command_string[1])
+
+
         choices_file = None
 
         Protein.gro_file = f"{Protein.protein_id}.gro"
@@ -939,7 +949,7 @@ class GromacsREMInput(GromacsInput):
         """writes the tinit timestep and number of steps string"""
 
         tinit = 0
-        timestep = 0.0150 #ps
+        timestep = 0.00150 #ps
         
         #ps calculated in 24 hours by one mpi_run (BATTERIES)
         number_of_steps = self.get_ns_per_day() * 1.E+3
@@ -1197,7 +1207,501 @@ class GromacsREMInput(GromacsInput):
 
         
 
+
+class GromacsNativeREMInput(GromacsInput):
+    #WORK IN PROGRESS
+    
+    def __init__(self,
+                input_filename = None,
+                output_filename = None,
+                Protein = None,
+                Ligand = None,
+                protein_tpg_file = None,
+                solvent_model = "amber99sb-ildn.ff/spce.itp",
+                MD_program_path = 'gmx',
+                kind_of_processor = 'skylake',
+                number_of_cores_per_node = 64,
+                use_gpu = 'auto'):
+
+        super().__init__(input_filename = input_filename,
+                        output_filename = output_filename,
+                        Protein = Protein,
+                        Ligand = Ligand,
+                        protein_tpg_file = protein_tpg_file,
+                        solvent_model = solvent_model,
+                        MD_program_path = MD_program_path)
+
+
+        #the tpr file
+        if self.input_filename == None:
+            self.input_filename = f"{self.Protein.protein_id}_NativeREM.tpr"
         
+        elif self.input_filename.rsplit('.', 1)[-1].strip() != 'tpr':
+            self.input_filename = self.input_filename + '.tpr'
+
+        if self.output_filename == None:
+            self.output_filename = f"{self.Protein.protein_id}_NativeREM.mdp"
+
+        self.kind_of_processor = kind_of_processor
+        self.number_of_cores_per_node = number_of_cores_per_node
+
+        #an instance of orient.Orient class
+        self.orient = orient.Orient(self.Protein, self.Ligand)
+
+        #gromacs has various options to use gpu
+        #auto (default) that will use all the available ones automaticly
+        #cpu uses no GPU even if available
+        #gpu forces the use of GPU (but in case you want to use a gpu auto would be safer and more robust)
+        self.use_gpu = use_gpu.lower().strip()
+        if self.use_gpu not in ('auto', 'cpu', 'gpu'):
+            raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
+
+
+
+        self.template = [
+            "; VARIOUS PREPROCESSING OPTIONS",
+            "; Preprocessor information: use cpp syntax.",
+            "; e.g.: -I/home/joe/doe -I/home/mary/roe",
+            "include                  =",
+            "; e.g.: -DPOSRES -DFLEXIBLE (note these variable names are case sensitive)",
+            "define                   =",
+            "",
+            "; RUN CONTROL PARAMETERS",
+            "integrator               = md",
+            "; Start time and timestep in ps",
+
+            self.write_TIME_TIMESTEP_string(),
+
+            "; For exact run continuation or redoing part of a run",
+            "init-step                = 0",
+            "; Part index is updated automatically on checkpointing (keeps files separate)",
+            "simulation-part          = 1",
+            "; mode for center of mass motion removal",
+            "comm-mode                = Linear",
+            "; number of steps for center of mass motion removal",
+            "nstcomm                  = 100",
+            "; group(s) for center of mass motion removal",
+            "comm-grps                =",
+            "",
+            "; TEST PARTICLE INSERTION OPTIONS",
+            "rtpi                     = 0.05",
+            "",
+            "; OUTPUT CONTROL OPTIONS",
+            "; Output frequency for coords (x), velocities (v) and forces (f)",
+            "nstxout                  = 10000",
+            "nstvout                  = 10000",
+            "nstfout                  = 10000",
+            "; Output frequency for energies to log file and energy file",
+            "nstlog                   = 1000",
+            "nstcalcenergy            = 100",
+            "nstenergy                = 1000",
+            "; Output frequency and precision for .xtc file",
+            "nstxtcout                = 2000",
+            "xtc-precision            = 1000",
+            "; This selects the subset of atoms for the .xtc file. You can",
+            "; select multiple groups. By default all atoms will be written.",
+            "xtc-grps                 =",
+            "; Selection of energy groups",
+            "energygrps               = System",
+            "",
+            "; NEIGHBORSEARCHING PARAMETERS",
+            "; cut-off scheme (group: using charge groups, Verlet: particle based cut-offs)",
+            "; nblist update frequency",
+            "cutoff-scheme            = Verlet",
+            "nstlist                  = 20",
+            "verlet-buffer-tolerance  = 0.0001",
+            "; ns algorithm (simple or grid)",
+            "ns_type                  = grid",
+            "; Periodic boundary conditions: xyz, no, xy",
+            "pbc                      = xyz",
+            "periodic-molecules       = no",
+            "; Allowed energy drift due to the Verlet buffer in kJ/mol/ps per atom,",
+            "; a value of -1 means: use rlist",
+            "; nblist cut-off",
+            "rlist                    = 1.0",
+            "; long-range cut-off for switched potentials",
+            "rlistlong                = -1",
+            "",
+            "; OPTIONS FOR ELECTROSTATICS AND VDW",
+            "; Method for doing electrostatics",
+            "coulombtype              = PME",
+            "rcoulomb-switch          = 0",
+            "rcoulomb                 = 1.0",
+            "; Relative dielectric constant for the medium and the reaction field",
+            "epsilon-r                = 1",
+            "epsilon-rf               = 0",
+            "; Method for doing Van der Waals",
+            "vdw-type                 = Cut-off",
+            "; cut-off lengths",
+            "rvdw-switch              = 0",
+            "rvdw                     = 1.0",
+            "; Apply long range dispersion corrections for Energy and Pressure",
+            "DispCorr                 = EnerPres",
+            "; Extension of the potential lookup tables beyond the cut-off",
+            "table-extension          = 1",
+            "; Separate tables between energy group pairs",
+            "energygrp-table          =",
+            "; Spacing for the PME/PPPM FFT grid",
+            "fourierspacing           = 0.12",
+            "; FFT grid size, when a value is 0 fourierspacing will be used",
+            "fourier-nx               = 0",
+            "fourier-ny               = 0",
+            "fourier-nz               = 0",
+            "; EWALD/PME/PPPM parameters",
+            "pme-order                = 4",
+            "ewald-rtol               = 1e-06",
+            "ewald-geometry           = 3d",
+            "epsilon-surface          =",
+            "optimize-fft             = no",
+            "",
+            "; IMPLICIT SOLVENT ALGORITHM",
+            "implicit-solvent         = No",
+            "",
+            "; OPTIONS FOR WEAK COUPLING ALGORITHMS",
+            "; Temperature coupling",
+            "tcoupl                   = v-rescale",
+            "nsttcouple               = -1",
+            "nh-chain-length          = 1",
+            "; Groups to couple separately",
+            "tc-grps                  = System",
+            "; Time constant (ps) and reference temperature (K)",
+            "tau-t                    = 0.2",
+            "ref-t                    = 298.15",
+            "; pressure coupling",
+            "pcoupl                   = Berendsen",
+            "pcoupltype               = Isotropic",
+            "nstpcouple               = -1",
+            "; Time constant (ps), compressibility (1/bar) and reference P (bar)",
+            "tau-p                    = 0.5",
+            "compressibility          = 4.6e-5",
+            "ref-p                    = 1",
+            "; Scaling of reference coordinates, No, All or COM",
+            "refcoord-scaling         = COM",
+            "",
+            "; GENERATE VELOCITIES FOR STARTUP RUN",
+            "gen-vel                  = no",
+            "gen-temp                 = 500",
+            "gen-seed                 = 173529",
+            "",
+            "; OPTIONS FOR BONDS",
+            "constraints              = all-bonds",
+            "; Type of constraint algorithm",
+            "constraint-algorithm     = Lincs",
+            "; Do not constrain the start configuration",
+            "continuation             = no",
+            "; Use successive overrelaxation to reduce the number of shake iterations",
+            "Shake-SOR                = no",
+            "; Relative tolerance of shake",
+            "shake-tol                = 0.00001",
+            "; Highest order in the expansion of the constraint coupling matrix",
+            "lincs-order              = 5",
+            "; Number of iterations in the final step of LINCS. 1 is fine for",
+            "; normal simulations, but use 2 to conserve energy in NVE runs.",
+            "; For energy minimization with constraints it should be 4 to 8.",
+            "lincs-iter               = 2",
+            "; Lincs will write a warning to the stderr if in one step a bond",
+            "; rotates over more degrees than",
+            "lincs-warnangle          = 30",
+            "; Convert harmonic bonds to morse potentials",
+            "morse                    = no"
+        ]
+
+
+    def get_ns_per_day(self,  Protein = None, Ligand = None, kind_of_processor = None):
+        """Get's the number of ns per day that a kind_of_processor
+        processor can process on the sistem"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if kind_of_processor == None:
+            kind_of_processor = self.kind_of_processor
+
+        number_of_atoms = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
+        number_of_atoms = number_of_atoms[0]
+
+        if self.use_gpu == 'cpu':
+            ns_per_day = ( 15000. / number_of_atoms ) * important_lists.processor_kind_ns_per_day_15000_atoms_for_cpu_only_runs[kind_of_processor]
+        
+        elif self.use_gpu in ('auto', 'gpu'):
+            ns_per_day = ( 15000. / number_of_atoms ) * important_lists.ns_per_day_15000_on_gpu_accellerated_architectures
+
+        else:
+            raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
+
+        return ns_per_day
+
+    def write_TIME_TIMESTEP_string(self):
+        """writes the tinit timestep and number of steps string"""
+
+        tinit = 0
+        timestep = 0.00150 #ps
+        
+        #ps calculated in 24 hours by one mpi_run (BATTERIES)
+        number_of_steps = self.get_ns_per_day() * 1.E+3
+        #number of steps (integer)
+        number_of_steps = math.ceil( number_of_steps / timestep )
+
+        string = f"tinit                    = {tinit} \ndt                       = {timestep} \nnsteps                   = {number_of_steps}\n"
+
+        return string
+
+    def get_BATTERIES(self, Protein = None, Ligand = None, kind_of_processor = None):
+        """Get's the number of batteries for REM"""
+
+        if Ligand == None:
+            Ligand = self.Ligand
+
+        if Protein == None:
+            Protein = self.Protein
+
+        if kind_of_processor == None:
+            kind_of_processor = self.kind_of_processor
+
+        ns_per_day = self.get_ns_per_day(Protein = Protein, Ligand = Ligand, kind_of_processor = kind_of_processor)
+
+        BATTERIES = math.ceil( 32. / ns_per_day )
+
+        return BATTERIES
+
+    def _edit_top_file(self):
+        """PRIVATE"""
+
+        hot_residues = self.orient.get_hot_residues_for_rem(Protein = self.Protein, Ligand = self.Ligand, cutoff = 4.5, residue_dist = 10.0)
+        hot_ids = []
+        for residue in hot_residues:
+            hot_ids.append(str(residue[1]).strip())
+
+        #add the ligand resnumber
+        Sub_Parser = file_manipulation.SubstitutionParser()
+
+        for lgand in self.Ligand:
+            hot_ids.append(str(Sub_Parser.get_ligand_resnum(Protein = self.Protein,
+                                                    ligand_resnames = lgand.resname,
+                                                    chain_model_selection = True)[0][1]))
+
+        with open(self.Protein.top_file, 'r') as f:
+            lines = f.readlines()
+
+        #auxiliary bool variable
+        is_hot_residue = False
+        with open(self.Protein.top_file, 'w') as f:
+            for i in range(len(lines)):
+
+                if lines[i][0:9] == "; residue" and lines[i][9:13].strip() in hot_ids :
+                    if lines[i][14:17].strip() != 'SOL' :
+
+                        is_hot_residue = True
+                        
+                        f.write(f"{lines[i].rstrip()}\n")
+
+                        continue
+
+                elif lines[i][0:9] == "; residue" and lines[i][9:13].strip() not in hot_ids:
+
+                    is_hot_residue = False
+
+                    f.write(f"{lines[i].rstrip()}\n")
+
+                    continue
+
+                #This is a check for the last residue in the chain (could probably be done better)
+                elif lines[i][0].strip() == "[":
+
+                    is_hot_residue = False
+
+                    f.write(f"{lines[i].rstrip()}\n")
+
+                    continue
+
+                if is_hot_residue and len(lines[i]) >= 17:
+                    if lines[i][16] != " ":
+
+                        lines[i] = lines[i][:17] + "_" + lines[i][18:]
+
+                f.write(f"{lines[i].rstrip()}\n")
+
+    def interact_with_plumed(self, string = None):
+        """Interacts with plumed running string
+        with subprocess.run
+        string must contain the plumed path"""
+
+        print("Running Plumed")
+        r = subprocess.run(string,
+                        shell = True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        universal_newlines=True)
+
+        print(r.stdout)
+        print(r.stderr)
+
+        if r.returncode != 0:
+            raise Exception(f"Plumed failure\n{r.stdout}\n{r.stderr}")
+
+    def write_workloadmanager_inputs(self, input_file, mpi_runs, replicas_for_run = 8):
+        """private method called by self.execute()"""
+
+        file_list = []
+
+        #making a nested list the firs dimension reppresents the mpirun
+        #and the second the various directories that will be called
+        #with each mpirun (gmx -multidir)
+        multidir = [[] for x in range(mpi_runs)]
+
+        for i in range(mpi_runs):
+            for j in range(replicas_for_run):
+
+                multidir[i].append(f"BATTERY{i}/scaled{j}")
+ 
+        slurm = funcs4slurm.SlurmInput(MD_input_file = input_file,
+                                    MD_input_directories = multidir,
+                                    slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.slr',
+                                    MD_program = 'gromacs',
+                                    MD_calculation_type = 'rem',
+                                    number_of_cores_per_node = self.number_of_cores_per_node,
+                                    max_time = "24:00:00",
+                                    ntasks = self.get_BATTERIES(Protein = self.Protein, Ligand = self.Ligand, kind_of_processor = self.kind_of_processor) * 8,
+                                    cpus_per_task = 8,
+                                    std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
+                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err',
+                                    use_gpu = self.use_gpu,
+                                    plumed = False)
+
+        file_list.append(slurm.write())
+
+        pbs = funcs4pbs.SlurmInput(MD_input_file = input_file,
+                                    MD_input_directories = multidir,
+                                    slurm_input_file = f'{self.output_filename.rsplit(".", 1)[0]}.pbs',
+                                    MD_program = 'gromacs',
+                                    MD_calculation_type = 'rem',
+                                    number_of_cores_per_node = self.number_of_cores_per_node,
+                                    max_time = "24:00:00",
+                                    ntasks = self.get_BATTERIES(Protein = self.Protein, Ligand = self.Ligand, kind_of_processor = self.kind_of_processor) * 8,
+                                    cpus_per_task = 8,
+                                    std_out = f'{self.output_filename.rsplit(".", 1)[0]}.out',
+                                    std_err = f'{self.output_filename.rsplit(".", 1)[0]}.err',
+                                    use_gpu = self.use_gpu,
+                                    plumed = False)
+
+        file_list.append(pbs.write())
+
+        return file_list
+
+    def make_TPR_files_script(self, mpi_runs, replicas_for_run = 8):
+        """private"""
+
+        filename = "MAKE_TPR_FILES_Native.sh"
+
+        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\n"
+
+        for i in range(mpi_runs):
+            for j in range(replicas_for_run):
+                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{self.input_filename} -f BATTERY{i}/Native_REM{j}.mdp -p BATTERY{i}/{self.Protein.protein_id}_scaled_{j}.top -c BATTERY{i}/{self.Protein.gro_file.rsplit('/', 1)[-1]} \n"
+
+
+        with open(filename, 'w') as f:
+            f.write(string)
+
+        return filename
+
+    def _get_hamiltonian_scaling_values(self):
+        """
+        Scales the hamiltonian with a geometrical progression
+        scale(m) =scale^(m/(nprocs−1)) with scale = 0.2 and nprocs = 8
+        0 <= m <= nprocs -1
+
+        for more information check the orac manual http://www.chim.unifi.it/orac/orac-manual.pdf
+        page 123 """
+
+        nprocs = 8.0
+        scale = 0.2
+
+        #instantiating the list and putting the value for scale^0 = 1.0
+        hamiltonian_scaling_values = [1.0]
+
+        for m in range(1, 8):
+
+            scale_m = scale ** ( m / (nprocs -1) )
+
+            hamiltonian_scaling_values.append(scale_m)
+
+        hamiltonian_scaling_values = tuple(hamiltonian_scaling_values)
+
+        return hamiltonian_scaling_values
+
+
+
+    def execute(self):
+        """This method does not run gromacs but
+        creates the input to make a REM simulation on a
+        HPC cluster"""
+
+        for enum, i in enumerate((298.15, 298.16, 298.17, 298.18, 298.19, 298.20, 298.21, 298.22)):
+
+            self.template[106] = f"ref-t                    = {i}"
+
+            with open(f"Native_REM{enum}.mdp", "w") as w:
+
+                for line in self.template:
+
+                    w.write(line + '\n')
+
+        number_of_mpiruns = self.get_BATTERIES()
+
+        #create the elaborated top file for plumed
+        #self.interact_with_gromacs(string = f"{self.MD_program_path} grompp -f {self.output_filename} -c {self.Protein.gro_file} -p {self.Protein.top_file} -maxwarn 100 -pp {self.Protein.top_file.rsplit('.', 1)[0]}_elaborated.top")
+        #self.Protein.top_file = f"{self.Protein.top_file.rsplit('.', 1)[0]}_elaborated.top"
+
+        #finds the hot residues and edits the elaborated top file accordingly
+        self._edit_top_file()
+
+        #use plumed to make the scaled topologies
+
+        hamiltonian_scaling_values = self._get_hamiltonian_scaling_values()
+
+        for counter, value in enumerate(hamiltonian_scaling_values):
+            self.interact_with_plumed(string = f"plumed partial_tempering {value} < {self.Protein.top_file} > {self.Protein.protein_id}_scaled_{counter}.top")
+
+
+        i = 0
+        j = 0
+        for i in range(number_of_mpiruns):
+
+            for j in range(len(hamiltonian_scaling_values)):
+
+                #creates the REM directory that will be copied to the HPC cluster
+                os.makedirs(f"{self.Protein.protein_id}_NativeREM/BATTERY{i}/scaled{j}", exist_ok=True)
+
+                
+
+            #copy the needed files in the new directories
+            j = 0
+            for j in (self.Protein.gro_file, "Native_REM0.mdp", "Native_REM1.mdp", "Native_REM2.mdp", "Native_REM3.mdp", "Native_REM4.mdp",\
+                "Native_REM5.mdp", "Native_REM6.mdp", "Native_REM7.mdp"):
+                shutil.copy(j, f"{self.Protein.protein_id}_NativeREM/BATTERY{i}")
+
+            #copy the scaled top files
+            j = 0
+            for j in range(len(hamiltonian_scaling_values)):
+                shutil.copy(f"{self.Protein.protein_id}_scaled_{j}.top", f"{self.Protein.protein_id}_NativeREM/BATTERY{i}")
+        
+        #make and copy the workload manager input files
+        #write workload manager input for different workload managers (slurm pbs ...)
+        workload_files = self.write_workloadmanager_inputs(input_file = self.input_filename, mpi_runs = number_of_mpiruns, replicas_for_run = len(hamiltonian_scaling_values))
+        for wl_file in workload_files:
+            shutil.copy(wl_file, f"{self.Protein.protein_id}_NativeREM")
+
+
+        #make and copy the script that will make the tpr files in loco
+        TPR_file_script = self.make_TPR_files_script(mpi_runs = number_of_mpiruns, replicas_for_run = len(hamiltonian_scaling_values))
+        shutil.copy(TPR_file_script, f"{self.Protein.protein_id}_NativeREM")
+
+        return self.output_filename
+
 
 
 

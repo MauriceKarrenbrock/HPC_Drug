@@ -23,7 +23,7 @@ protein_filetype = cif
 #default = 7.0
 ph = 7.0
 
-#with wich tool the pdb shall be fixed
+#with which tool the pdb shall be fixed
 #adding missing atoms, missing hydrogens and substituting
 #non standard residues with standard ones
 #default is pdbfixer (needs openmm and conda environment)
@@ -49,7 +49,7 @@ local = no
 ligand_in_protein = yes
 #ligand = ligand.pdb
 
-#The program with wich elaborate the ligand (optimization and potential)
+#The program with which elaborate the ligand (optimization and potential)
 #default primadorac (amber force field)
 
 ligand_elaboration_program = primadorac

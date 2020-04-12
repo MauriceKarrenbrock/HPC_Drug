@@ -38,7 +38,10 @@ class SlurmInput(object):
                 partition_name = None,
                 account_name = None,
                 MD_program_path = None,
-                use_gpu = 'auto'):
+                use_gpu = 'auto',
+                plumed = True):
+
+        self.plumed = plumed
 
         
         self.MD_input_file = MD_input_file
@@ -229,19 +232,31 @@ class SlurmInput(object):
             return string
 
 
-            
+        string = ""            
 
-        string = ""
+        if self.plumed == True:
 
-        if self.MD_input_directories == None:
+            if self.MD_input_directories == None:
 
-            string = f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no -s {self.MD_input_file} \n"
+                string = f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no -s {self.MD_input_file} \n"
+
+            else:
+                for dirs in self.MD_input_directories:
+                    string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no {multidir_string(dirs = dirs)} -s {self.MD_input_file} & \n"
+
+                string = string + "wait"
 
         else:
-            for dirs in self.MD_input_directories:
-                string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun {gpu_options(use_gpu = self.use_gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no {multidir_string(dirs = dirs)} -s {self.MD_input_file} & \n"
 
-            string = string + "wait"
+            if self.MD_input_directories == None:
+
+                string = f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun {gpu_options(use_gpu = self.use_gpu)} -v  -replex 100 -s {self.MD_input_file} \n"
+
+            else:
+                for dirs in self.MD_input_directories:
+                    string = string + f"mpirun -np {self.cpus_per_task * 8} gmx_mpi mdrun {gpu_options(use_gpu = self.use_gpu)} -v  -replex 100  {multidir_string(dirs = dirs)} -s {self.MD_input_file} & \n"
+
+                string = string + "wait"
 
         return string
 

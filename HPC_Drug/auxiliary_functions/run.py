@@ -12,11 +12,13 @@ This file contains the functions needed to run external programs
 """
 
 import subprocess
+import os
 
 def subprocess_run(commands,
     shell = False,
     universal_newlines = False,
-    error_string = "error during the call of an external program"):
+    error_string = "error during the call of an external program",
+    cwd = os.getcwd()):
 
     """
     runs an external program using subprocess.run
@@ -32,13 +34,16 @@ def subprocess_run(commands,
     universa_newlines :: bool, dafault False
 
     error_string :: the sting to give to the RuntimeError as argument
+
+    cwd :: string , default the current working directory, it is the working directory for the child process
     """
 
     r = subprocess.run(commands,
                     shell = shell,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    universal_newlines = universal_newlines)
+                    universal_newlines = universal_newlines,
+                    cwd = cwd)
 
     print(r.stdout)
     print(r.stderr)
