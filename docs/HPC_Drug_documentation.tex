@@ -1,0 +1,71 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\documentclass[a4paper,12pt,oneside]{book}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{amssymb}
+
+\usepackage{amsmath}
+
+
+\usepackage{xkeyval}
+\usepackage{subfig}
+\usepackage{import}
+\usepackage{transparent}
+\usepackage{xcolor}
+\usepackage{color}
+
+\usepackage{pdfpages}
+
+\usepackage{placeins}
+
+\usepackage{longtable}
+
+\usepackage{float}
+
+\usepackage[parfill]{parskip}
+
+\makeindex
+\begin{document}
+		\title{HPC\_Drug Documentation}
+		\author{Maurice Karrenbrock}
+		\date{\today}
+		\maketitle
+
+\clearpage\null\thispagestyle{empty}\newpage
+	
+\tableofcontents
+
+\mainmatter
+
+%\chapter{User guide}
+\input{user_guide/user_guide.tex}
+	
+%\chapter{Developer guide}
+\input{developer_guide/developer_guide.tex}
+
+%\chapter{Dependencies}
+\input{dependencies.tex}
+
+%\clearpage
+%\appendix
+%\chapter{}
+%\input{}
+\backmatter
+
+
+\bibliographystyle{unsrt}
+\bibliography{HPC_Drug_bibliography}
+\end{document}

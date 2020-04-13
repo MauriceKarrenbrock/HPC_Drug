@@ -1,0 +1,23 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/PDB/repair\_pdb/repair.py}
+
+    This file contains the function that repairs a pdb or mmcif file using the right repairing method
+
+    \subsubsection{Function repair(Protein, repairing\_method = "pdbfixer")}
+
+        This is a factory that returns a Protein with Protein.pdb\_file updated to a repaired pdb or mmcif file using the right repiring method
+
+        Protein :: HPC\_Drug.structures.protein.Protein instance
+
+        repairing\_method :: string, default pdbfixer, it is the tool you want to repair the file with if you input a non existing tool will return NotImplementedError

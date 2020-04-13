@@ -1,0 +1,103 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/PDB/structural\_information/scan\_structure.py}
+
+    This file contains the functions necessary to scan the structure of a PDB file or a headerless mmCIF file
+
+    \subsubsection{Function get\_metal\_binding\_residues\_with\_no\_header(structure, cutoff = 3.0, protein\_chain = 'A', protein\_model = 0, COM\_distance = 10.0, metals = important\_lists.metals)}
+
+        This function gets called by get\_metalbinding\_disulf\_ligands
+
+        This function iterates through the structure many times in order to return the metal binding residues through a substitution dictionary
+
+        {residue\_id : [residue\_name, binding\_atom, binding\_metal]}
+
+        It uses biopython structures
+
+        structure :: a biopython structure of the protein
+
+        cutoff :: double the maximum distance that a residue's center of mass and a metal ion can have to be considered binding default 3.0 angstrom
+
+        protein\_chain :: string default 'A', if == None no chain selection will be done
+
+        protein\_model :: integer default 0, if == None no model and no chain selection will be done
+
+        metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for, default HPC\_Drug.important\_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+
+
+        this function is slow and error prone and should only be used if there is no mmCIF with a good header
+
+        It should not be necessary to change COM\_distance because it simply is the distance between the center of mass of a residue and the metal that is used to know which atom distances to calculate
+
+    \subsubsection{Function get\_disulf\_bonds\_with\_no\_header(structure, cutoff = 3.0, protein\_chain = 'A', protein\_model = 0)}
+
+        This function gets called by get\_metalbinding\_disulf\_ligands
+
+        This function iterates through the structure many times in order to return the disulf bonds through a substitution dictionary and a list of the binded couples
+
+        {residue\_id : [residue\_name, binding\_atom, binding\_metal]} and [(cys\_id, cys\_id), (cys\_id, ...), ...]
+
+        return substitutions\_dict, sulf\_bonds
+
+        it uses a biopython structure
+
+        structure :: biopython structure of the protein
+
+        cutoff :: double the maximum distance that two CYS S atoms can have to be considered binding default 3.0 angstrom
+
+        protein\_chain :: string default 'A', if == None no chain selection will be done
+
+        protein\_model :: integer default 0, if == None no model and no chain selection will be done
+
+        this function is slow and error prone and should only be used if there is no mmCIF with a good header
+
+
+    \subsubsection{Function get\_organic\_ligands\_with\_no\_header(structure, protein\_chain = 'A', protein\_model = 0, trash = important\_lists.trash, metals = important\_lists.metals)}
+
+        This function gets called by get\_metalbinding\_disulf\_ligands
+
+        This function iterates through the structure to get the organic ligand
+
+        returning a list of lists containing [[resname, resnumber], [resname, resnumber], ...]
+
+        If there are none returns None
+
+        it uses a biopython structure
+
+        structure :: biopython structure of the protein
+
+        protein\_chain :: string default 'A', if == None no chain selection will be done
+
+        protein\_model :: integer default 0, if == None no model and no chain selection will be done
+
+        trash :: a list (or tuple etc) that contains all the resnames (in capital letters) of trash ligands to avoid listing, default HPC\_Drug.important\_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
+
+        metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for, default HPC\_Drug.important\_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+
+        this function is slow and error prone and should only be used if there is no mmCIF with a good header
+
+    \subsubsection{Function et\_metalbinding\_disulf\_ligands(Protein, trash = important\_lists.trash, metals = important\_lists.metals)}
+    
+        This is a template that uses the other funcions on this file to return a dictionary with key = resnum and value = (resname, binding atom, metal) or ('CYS', 'SG', 'disulf') depending if the residue number {resnum} binds a metallic ion or is part of a disulf bond and updates Protein.substitutions\_dict with it
+
+        and a list of tuples that contain the couples of CYS that are part of a disulf bond and updates Protein.sulf\_bonds with it
+
+        and a list of tuples with the residue name and residue number of the organic ligands (if there are none None will be returned)
+
+        Protein :: a HPC\_Drug.structures.protein.Protein instance
+
+        trash :: a list (or tuple etc) that contains all the resnames (in capital letters) of trash ligands to avoid listing, default HPC\_Drug.important\_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
+
+        metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for, default HPC\_Drug.important\_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+
+        return Protein, [[lig\_resname, lig\_resnum], ...]

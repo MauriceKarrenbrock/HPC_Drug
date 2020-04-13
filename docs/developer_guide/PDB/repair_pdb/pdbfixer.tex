@@ -1,0 +1,42 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/PDB/repair\_pdb/pdbfixer.py}
+
+    This file contains the function to repair a PDB or a mmCIF file with pdbfixer
+
+    \subsubsection{Function \_repair(input\_file\_name, file\_type, output\_file\_name, add\_H = False, ph = 7.0)}
+
+        Private, it is called by the repair function
+
+        repairs a PDB or mmCIF file with pdbfixer and returns the new file\_name
+
+        input\_file\_name :: string, the pdb or mmcif file to be repaired
+
+        file\_type :: string, can be cif or pdb
+
+        output\_file\_name :: string, the name of the new structure file that will be created
+
+        add\_H :: bool, default False, if True pdbfixer will add hydrogens according to ph
+
+        ph :: float, default 7.0, if add\_H == True this is the pH value that will be used to add hydrogens
+
+    \subsubsection{Function repair(Protein)}
+
+        repairs a PDB or mmCIF file with pdbfixer and returns the new file\_name
+
+        This function calls \_repair it is an interface to use a
+        HPC\_Drug.structures.protein.Protein instance on \_repair in a simplified way
+
+        Protein :: HPC\_Drug.structures.protein.Protein instance
+
+        return Protein

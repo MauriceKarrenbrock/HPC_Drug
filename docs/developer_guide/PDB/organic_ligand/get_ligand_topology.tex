@@ -1,0 +1,29 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/PDB/organic\_ligand/get\_ligand\_topology.py}
+
+    This file contains the function that uses the right tool to get the topology of a given organic ligand (.itp .tpg .prm etc...) in order to use it in a MD run
+
+    \subsubsection{Function get\_topology(Protein, program\_path, tool = "primadorac", ph = 7.0)}
+
+        Uses the right tool to get the topology of a given organic ligand (.itp .tpg .prm etc...) in order to use it in a MD run returns the updated protein
+
+        Protein :: HPC\_Drug.structures.protein.Protein instance with a valid Protein.\_ligands (Protein.get\_ligand\_list()) value (if it is None or [] will return the protein untouched)
+
+        program\_path :: string, the absolute path to the tool's executable
+
+        tool :: string, default primadorac, the tool to use to get the topology (.itp .tpg .prm etc...)
+
+        ph :: float, default 7.0, the ph at which the ligand shall be added the missing hydrogens
+
+        return Protein

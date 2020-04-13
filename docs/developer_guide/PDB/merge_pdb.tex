@@ -1,0 +1,25 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/PDB/merge\_pdb.py}
+
+    This file contains the functions to merge PDB or mmCIF. They are useful wen you need to merge one or more organic ligands with a protein.
+
+    \subsubsection{Function merge\_pdb(Protein)}
+    
+        Will put all the given ligands after the protein and update the ligand resnums this function is brutal and memory consuming I should do it better in the future
+
+        both th protein and the ligands should be in PDB files (no check will be done)
+
+        Protein :: HPC\_Drug.structures.protein.Protein instance with a valid \_ligands value
+
+        return Protein with updated Protein.pdb\_file

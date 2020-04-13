@@ -1,0 +1,26 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/PDB/remove\_trash\_metal\_ions.py}
+
+    \subsubsection{Function remove\_trash\_metal\_ions(Protein, trash = important\_lists.trash\_ions)}
+        This function removes unwanted metal ions
+        that are still inside the structure after it went through prody
+        selection (updates Protein.pdb\_file)
+
+        This is a brutal function I will need to do a better job
+
+        Protein :: HPC\_Drug.structures.protein.Protein instance
+
+        Protein.file\_type must be pdb or cif otherwise TypeError will be raised
+
+        return Protein

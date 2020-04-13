@@ -1,0 +1,39 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/structures/structure.py}
+
+    \subsubsection{Class Ligand(object)}
+
+        This is the super class for all structures, it's constructor raises a NotImplementedError.\\
+        It implements some common methods.
+
+        \paragraph{Method \_\_init\_\_(self)}
+
+            Raises NotImplementedError
+
+        \paragraph{Method write(self, file\_name = None, struct\_type = 'biopython')}
+        
+            This method writes self.structure on a {self.file\_type} file (pdb, cif) using biopython (default) or prody (can only write pdb files)\\
+            If no file\_name is given self.pdb\_file file will be overwritten otherwise a new file called file\_name will be created and self.pdb\_file will be updated with the new file\_name
+
+            file\_name :: string, default self.pdb\_file
+
+            struct\_type :: string, values: biopython (default), prody ; is the kind of structure in self.structure
+    
+        \paragraph{Method update\_structure(self, struct\_type = "biopython")}
+        
+            Parses the self.pdb\_file file with the selected tool (biopython (default), mmcif2dict or prody) and updates self.structure\\
+            prody can only parse pdb files, if you try to parse a cif with prody a TypeError will be raised\\
+            mmcif2dict can only parse cif files, if you try to parse a pdb with mmcif2dict a TypeError will be raised
+    
+            structure\_type :: string, values: biopython (default), prody, mmcif2dict

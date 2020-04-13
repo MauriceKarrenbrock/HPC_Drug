@@ -1,0 +1,2 @@
+#The documentation is in LaTeX and it should not influence the repo language (python)
+docs/* linguist-vendored

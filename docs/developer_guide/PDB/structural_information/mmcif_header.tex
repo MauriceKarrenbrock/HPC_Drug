@@ -1,0 +1,89 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/PDB/structural\_information/mmcif\_header.py}
+
+    This file contains the files necessary to parse the header of a mmCIF file
+
+    \subsubsection{Function get\_ligand\_binding\_residues(mmcif2dict, metals = important\_lists.metals)}
+
+        This function is called from get\_metalbinding\_disulf\_ligands
+
+        Searces the given mmcif file for the metal binding residues parsing the header returns a dictionary that has as key the residue number and as vaue a tuple with (resname, binding atom, metal) for metal binding residues
+
+        mmcif2dict :: a dictionary of the type you obtain with HPC\_Drug.PDB.biopython.mmcif2dict function
+
+        metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for, default HPC\_Drug.important\_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+
+        return {resnum : (resname, binding atom, metal), ...}
+
+    \subsubsection{Function get\_disulf\_bonds(mmcif2dict)}
+    
+        This function is called from get\_metalbinding\_disulf\_ligands
+
+        Searces the given mmcif file for disulf bonds parsing the header returns a dictionary that has as key the residue number and as vaue a tuple with ('CYS', 'SG', 'disulf') for any disulf cysteine.\\
+        And a a list composed of tuples containing the resnumbers of the 2 CYS that bound through disulfide bond
+
+        mmcif2dict :: a dictionary of the type you obtain with HPC\_Drug.PDB.biopython.mmcif2dict function
+
+        return {resnum : ('CYS', 'SG', 'disulf'), ...}   [(resnum, resnum), (...), ...]
+
+    \subsubsection{Function get\_organic\_ligands(mmcif2dict, protein\_chain = None, trash = important\_lists.trash, metals = important\_lists.metals)}
+    
+        This function is called from get\_metalbinding\_disulf\_ligands
+
+        Searces the given mmcif file for organic ligands parsing the header returns a list of resnames. If protein chain is None (default) will list all ligands from any chain, if protein chain is set does only consider the ones of the given chain (es A)
+
+        mmcif2dict :: a dictionary of the type you obtain with HPC\_Drug.PDB.biopython.mmcif2dict function
+
+        protein\_chain :: string, default None, the chain id of the chain you want to analize in capital letters (es A)
+
+        trash :: a list (or tuple etc) that contains all the resnames (in capital letters) of trash ligands to avoid listing,
+        default HPC\_Drug.important\_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
+
+        metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for,
+        default HPC\_Drug.important\_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+
+        return [resname, resname, ...]
+
+    \subsubsection{Function get\_ligand\_resnum(structure, ligand\_resnames = None, protein\_chain = 'A', protein\_model = 0)}
+    
+        This function is called from get\_metalbinding\_disulf\_ligands
+
+        Given a Biopython structure and a list of Ligand\_resnames will return 
+        a list containing the ligand resnames and resnumbers
+        in order to distinguish ligands with the same resname: [[resname, resnumber], [.., ...], ...]
+        
+        ligand\_resnames :: list, it is a list containing the organic ligand resnames (capital letters) to look for
+        if it is == None or empty will return None
+
+        protein\_chain :: string, default A, the chain id of the chain you want to analize in capital letters (es A), if == None no chain selection will be done
+        
+        protein\_model :: integer, default 0, the model to check, if == None no chain and no model selection will be done
+
+        return [[resname, resnumber], [.., ...], ...]
+
+    \subsubsection{Function get\_metalbinding\_disulf\_ligands(Protein, trash = important\_lists.trash, metals = important\_lists.metals)}
+    
+        This is a template that uses the other funcions on this file to return a dictionary with key = resnum and value = (resname, binding atom, metal) or ('CYS', 'SG', 'disulf') depending if the residue number {resnum} binds a metallic ion or is part of a disulf bond and updates Protein.substitutions\_dict with it
+
+        and a list of tuples that contain the couples of CYS that are part of a disulf bond and updates Protein.sulf\_bonds with it
+
+        and a list of tuples with the residue name and residue number of the organic ligands (if there are none None will be returned)
+
+        Protein :: a HPC\_Drug.structures.protein.Protein instance
+
+        trash :: a list (or tuple etc) that contains all the resnames (in capital letters) of trash ligands to avoid listing, default HPC\_Drug.important\_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
+
+        metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for, default HPC\_Drug.important\_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
+
+        return Protein, [[lig\_resname, lig\_resnum], ...]

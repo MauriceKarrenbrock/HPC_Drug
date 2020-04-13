@@ -1,0 +1,53 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/PDB/organic\_ligand/primadorac.py}
+
+    This file contains the class to run primadorac
+
+    \subsubsection{Class Primadorac(object)}
+
+        It is a template class to run primadorac
+
+        \paragraph{Method \_\_init\_\_(self, Protein, primadorac\_path, ph = 7.0)}
+
+            Protein :: Protein :: HPC\_Drug.structures.protein.Protein instance with a valid Protein.\_ligands (Protein.get\_ligand\_list())
+
+            primadorac\_path :: string, the path to the primadorac executable (better if absolute)
+
+            ph :: float, default 7.0, the ph at which the ligand will be protonated (at the moment primadorac does ONLY SUPPORT PH 7.0)
+
+        \paragraph{Method \_run(self, string)}
+        
+            private
+
+        \paragraph{Method \_rename\_itp(self, file\_to\_search, ligand\_resname = "LIG")}
+    
+            private
+
+            it is a patch because some old versions of primadorac do mess up the .itp file name
+
+        \paragraph{Method \_edit\_itp(self, ligand\_resname, itp\_file)}
+        
+            private
+
+            primadorac itp call any lignd LIG i change it to the ligand\_resname
+
+            and removes the first 9 lines of the file (they make gromacs fail)
+
+        \paragraph{Method execute(self)}
+        
+            Run primadorac
+
+            return Protein
+            
+            with updated .itp .prm .tpg files for any ligand in Protein.\_ligands

@@ -1,0 +1,31 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+\subsection{HPC\_Drug/structures/ligand.py}
+
+    \subsubsection{Class Ligand(HPC\_Drug.structures.structure.Structure)}
+    
+        This is the Protein class, subclasses HPC\_Drug.structures.structure.Structure
+        
+        \paragraph{Method \_\_init\_\_(self,\\
+        resname = None,\\
+        file\_type = 'pdb',\\
+        pdb\_file = None,\\
+        structure = None,\\
+        resnum = None,\\
+        itp\_file = None,\\
+        gro\_file = None,\\
+        top\_file = None,\\
+        tpg\_file = None,\\
+        prm\_file = None)}
+
+            $\ $\\resnum must be an integer, resname upper case, if pdb\_file == None self.pdb\_file = {self.resname}\_lgand.{file\_type}
