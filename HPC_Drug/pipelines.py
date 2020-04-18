@@ -30,6 +30,7 @@ from HPC_Drug.structures import get_ligands
 from HPC_Drug import funcs4primadorac
 from HPC_Drug import funcs4gromacs
 from HPC_Drug import funcs4orac
+from HPC_Drug import orient
 
 
 def choose_pipeline(*args, **kwargs):
@@ -335,6 +336,13 @@ class NoLigandPipeline(Pipeline):
 
                 f.write(f"{lines[len(lines)-1].strip()}\n")
             #END OF PATCH
+
+            #quick patch, will do it better
+            #The structure must be put in the reference system of the
+            #inertia tensor
+            orient_obj = orient.Orient(Protein = Protein)
+            Protein.structure = orient_obj.base_change_structure()
+            Protein.write()
 
             
 
