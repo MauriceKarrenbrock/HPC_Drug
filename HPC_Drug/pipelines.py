@@ -341,8 +341,19 @@ class NoLigandPipeline(Pipeline):
             #The structure must be put in the reference system of the
             #inertia tensor
             orient_obj = orient.Orient(Protein = Protein)
+            tmp_1, tmp_2, Rot_matrix = orient_obj.calculate_moment_of_intertia_tensor()
+            tmp_1 = tmp_2 = None
             Protein.structure = orient_obj.base_change_structure()
             Protein.write()
+
+            for i in range(len(Ligand)):
+                Ligand[i].update_structure(struct_type = "biopython")
+
+                Ligand[i].structure = orient_obj.base_change_structure(structure = Ligand[i].structure, rot_matrix = Rot_matrix)
+
+                Ligand[i].write()
+
+
 
             
 
