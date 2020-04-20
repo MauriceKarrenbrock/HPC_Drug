@@ -76,6 +76,18 @@
 		\paragraph{Method add\_ligands(Ligand)}
 		
 			Takes a HPC\_Drug.structures.ligand.Ligand instance and add it to self.\_ligands
+
+		\paragraph{Method clear\_ligands()}
+
+            Clears ALL the ligands stored in self.\_ligands
+
+        \paragraph{Method update\_ligands(ligands)}
+        
+            Takes an iterable (list, tuple, etc...) containing HPC\_Drug.structures.ligand.Ligand 
+            instances and ovewrites self.\_ligand with this new ones (any information about the old ones will be lost)
+            
+            ligands :: iterable containing the new HPC\_Drug.structures.ligand.Ligand instances
+
 			
 		\paragraph{Method get\_ligand\_list()}
 		

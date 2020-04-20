@@ -28,6 +28,9 @@ def get_ligands(Protein, ligand_resnames_resnums):
     return Protein
     """
 
+    #removes old ligands if any
+    Protein.clear_ligands()
+
     #There are no ligands to add
     if ligand_resnames_resnums == None or ligand_resnames_resnums == []:
         

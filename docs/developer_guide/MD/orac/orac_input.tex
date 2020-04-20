@@ -1,0 +1,133 @@
+% ######################################################################################
+% # Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+% #                                                                                    #
+% # This is part of the documentation of the HPC_Drug software                         #
+% #                                                                                    #
+% # This software is open-source and is distributed under the                          #
+% # GNU Affero General Public License v3 (agpl v3 license)                             #
+% #                                                                                    #
+% # A copy of the license must be included with any copy of the program or part of it  #
+% ######################################################################################
+
+
+
+\subsection{HPC\_Drug/MD/orac/orac\_input.py}
+
+    This file contains the super class of the Orac input templates
+
+    \subsubsection{Class OracInput(object)}
+
+        Super class of any Orac input template object
+
+        \paragraph{Method \_\_init\_\_(self, Protein, solvent\_pdb = None, MD\_program\_path = 'orac')}
+
+            Protein :: HPC\_Drug.structures.protein.Protein instance
+
+            solvent\_pdb :: string, it is the pdb file that contains the coordinates of a solvent molecule 
+            it is needed if there has to be added a solvent box around the protein 
+            default HPC\_Drug.lib "water.pdb"
+
+            MD\_program\_path :: string, the absolute path to the orac executable 
+            dafault will look for an executable called orac in the PATH and the working directory (in this order)
+
+        \paragraph{Method \_write\_box(self)}
+            
+            private
+
+            Writes the string about the box size
+            and rotates the strucure in a smart way
+
+        \paragraph{Method \_write\_sulf\_bond\_string(self)}
+        
+            private
+            
+            Writes the part of the template inherent to the disulf bonds
+
+
+        \paragraph{Method \_get\_protein\_resnumber\_cutoff(self)}
+        
+            private
+            
+            Orac starts the residue count from one
+            but pdb files often don't
+            so I get the id of the resnumber of the first residue
+            
+            returns the cutoff to apply to start from one
+
+        
+        \paragraph{Method \_write\_ligand\_tpg\_path(self)}
+            
+            private
+            
+            Writes the tpg file for any given ligand
+
+
+        \paragraph{Method \_write\_ligand\_prm\_path(self)}
+        
+            private
+            
+            Writes the prm file for any given ligand
+
+
+        \paragraph{Method \_get\_ligand\_name\_from\_tpg(self)}
+        
+            private
+            
+            Gets the name of the ligand from the tpg file
+            for any given ligand
+
+
+        \paragraph{Method \_write\_solvent\_grid(self)}
+        
+            private
+            
+            Writes the informations about the solvent grid    
+            
+        
+        \paragraph{Method \_write\_EWALD\_PME(self)}
+            
+            private
+            
+            Writes the informations about the grid
+            in the reciprocal reticle
+
+
+        \paragraph{Method \_write\_ADD\_STR\_COM(self)}
+            
+            private
+            
+            Writes the informations about the bounding between the protein and the ligands
+
+
+        \paragraph{Method \_write\_LINKED\_CELL(self)}
+            
+            private
+            
+            writes the LINKED CELL string
+
+
+        \paragraph{Method \_write\_template\_on\_file(self)}
+        
+            private
+
+            Writes the objects template on {filename} file
+
+
+        \paragraph{Method \_write\_chain\_in\_pdb(self)}
+            
+            private
+
+            This is a patch because orac removes the chain id from
+            pdb files and this confuses some pdb parsers
+
+
+        \paragraph{Method \_run(self)}
+        
+            private
+
+        \paragraph{Method execute(self)}
+        
+            Runs the requested Orac run and returns an updated 
+            HPC\_Drug.structures.protein.Protein instance
+
+            (The only pubblic method of this class)
