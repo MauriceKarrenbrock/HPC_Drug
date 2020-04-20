@@ -191,7 +191,7 @@ class Orient(object):
             Pp = Bio.PDB.PDBParser()
             structure = Pp.get_structure(self.Protein.protein_id, self.Protein.pdb_file)
         
-        if rot_matrix == None:
+        if rot_matrix is None:
             tmp, tmp_1, rot_matrix = self.calculate_moment_of_intertia_tensor()
 
         #I want to be sure that the matrix doesn't contain a reflection (det < 0)
