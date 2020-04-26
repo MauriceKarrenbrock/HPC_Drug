@@ -10,6 +10,7 @@
 % ######################################################################################
 
 
+
 \section{Plug and Play}
 
 	\subsection{HREM for FS-DAM Protein-Ligand binding free energy (main.py)}
@@ -80,188 +81,16 @@
 				\subsubsection*{Orac example}
 				
 					This is an example of correct input with some explanatory comments (below it you will find more information):
-				
-					\textit{\#This is a correct input example\\
-					\#Every line beginning with '\#' is a comment\\
-					\#Error occurs only for wrong keys\\
-					\#kase-sensitive\\
-					\#------------------------------------------------\\
-					$\ $\\
-					\#Protein code and desired file type, possible values 'cif' or 'pdb'\\
-					\#'cif' is for PDBx/mmCIF (default)\\
-					\#'pdb' for standard PDB file (not implemented)\\
-					$\ $\\
-					protein = 1df8\\
-					protein\_filetype = cif\\
-					$\ $\\
-					\#the model to take from the mmcif, if omitted model = 0 will be taken (starts from 0)\\
-					\#Protein\_model = 0\\
-					\#the chain to choose from the xray structure (default A)\\
-					\#Protein\_chain = A\\
-					$\ $\\
-					\#The ph at which the hydrogens shall be added to the protein\\
-					\#default = 7.0\\
-					ph = 7.0\\
-					$\ $\\
-					\#with which tool the pdb shall be fixed\\
-					\#adding missing atoms, missing hydrogens and substituting\\
-					\#non standard residues with standard ones\\
-					\#default is pdbfixer (needs openmm and conda environment)\\
-					$\ $\\
-					repairing\_method = pdbfixer\\
-					$\ $\\
-					\#local tells if the program shall use a protein file that is already\\
-					\#on the computer\\
-					\#if 'no' (default) it will download it from the wwPDB database\\
-					\#if 'yes' insert the absolute path in filepath\\
-					\#any keyword different from yes and no will abort the program\\
-					$\ $\\
-					local = no\\
-					\#filepath = 2rfh.pdb\\
-					$\ $\\
-					\#if ligand\_in\_protein = yes (default) ligand will be taken from the\\
-					\#protein mmcif file\\
-					$\ $\\
-					\#if ligand\_in\_protein = no ligand will be given as input\\
-					\#ligand = path/to/PDB\\
-					\#the ligand shall be given as a pdb file (I suggest to use absolute path)\\
-					$\ $\\
-					ligand\_in\_protein = yes\\
-					\#ligand = ligand.pdb\\
-					$\ $\\
-					\#The program with which elaborate the ligand (optimization and potential)\\
-					\#default primadorac (amber force field)\\
-					$\ $\\
-					ligand\_elaboration\_program = primadorac\\
-					ligand\_elaboration\_program\_path = ~/ORAC/trunk/tools/primadorac/primadorac.bash\\
-					$\ $\\
-					\#The molecular dynamics MD program\\
-					\#of choice and the path to the executable\\
-					$\ $\\
-					MD\_program = orac\\
-					MD\_program\_path = ~/ORAC/trunk/src/GNU-FFTW-OMP/orac\\
-					$\ $\\
-					\#protein tpg and primadorac\\
-					\#if omitted default ones will be used\\
-					\#see HPC\_Drug/lib/\\
-					protein\_prm\_file = amber99sb-ildn.prm\\
-					protein\_tpg\_file = amber99sb-ildn.tpg\\
-					$\ $\\
-					\#solvent pdb, if omitted default will be used\\
-					\#see HPC\_Drug/lib/\\
-					solvent\_pdb = water.pdb\\
-					$\ $\\
-					\#there can be custom residue substitutions for metal binding residues\\
-					\#default standard\\
-					\#standard, custom\_zinc\\
-					residue\_substitution = standard\\
-					$\ $\\
-					\#The kind of processor present on the HPC cluster\\
-					\#default skylake\\
-					\#other options broadwell knl (you can find them in the important\_lists.py file)\\
-					kind\_of\_processor = skylake\\
-					$\ $\\
-					\# how many cores there are on the HPC cluster on each node\\
-					\#default 64\\
-					number\_of\_cores\_per\_node = 64}
-				
+					
+					\verbatiminput{user_guide/input_correct_orac.txt}
+
 					In the end you will obtain a directory called \{protein id\}\_REM that can be copied on the access node of the HPC cluster you want to use. It doesn't only contain the input file for Orac\cite{orac} but also some basic PBS and SLURM input files to run the code with the right amount of processors, but pay attention, these are very basic so you will 99.9\% need to add/edit some lines.
 								
 				\subsubsection*{Gromacs example}
 				
 					This is an example of correct input with some explanatory comments (below it you will find more information):
 				
-					{\textit \#This is a correct input example\\
-					\#Every line beginning with '\#' is a comment\\
-					\#Error occurs only for wrong keys\\
-					\#kase-sensitive\\
-					\#------------------------------------------------\\
-					$\ $\\
-					\#Protein code and desired file type, possible values 'cif' or 'pdb'\\
-					\#'cif' is for PDBx/mmCIF (default)\\
-					\#'pdb' for standard PDB file (not implemented)\\
-					$\ $\\
-					protein = 5aol\\
-					\#3m5e\\
-					protein\_filetype = cif\\
-					$\ $\\
-					\#the model to take from the mmcif, if omitted model = 0 will be taken (starts from 0)\\
-					\#Protein\_model = 0\\
-					\#the chain to choose from the xray structure (default A)\\
-					\#Protein\_chain = A\\
-					$\ $\\
-					\#The ph at which the hydrogens shall be added to the protein\\
-					\#default = 7.0\\
-					ph = 7.0\\
-					$\ $\\
-					\#with which tool the pdb shall be fixed\\
-					\#adding missing atoms, missing hydrogens and substituting\\
-					\#non standard residues with standard ones\\
-					\#default is pdbfixer (needs openmm and conda environment)\\
-					$\ $\\
-					repairing\_method = pdbfixer\\
-					$\ $\\
-					\#local tells if the program shall use a protein file that is already\\
-					\#on the computer\\
-					\#if 'no' (default) it will download it from the wwPDB database\\
-					\#if 'yes' insert the absolute path in filepath\\
-					\#any keyword different from yes and no will abort the program\\
-					$\ $\\
-					local = no\\
-					\#filepath = 2rfh.pdb\\
-					$\ $\\
-					\#if ligand\_in\_protein = yes (default) ligand will be taken from the\\
-					\#protein mmcif file\\
-					$\ $\\
-					\#if ligand\_in\_protein = no ligand will be given as input\\
-					\#ligand = path/to/PDB\\
-					\#the ligand shall be given as a pdb file (I suggest to use absolute path)\\
-					$\ $\\
-					ligand\_in\_protein = yes\\
-					\#ligand = ligand.pdb\\
-					$\ $\\
-					\#The program with which elaborate the ligand (optimization and potential)\\
-					\#default primadorac (amber force field)\\
-					$\ $\\
-					ligand\_elaboration\_program = primadorac\\
-					ligand\_elaboration\_program\_path = ~/ORAC/trunk/tools/primadorac/primadorac.bash\\
-					
-					\#The molecular dynamics MD program\\
-					\#of choice and the path to the executable\\
-					$\ $\\
-					MD\_program = gromacs\\
-					MD\_program\_path = /usr/bin/gmx\\
-					$\ $\\
-					\#protein ff\\
-					\#if omitted default one is 6 that in standard gromacs is\\
-					\# AMBER99SB-ILDN protein, nucleic AMBER94 (Lindorff-Larsen et al., Proteins 78, 1950-58, 2010)\\
-					protein\_tpg\_file = 6\\
-					$\ $\\
-					\#the solvent model that will be chosen\\
-					\#standard is amber99sb-ildn.ff/spce.itp\\
-					\# from the standard gromacs share directory\\
-					solvent\_pdb = amber99sb-ildn.ff/spce.itp\\
-					$\ $\\
-					\#there can be custom residue substitutions for metal binding residues\\
-					\#default standard\\
-					\#standard, custom\_zinc\\
-					residue\_substitution = standard\\
-					$\ $\\
-					\#gromacs can use gpu accelerators\\
-					\#there are 3 options\\
-					\#auto (default)\\
-					\#cpu ues only cpu even if gpus are available\\
-					\#gpu forces to use gpus (using auto is HIGHLY RECOMMENDED)\\
-					use\_gpu = auto
-					$\ $\\
-					\#The kind of processor present on the HPC cluster\\
-					\#default skylake\\
-					\#other options broadwell knl (you can find them in the important\_lists.py file)\\
-					kind\_of\_processor = skylake\\
-					$\ $\\
-					\# how many cores there are on the HPC cluster on each node\\
-					\#default 64\\
-					number\_of\_cores\_per\_node = 64}
+					\verbatiminput{user_guide/input_correct_orac.txt}
 				
 					In the end you will obtain two directories, one to use if you have a Gromacs\cite{gromacs_ABRAHAM201519} patched with Plumed\cite{plumed} on your HPC cluster of choice and the other to use if you want to use Gromacs' native Replica Exchange (what we do is actually trick it to think we are doing a temperature REM), that can be copied on the access node of the HPC cluster you want to use (but for both versions you will need a working Plumed executable on your PC, the one you can download from conda-forge is perfect). They do not only contain the input files for Gromacs but also some basic PBS and SLURM input files to run the code with the right amount of processors, but pay attention, these are very basic so you will 99.9\% need to add/edit some lines, and a bash script to create all the needed .tpr files once you are on the HPC cluster (must be run before the workload-manager input).
 				
@@ -279,7 +108,7 @@
 			$ $\\
 			And the command is:
 			\[
-			\$\ python\ automizable_main.py\ input_file.txt
+			\$\ python\ automizable\_main.py\ input\_file.txt
 			\]
 			Of course you must check for the other options inside the .py file. stderr and stdout are redirected to two different files for any given protein.
 				

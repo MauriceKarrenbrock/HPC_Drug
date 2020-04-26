@@ -8,7 +8,7 @@ The latest version of the software can be found on GitHub https://github.com/Mau
 You might need a working Gromacs, Orac, and Primadorac installation on your local PC to get many of the most interesting features of the program.
 
 # Issues
-If you found a bug please open an issue on GitHub
+If you find a bug please open an issue on GitHub
 
 # Contributions
 If you would like to contribute to the program please chack out the guidelines in the documentations under "Developer Guide"
@@ -17,5 +17,15 @@ If you would like to contribute to the program please chack out the guidelines i
 agpl v3
 
 # Citation
-coming soon
 
+Maurice Karrenbrock. HPC_Drug: a python middleware for Drug Discovery on HPC systems. Master's Thesis Università degli Studi di Firenze, Firenze, Italy, June, 2020.
+```
+@mastersthesis{HPC_Drug_mastersthesis,
+    author  = "Maurice Karrenbrock",
+    title   = "{HPC\_Drug: a python middleware for Drug Discovery on HPC systems}",
+    school  = "Università degli Studi di Firenze",
+    year    = 2020,
+    address = "Firenze, Italy",
+    month   = jun
+}
+```
