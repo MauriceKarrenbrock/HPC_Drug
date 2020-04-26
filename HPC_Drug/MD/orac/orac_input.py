@@ -13,7 +13,7 @@ This file contains the super class of the Orac input templates
 
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
-from HPC_Drug.structures import get_ligands
+from HPC_Drug.structures import update_ligands
 from HPC_Drug import orient
 from HPC_Drug import important_lists
 from HPC_Drug import lib
@@ -25,6 +25,7 @@ from HPC_Drug.PDB import add_chain_id
 from HPC_Drug.PDB import prody
 from HPC_Drug.PDB import biopython
 from HPC_Drug.PDB.structural_information import mmcif_header
+from HPC_Drug.MD.orac import get_resnum_cutoff
 
 
 import os
@@ -64,10 +65,32 @@ class OracInput(object):
 
         self.output_pdb_file = os.getcwd() + f"/{self.Protein.protein_id}_orac.pdb"
 
-        self.template = []
-
         #an instance of orient.Orient class
         self.orient = orient.Orient(self.Protein, self.Protein.get_ligand_list())
+
+        self.template = []
+
+        #some values that are needed many times are calculated in the constructor
+
+        #The box sizes (lx, ly, lz)
+        #the structure is rotated in its tensor of inertia ref
+        self.box = self._create_selfbox()
+
+    def _create_selfbox(self):
+        """
+        private
+
+        This method is called by the constructor
+        """
+
+        #The box sizes (lx, ly, lz)
+        #the structure is rotated in its tensor of inertia ref
+        self.Protein.update_structure("biopython")
+        self.Protein.structure = self.orient.base_change_structure()
+        self.Protein.write(file_name = self.Protein.pdb_file, struct_type = 'biopython')
+        box = self.orient.create_box(self.Protein.structure)
+
+        return box
 
     def _write_box(self):
         """
@@ -76,12 +99,8 @@ class OracInput(object):
         Writes the string about the box size
         and rotates the strucure in a smart way
         """
-
-        self.Protein.structure = self.orient.base_change_structure()
-
-        self.Protein.write(file_name = self.Protein.pdb_file, struct_type = 'biopython')
         
-        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+        lx, ly, lz = self.box
 
         string = f"   CRYSTAL    {lx:.2f}    {ly:.2f}    {lz:.2f}  !! simulation BOX"
 
@@ -127,13 +146,9 @@ class OracInput(object):
         """
 
         self.Protein.update_structure(struct_type = "biopython")
-        r = self.Protein.structure.get_residues()
 
-        for i in r:
-            resnum = i.id[1]
-            break
-        
-        cutoff = 1 - resnum
+        cutoff = get_resnum_cutoff.get_resnum_cutoff(structure = self.Protein.structure)
+
         return cutoff
 
     def _write_ligand_tpg_path(self):
@@ -224,7 +239,7 @@ class OracInput(object):
         Writes the informations about the solvent grid
         """
 
-        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+        lx, ly, lz = self.box
 
         nx, ny, nz = self.orient.create_solvent_grid(lx, ly, lz)
 
@@ -240,7 +255,7 @@ class OracInput(object):
         in the reciprocal reticle
         """
         
-        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+        lx, ly, lz = self.box
 
         pme_x, pme_y, pme_z = self.orient.create_recipr_solvent_grid(lx, ly, lz)
 
@@ -261,23 +276,11 @@ class OracInput(object):
             return ""
 
 
-        
-        #Updates the ligands and gets the structure of the protein and any ligand
+        #updates the Protein._ligands
+        self.Protein = update_ligands.update_ligands(Protein = self.Protein)
+
+        #get a list of ligand structures
         ligand_structures = []
-
-        ligand_resnames = []
-
-        for lig in Ligand:
-
-            ligand_resnames.append(lig.resname)
-
-        self.Protein.update_structure(struct_type = "prody")
-
-        self.Protein = get_ligands.get_ligands(Protein = self.Protein,
-                            ligand_resnames_resnums = mmcif_header.get_ligand_resnum(structure = self.Protein.structure,
-                                                                                    ligand_resnames = ligand_resnames,
-                                                                                    protein_chain = None,
-                                                                                    protein_model = None))
 
         Ligand = self.Protein.get_ligand_list()
         for lig in Ligand:
@@ -286,12 +289,10 @@ class OracInput(object):
 
             ligand_structures.append(lig.structure)
 
+        #get the only protein biopython structure
         protein_structure = prody.ProdySelect(structure = self.Protein.structure)
         prody.write_pdb(structure = protein_structure, file_name = f"{self.Protein.protein_id}_protein.pdb")
         protein_structure = biopython.parse_pdb(protein_id = self.Protein.protein_id, file_name = f"{self.Protein.protein_id}_protein.pdb")
-
-        #get the separated structures of the protein and the ligands
-        self.Protein.structure, ligand_structures = self.orient.separate_protein_ligand()
 
         
         #Get the atom number range of each segment
@@ -306,8 +307,7 @@ class OracInput(object):
             COM_Protein, COM_ligand, distance = self.orient.center_mass_distance(protein_structure, ligand)
             
             #These are useless
-            COM_Protein = None
-            COM_ligand = None
+            COM_Protein = COM_ligand = None
 
             tmp_string = ["   ADD_STR_COM   !! linker COM-COM legand protein",
                         f"       ligand     {ligand_atoms[i][1]}      {ligand_atoms[i][0]}",
@@ -334,7 +334,7 @@ class OracInput(object):
         writes the LINKED CELL string
         """
 
-        lx, ly, lz = self.orient.create_box(self.Protein.structure)
+        lx, ly, lz = self.box
 
         string = f"   LINKED_CELL   {int(lx/3.0)}  {int(ly/3.0)}  {int(lz/3.0)}"
 
