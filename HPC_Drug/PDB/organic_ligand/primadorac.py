@@ -50,7 +50,6 @@ class Primadorac(object):
         run.subprocess_run(
             commands = string,
             shell = False,
-            universal_newlines = False,
             error_string = "primadorac failure"
         )
 

@@ -16,7 +16,7 @@ import os
 
 def subprocess_run(commands,
     shell = False,
-    universal_newlines = False,
+    universal_newlines = True,
     error_string = "error during the call of an external program",
     cwd = os.getcwd()):
 

@@ -352,11 +352,9 @@ class OracInput(object):
         Writes the objects template on {filename} file
         """
 
-        for i in range(len(self.template)):
-
-            self.template[i] = self.template[i] + '\n'
+        lines = ["\n".join(self.template)]
         
-        write_on_files.write_file(lines = self.template, file_name = self.orac_in_file)
+        write_on_files.write_file(lines = lines, file_name = self.orac_in_file)
 
 
     def _write_chain_in_pdb(self):
