@@ -1642,7 +1642,13 @@ class GromacsNativeREMInput(GromacsInput):
 
         for enum, i in enumerate((298.15, 298.16, 298.17, 298.18, 298.19, 298.20, 298.21, 298.22)):
 
-            self.template[106] = f"ref-t                    = {i}"
+            for j in range(len(self.template)):
+                
+                if self.template[j].strip() == "":
+                    pass
+                elif self.template[j].strip().split()[0] == "ref-t":
+                    
+                    self.template[j] = f"ref-t                    = {i}"
 
             with open(f"Native_REM{enum}.mdp", "w") as w:
 
