@@ -33,7 +33,12 @@ import importlib_resources
 import subprocess
 
 class OracInput(object):
-    """Super class of any Orac input template object"""
+    """
+    Super class of any Orac input template object
+    
+    The only public methos are the constructor and execute()
+    execute returns a HPC_Drug.structires.protein.Protein instance 
+    """
 
     def __init__(self,
                 Protein,
