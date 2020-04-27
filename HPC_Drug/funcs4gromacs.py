@@ -931,7 +931,7 @@ class GromacsREMInput(GromacsInput):
         if kind_of_processor == None:
             kind_of_processor = self.kind_of_processor
 
-        number_of_atoms = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
+        number_of_atoms = self.orient.get_first_last_atom_structure(Protein = Protein, Ligand = Ligand)
         number_of_atoms = number_of_atoms[0]
 
         if self.use_gpu == 'cpu':
@@ -1420,7 +1420,7 @@ class GromacsNativeREMInput(GromacsInput):
         if kind_of_processor == None:
             kind_of_processor = self.kind_of_processor
 
-        number_of_atoms = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
+        number_of_atoms = self.orient.get_first_last_atom_structure(Protein = Protein, Ligand = Ligand)
         number_of_atoms = number_of_atoms[0]
 
         if self.use_gpu == 'cpu':

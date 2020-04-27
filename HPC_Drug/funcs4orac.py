@@ -1117,7 +1117,7 @@ class OracREMInput(OracInput):
         if Protein == None:
             Protein = self.Protein
 
-        max_min_atom = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
+        max_min_atom = self.orient.get_first_last_atom_structure(Protein = Protein, Ligand = Ligand)
 
         return f"DEF_FRAGMENT   {max_min_atom[1]} {max_min_atom[0]}"
 
@@ -1134,7 +1134,7 @@ class OracREMInput(OracInput):
         if kind_of_processor == None:
             kind_of_processor = self.kind_of_processor
 
-        number_of_atoms = self.orient.get_first_last_atom_strucure(Protein = Protein, Ligand = Ligand)
+        number_of_atoms = self.orient.get_first_last_atom_structure(Protein = Protein, Ligand = Ligand)
         number_of_atoms = number_of_atoms[0]
 
         ns_per_day = ( 15000. / number_of_atoms ) * important_lists.processor_kind_ns_per_day_15000_atoms_for_cpu_only_runs[kind_of_processor]
