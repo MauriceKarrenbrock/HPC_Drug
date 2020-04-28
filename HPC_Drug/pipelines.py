@@ -211,7 +211,9 @@ class GetProteinLigandFilesPipeline(Pipeline):
                                     pdb_file = self.protein_filename,
                                     model = self.model,
                                     chain = self.chain,
-                                    file_type = self.protein_filetype)
+                                    file_type = self.protein_filetype,
+                                    tpg_file = self.protein_tpg_file,
+                                    prm_file = self.protein_prm_file)
         
 
         #Get Protein.substitutions_dict Protein.sulf_bonds
