@@ -424,7 +424,7 @@ class NoLigandPipeline(Pipeline):
 
 
             #create the REM input for native gromacs REM (tricking it in thinking it is doing a temperature REM)
-            native_rem_input = funcs4gromacs.GromacsNativeREMInput(input_filename = f"{Protein.protein_id}_REM",
+            native_rem_input = funcs4gromacs.GromacsMarinaRem(input_filename = f"{Protein.protein_id}_REM",
                                                     output_filename = f"{Protein.protein_id}_REM.mdp",
                                                     Protein = Protein,
                                                     Ligand = Ligand,

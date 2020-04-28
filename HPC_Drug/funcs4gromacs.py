@@ -1710,6 +1710,22 @@ class GromacsNativeREMInput(GromacsInput):
 
 
 
+class GromacsMarinaRem(GromacsNativeREMInput):
 
+    def write_TIME_TIMESTEP_string(self):
+        """writes the tinit timestep and number of steps string"""
+
+        tinit = 0
+        timestep = 0.00150 #ps
+
+        number_of_steps = 8000000
+
+        string = f"tinit                    = {tinit} \ndt                       = {timestep} \nnsteps                   = {number_of_steps}\n"
+
+        return string
+
+    def get_BATTERIES(self, Protein = None, Ligand = None, kind_of_processor = None):
+
+        return 5
 
 
