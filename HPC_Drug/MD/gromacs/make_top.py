@@ -25,11 +25,16 @@ class GromacsMakeProteinGroTop(gromacs_input.GromacsInput):
     Takes a protein instance and creates it's .top and .gro file
     for the Protein, ions and solvent BUT NOT for the organic ligands 
     THE ORGANIC LIGANDS SHOULD HAVE BEEN REMOVED BEFOREHAND FROM THE Protein.pdb_file
+
+    it uses the force field inside Protein.tpg_file and must be the name of the .ff directory
+    without the .ff suffix (case sensitive)
+
+    solvent_model can e none spce tip3p etc (check the gromacs pdb2gmx -water flag documentation for extra info)
     """
 
     def __init__(self,
                 Protein,
-                solvent_model = '7',
+                solvent_model = "spce",
                 MD_program_path = "gmx"):
 
         super().__init__(self,
@@ -46,56 +51,28 @@ class GromacsMakeProteinGroTop(gromacs_input.GromacsInput):
 
         #protein_tpg_file is actually the protein model chosen through choices_file
         
-        self.command_string = [f"{self.MD_program_path}", "pdb2gmx", "-f", f"{self.Protein.pdb_file}", "-o", f"{self.output_gro_file}", "-p", f"{self.output_top_file}"]
+        self.command_string = [f"{self.MD_program_path}", "pdb2gmx",
+            "-ff", f"{self.Protein.tpg_file}",
+            "-water", f"{self.solvent_model}",
+            "-f", f"{self.Protein.pdb_file}",
+            "-o", f"{self.output_gro_file}",
+            "-p", f"{self.output_top_file}"]
 
     
-        self.template = [
-            f"{self.Protein.tpg_file}",
-            f"{self.solvent_model}"
-                        ]
+        self.template = []
     
     def execute(self):
 
         """Takes a protein instance and returns one"""
 
-        #write the file that will be given as choices for pdb2gmx (equivalent to pipeing the file with < on linux shell)
-        write_on_files.write_file(lines = self.template, file_name = "choices.txt")
-
         #sometimes gromacs complains about some hydrogens, so in case I put the -ignh flag
-        error_string = "Could not create the gromacs topology (.top) file"
         try:
             
-            with open("choices.txt", "r") as std_in:
-                
-                r = subprocess.run(self.command_string,
-                            shell = False,
-                            stdin = std_in,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-
-            print(r.stdout)
-            print(r.stderr)
-
-            if r.returncode != 0:
-                raise RuntimeError(error_string)
+            self._interact_with_gromacs(string = self.command_string)
 
         except:
 
-            ignh = self.command_string + ["-ignh"]
-
-            with open("choices.txt", "r") as std_in:
-                
-                r = subprocess.run(ignh,
-                            shell = False,
-                            stdin = std_in,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-
-            print(r.stdout)
-            print(r.stderr)
-
-            if r.returncode != 0:
-                raise RuntimeError(error_string)
+            self._interact_with_gromacs(string = self.command_string + ["-ignh"])
 
         self.Protein.gro_file = self.output_gro_file
         self.Protein.top_file = self.output_top_file
@@ -175,3 +152,71 @@ class GromacsMakeJoinedProteinLigandTopGro(gromacs_input.GromacsInput):
         self.Protein = self._edit_top_file()
         
         return self.Protein
+
+
+
+class GromacsMakeOnlyLigandTopGro(gromacs_input.GromacsInput):
+
+    """
+    Makes the top and gro for any Ligand in a Protein instance
+    """
+
+    def __init__(self,
+                Protein,
+                MD_program_path = "gmx",
+                solvent_model = "spce"):
+
+        super.__init__(Protein = Protein,
+                    MD_program_path = MD_program_path)
+
+        self.solvent_model = solvent_model
+
+    def _create_top_file(self):
+
+        Ligand = self.Protein.get_ligand_list()
+
+        for i in range(len(Ligand)):
+
+            top_file = [
+                '\n',
+                ';protein ff (needed for the water itp file\n',
+                f'#include  "{self.Protein.tpg_file}.ff/forcefield.itp" \n',
+                '\n',
+                ';ligand itp file'
+                f'#include "{Ligand[i].itp_file}"\n',
+                '\n',
+                ';water itp',
+                f'#include  "{self.Protein.tpg_file}.ff/{self.solvent_model}.itp" \n',
+                '\n',
+                "[ system ]",
+                "; Name",
+                "Protein in water",
+                '\n',
+                '[ molecules ]',
+                '; Compound        #mols',
+                f'{Ligand[i].resname}              1'
+            ]
+        
+            write_on_files.write_file(lines = top_file, file_name = os.getcwd() + "/" + f"{Ligand[i].resname}_only_ligand.top")
+
+            Ligand[i].top_file = os.getcwd() + f"{Ligand[i].resname}_only_ligand.top"
+    
+    def _create_gro_files(self):
+
+        Ligand = self.Protein.get_ligand_list()
+
+        for i in range(len(Ligand)):
+
+            Ligand[i].gro_file = self._pdb2gro(pdb_file = Ligand[i].pdb_file,
+                                            gro_file = os.getcwd() + "/" + f"{Ligand[i].resname}_only_ligand.gro")
+
+
+    def execute(self):
+
+        self._create_top_file()
+
+        self._create_gro_files()
+
+        return self.Protein
+
+            

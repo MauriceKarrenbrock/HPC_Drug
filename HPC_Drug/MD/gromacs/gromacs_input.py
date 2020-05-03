@@ -92,16 +92,31 @@ class GromacsInput(object):
         string must contain the gromacs path
         """
 
+        if string is None:
+            string = self.command_string
+
         print("Running Gromacs")
 
         run.subprocess_run(commands = string,
                         shell = False,
                         error_string = f"Gromacs failure\n{' '.join(self.command_string)}")
 
+    def _pre_run_hook(self):
+        """
+        private
+
+        hook method for some pre run actions
+        """
+
+        pass
+
 
     def execute(self):
 
         self._write_template_on_file()
+
+        #a hook for some pre run actions
+        self._pre_run_hook()
 
         self._interact_with_gromacs(string = self.command_string)
 
