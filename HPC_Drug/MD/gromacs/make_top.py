@@ -37,9 +37,8 @@ class GromacsMakeProteinGroTop(gromacs_input.GromacsInput):
                 solvent_model = "spce",
                 MD_program_path = "gmx"):
 
-        super().__init__(self,
-                Protein = Protein,
-                MD_program_path = MD_program_path)
+        super().__init__(Protein = Protein,
+                        MD_program_path = MD_program_path)
 
         self.solvent_model = solvent_model
 
@@ -95,9 +94,8 @@ class GromacsMakeJoinedProteinLigandTopGro(gromacs_input.GromacsInput):
                 Protein,
                 MD_program_path = "gmx"):
 
-        super().__init__(self,
-                Protein = Protein,
-                MD_program_path = MD_program_path)
+        super().__init__(Protein = Protein,
+                        MD_program_path = MD_program_path)
 
         self.output_gro_file = os.getcwd() + f"/{self.Protein.protein_id}_joined.gro"
 
@@ -123,15 +121,20 @@ class GromacsMakeJoinedProteinLigandTopGro(gromacs_input.GromacsInput):
             top.append(compound_string)
 
         for i in range(len(top)):
-            if top[i].strip() == "" and top[i].strip()[0] == ";":
+            if top[i].strip() == "":
                 pass
+            elif top[i].strip()[0] == ";":
+                pass
+            elif top[i].strip()[0:8] == "#include":
+                top[i] = top[i] + '\n' + itp_insertion_string + '\n'
+                break
             elif top[i].strip().replace(" ", "").split(";")[0] == '[moleculetype]':
                 top[i] = itp_insertion_string + '\n' + top[i]
                 break
 
-        write_on_files.write_file(lines = top, file_name = f'{self.Protein.protein_id}_joined.top')    
+        write_on_files.write_file(lines = top, file_name = self.output_top_file)    
 
-        self.Protein.top_file = f'{self.Protein.protein_id}_joined.top'
+        self.Protein.top_file = self.output_top_file
         
         return self.Protein
 
@@ -166,7 +169,7 @@ class GromacsMakeOnlyLigandTopGro(gromacs_input.GromacsInput):
                 MD_program_path = "gmx",
                 solvent_model = "spce"):
 
-        super.__init__(Protein = Protein,
+        super().__init__(Protein = Protein,
                     MD_program_path = MD_program_path)
 
         self.solvent_model = solvent_model
@@ -182,24 +185,24 @@ class GromacsMakeOnlyLigandTopGro(gromacs_input.GromacsInput):
                 ';protein ff (needed for the water itp file\n',
                 f'#include  "{self.Protein.tpg_file}.ff/forcefield.itp" \n',
                 '\n',
-                ';ligand itp file'
+                ';ligand itp file\n'
                 f'#include "{Ligand[i].itp_file}"\n',
                 '\n',
-                ';water itp',
+                ';water itp\n',
                 f'#include  "{self.Protein.tpg_file}.ff/{self.solvent_model}.itp" \n',
                 '\n',
-                "[ system ]",
-                "; Name",
-                "Protein in water",
+                "[ system ]\n",
+                "; Name\n",
+                "Protein in water\n",
                 '\n',
-                '[ molecules ]',
-                '; Compound        #mols',
-                f'{Ligand[i].resname}              1'
+                '[ molecules ]\n',
+                '; Compound        #mols\n',
+                f'{Ligand[i].resname}              1\n'
             ]
         
             write_on_files.write_file(lines = top_file, file_name = os.getcwd() + "/" + f"{Ligand[i].resname}_only_ligand.top")
 
-            Ligand[i].top_file = os.getcwd() + f"{Ligand[i].resname}_only_ligand.top"
+            Ligand[i].top_file = os.getcwd() + "/" + f"{Ligand[i].resname}_only_ligand.top"
     
     def _create_gro_files(self):
 
@@ -212,6 +215,9 @@ class GromacsMakeOnlyLigandTopGro(gromacs_input.GromacsInput):
 
 
     def execute(self):
+
+        if self.Protein.get_ligand_list() == []:
+            return self.Protein
 
         self._create_top_file()
 

@@ -124,9 +124,6 @@ class ParseInputFromFile(GetFile):
 
         """Makes the needed casts from string, defines some None to default ecc"""
 
-        if type(input_variables) != dict:
-            raise TypeError('Need a dictionary')
-
         # Protein_model must be an integer
         if input_variables['Protein_model'] != None:
             input_variables['Protein_model'] = int(input_variables['Protein_model'])
@@ -172,10 +169,10 @@ class ParseInputFromFile(GetFile):
         
         elif input_variables['MD_program'] == 'gromacs':
             if input_variables['protein_tpg_file'] == None:
-                input_variables['protein_tpg_file'] = '6'
+                input_variables['protein_tpg_file'] = 'amber99sb-ildn'
 
             if input_variables['solvent_pdb'] == None:
-                input_variables['solvent_pdb'] = 'amber99sb-ildn.ff/spce.itp'
+                input_variables['solvent_pdb'] = 'spce'
 
 
         #set a default for processor (skylake)

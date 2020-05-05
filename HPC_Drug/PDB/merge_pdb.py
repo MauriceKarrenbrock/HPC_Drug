@@ -39,7 +39,11 @@ def merge_pdb(Protein):
 
         if protein_file[i][0:4] == 'ATOM' or protein_file[i][0:6] == 'HETATM' or protein_file[i][0:3] == 'TER':
 
-            residue_number =  int(protein_file[i][22:26].strip())
+            #some TER lines are non standard and don't contain the residue number
+            try:
+                residue_number =  int(protein_file[i][22:26].strip())
+            except:
+                residue_number =  int(protein_file[i-1][22:26].strip())
 
             index_protein_file = i + 1
 

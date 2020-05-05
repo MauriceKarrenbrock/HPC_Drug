@@ -90,7 +90,7 @@ class OracFirstOptimization(orac_input.OracInput):
 
             f"   WRITE_TPGPRM_BIN  {Protein.protein_id}.tpgprm",
 
-            "   JOIN SOLVENT   ! solvente",
+            "   JOIN SOLVENT   ! solvent",
             "       tip3",
             "   END",
             "&END",

@@ -43,10 +43,6 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         #the input directory that will be created
         self.HREM_dir = f"{self.Protein.protein_id}_HREM"
 
-        self.BATTERIES = self._get_BATTERIES()
-        #the replicas for BATTERY
-        self.replicas = 8
-
         self.elaborated_top_file = f"{self.Protein.protein_id}_elaborated_topology.top"
 
         self.mdp_file = f"{self.Protein.protein_id}_HREM.mdp"
@@ -67,9 +63,10 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         if self.use_gpu not in ('auto', 'cpu', 'gpu'):
             raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
 
+        self.BATTERIES = self._get_BATTERIES()
+        #the replicas for BATTERY
+        self.replicas = 8
 
-        #as to make a hrem on gromacs you have to trick it in thinking it is doing a temperature rem
-        #the temperature will be changed during the process
         self.temperature = 298.15
 
         self.template = [
@@ -389,7 +386,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
                                     std_out = f'{self.mdp_file.rsplit(".", 1)[0]}.out',
                                     std_err = f'{self.mdp_file.rsplit(".", 1)[0]}.err',
                                     use_gpu = self.use_gpu,
-                                    plumed = False)
+                                    plumed = True)
 
         file_list.append(slurm.write())
 
@@ -405,7 +402,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
                                     std_out = f'{self.mdp_file.rsplit(".", 1)[0]}.out',
                                     std_err = f'{self.mdp_file.rsplit(".", 1)[0]}.err',
                                     use_gpu = self.use_gpu,
-                                    plumed = False)
+                                    plumed = True)
 
         file_list.append(pbs.write())
 
@@ -474,11 +471,45 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         return hamiltonian_scaling_values
 
 
+    def _change_absolute_ligand_itp_include_in_relative(self, top_file):
+        """
+        private
+
+        changes the #include of the ligand itp file in the protein top from the absolute one in the relative one
+        in the given topology file in order to get a meaningful #include in the self.HREM_dir directory
+        that will be copied on a different Computer (the HPC cluster)
+        """
+
+        lines = read_file.read_file(file_name = top_file)
+
+        ligand_itp_files = []
+
+        for lgand in self.Protein.get_ligand_list():
+            ligand_itp_files.append(lgand.itp_file)
+
+        for i in range(len(lines)):
+
+            if lines[i].strip()[:8] == "#include":
+
+                if lines[i].split()[1].replace('"', '').strip() in ligand_itp_files:
+
+                    itp_file = lines[i].split()[1].replace('"', '').strip()
+                    itp_file = itp_file.split("/")[-1]
+
+                    lines[i] = f'#include "{itp_file}"'
+
+        write_on_files.write_file(lines = lines, file_name = top_file)
+
+
+
 
     def execute(self):
         """This method does not run gromacs but
         creates the input to make a REM simulation on a
         HPC cluster"""
+
+        #crate an empty file for plumed
+        write_on_files.write_file(lines = ['\n'], file_name = "empty_plumed.dat")
 
         #creates the REM directory that will be copied to the HPC cluster
         os.makedirs(self.HREM_dir, exist_ok=True)
@@ -489,6 +520,9 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
             for j in range(self.replicas):
 
                 os.makedirs(self.HREM_dir + "/" + f"BATTERY{i}" + "/" + f"scaled{j}", exist_ok=True)
+
+                #copy the empty file fo plumed
+                shutil.copy("empty_plumed.dat", self.HREM_dir + "/" + f"BATTERY{i}" + "/" + f"scaled{j}")
 
         #write the mdp file
         self._write_template_on_file()
@@ -510,7 +544,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
             #they are already saved in the HREM dir
             self._plumed_partial_tempering(scaling_value = value,
                                         input_file = self.elaborated_top_file,
-                                        output_file = self.HREM_dir + f"{self.Protein.protein_id}_scaled_{counter}.top")
+                                        output_file = self.HREM_dir + "/" + f"{self.Protein.protein_id}_scaled_{counter}.top")
 
             scaled_topologies.append(f"{self.Protein.protein_id}_scaled_{counter}.top")
 
@@ -540,12 +574,27 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         #create a file with important info for post processing of the HREM output
         # key = value
         important_info = [
-            f"ligand_resname = {self.Protein.get_ligand_list()[0].resname}", #only takes the first ligand, because actually there should be ony one
-            f"ligand_itp = {self.Protein.get_ligand_list()[0].itp_file}"
-            f"protein_topology = {self.Protein.top_file}"
+            f"ligand_resname = {self.Protein.get_ligand_list()[0].resname}\n", #only takes the first ligand, because actually there should be ony one
+            f"ligand_itp = {self.Protein.get_ligand_list()[0].itp_file.split('/')[-1]}\n",
+            f"protein_topology = {self.Protein.top_file.split('/')[-1]}\n"
         ]
 
         write_on_files.write_file(lines = important_info, file_name = self.HREM_dir + "/" + "important_info.dat")
+
+
+        #as gmx2pdb makes some random but needed itp files some times
+        #I lazily copy them all
+        for file_name in os.listdir(os.getcwd()):
+
+            if file_name[-4:] == ".itp":
+                shutil.copy(file_name, self.HREM_dir)
+
+        #change the absolute #include in relative ones as they would make no sense when the directory will be copied
+        #on a different computer (the HPC cluster)
+        for file_name in os.listdir(self.HREM_dir):
+
+            if file_name[-4:] == ".top":
+                self._change_absolute_ligand_itp_include_in_relative(top_file = self.HREM_dir + "/" + file_name)
 
         return self.Protein
 
@@ -554,14 +603,15 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 class GromacsHREMOnlyLigand(GromacsHREMInput):
     """
     Makes the HREM to a system where there is only the ligand
-
-    the ligand shall be "delivered" as a Protein instance with an empty _ligands
+    for any ligand in Protein._ligands
 
     Solvent can or cannot be present (if you want to use the output for FS-DAM there should be no solvent)
     """
 
     def __init__(self,
                 Protein,
+                only_solvent_box_gro,
+                only_solvent_box_top,
                 MD_program_path = 'gmx',
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
@@ -573,19 +623,167 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                         number_of_cores_per_node = number_of_cores_per_node,
                         use_gpu = use_gpu)
 
-
-        #the input directory that will be created
-        self.HREM_dir = f"{self.Protein.protein_id}_only_ligand_HREM"
+        self.only_solvent_box_gro = only_solvent_box_gro
+        self.only_solvent_box_top = only_solvent_box_top
 
         self.BATTERIES = self._get_BATTERIES()
         #the replicas for BATTERY
         self.replicas = 8
 
-        self.elaborated_top_file = f"{self.Protein.protein_id}_only_ligand_elaborated_topology.top"
+        #as to make a hrem on gromacs you have to trick it in thinking it is doing a temperature rem
+        #the temperature will be changed during the process
+        self.temperature = 298.15
 
-        self.mdp_file = f"{self.Protein.protein_id}_only_ligand_HREM.mdp"
+        self.template = [
+            "; VARIOUS PREPROCESSING OPTIONS",
+            "; Preprocessor information: use cpp syntax.",
+            "; e.g.: -I/home/joe/doe -I/home/mary/roe",
+            "include                  =",
+            "; e.g.: -DPOSRES -DFLEXIBLE (note these variable names are case sensitive)",
+            "define                   =",
+            "",
+            "; RUN CONTROL PARAMETERS",
+            "integrator               = md",
+            "; Start time and timestep in ps",
 
-        self.output_tpr_file = f"{self.Protein.protein_id}_only_ligand_HREM.tpr"
+            self._write_TIME_TIMESTEP_string(),
+
+            "; For exact run continuation or redoing part of a run",
+            "init-step                = 0",
+            "; Part index is updated automatically on checkpointing (keeps files separate)",
+            "simulation-part          = 1",
+            "; mode for center of mass motion removal",
+            "comm-mode                = Linear",
+            "; number of steps for center of mass motion removal",
+            "nstcomm                  = 100",
+            "; group(s) for center of mass motion removal",
+            "comm-grps                =",
+            "",
+            "; TEST PARTICLE INSERTION OPTIONS",
+            "rtpi                     = 0.05",
+            "",
+            "; OUTPUT CONTROL OPTIONS",
+            "; Output frequency for coords (x), velocities (v) and forces (f)",
+            "nstxout                  = 100000",
+            "nstvout                  = 100000",
+            "nstfout                  = 100000",
+            "; Output frequency for energies to log file and energy file",
+            "nstlog                   = 100000",
+            "nstcalcenergy            = 100",
+            "nstenergy                = 100000",
+            "; Output frequency and precision for .xtc file",
+            "nstxtcout                = 80000",
+            "xtc-precision            = 1000",
+            "; This selects the subset of atoms for the .xtc file. You can",
+            "; select multiple groups. By default all atoms will be written.",
+            "xtc-grps                 =",
+            "; Selection of energy groups",
+            "energygrps               = System",
+            "",
+            "; NEIGHBORSEARCHING PARAMETERS",
+            "; cut-off scheme (group: using charge groups, Verlet: particle based cut-offs)",
+            "; nblist update frequency",
+            "cutoff-scheme            = Verlet",
+            "nstlist                  = 20",
+            "verlet-buffer-tolerance  = 0.0001",
+            "; ns algorithm (simple or grid)",
+            "ns_type                  = grid",
+            "; Periodic boundary conditions: xyz, no, xy",
+            "pbc                      = xyz",
+            "periodic-molecules       = no",
+            "; Allowed energy drift due to the Verlet buffer in kJ/mol/ps per atom,",
+            "; a value of -1 means: use rlist",
+            "; nblist cut-off",
+            "rlist                    = 1.0",
+            "; long-range cut-off for switched potentials",
+            "rlistlong                = -1",
+            "",
+            "; OPTIONS FOR ELECTROSTATICS AND VDW",
+            "; Method for doing electrostatics",
+            "coulombtype              = PME",
+            "rcoulomb-switch          = 0",
+            "rcoulomb                 = 1.0",
+            "; Relative dielectric constant for the medium and the reaction field",
+            "epsilon-r                = 1",
+            "epsilon-rf               = 0",
+            "; Method for doing Van der Waals",
+            "vdw-type                 = Cut-off",
+            "; cut-off lengths",
+            "rvdw-switch              = 0",
+            "rvdw                     = 1.0",
+            "; Apply long range dispersion corrections for Energy and Pressure",
+            "DispCorr                 = EnerPres",
+            "; Extension of the potential lookup tables beyond the cut-off",
+            "table-extension          = 1",
+            "; Separate tables between energy group pairs",
+            "energygrp-table          =",
+            "; Spacing for the PME/PPPM FFT grid",
+            "fourierspacing           = 0.12",
+            "; FFT grid size, when a value is 0 fourierspacing will be used",
+            "fourier-nx               = 0",
+            "fourier-ny               = 0",
+            "fourier-nz               = 0",
+            "; EWALD/PME/PPPM parameters",
+            "pme-order                = 4",
+            "ewald-rtol               = 1e-06",
+            "ewald-geometry           = 3d",
+            "epsilon-surface          =",
+            "optimize-fft             = no",
+            "",
+            "; IMPLICIT SOLVENT ALGORITHM",
+            "implicit-solvent         = No",
+            "",
+            "; OPTIONS FOR WEAK COUPLING ALGORITHMS",
+            "; Temperature coupling",
+            "tcoupl                   = v-rescale",
+            "nsttcouple               = -1",
+            "nh-chain-length          = 1",
+            "; Groups to couple separately",
+            "tc-grps                  = System",
+            "; Time constant (ps) and reference temperature (K)",
+            "tau-t                    = 0.2",
+
+            f"ref-t                    = {self.temperature}",
+
+            "; pressure coupling",
+            "pcoupl                   = Berendsen",
+            "pcoupltype               = Isotropic",
+            "nstpcouple               = -1",
+            "; Time constant (ps), compressibility (1/bar) and reference P (bar)",
+            "tau-p                    = 0.5",
+            "compressibility          = 4.6e-5",
+            "ref-p                    = 1",
+            "; Scaling of reference coordinates, No, All or COM",
+            "refcoord-scaling         = COM",
+            "",
+            "; GENERATE VELOCITIES FOR STARTUP RUN",
+            "gen-vel                  = no",
+            "gen-temp                 = 500",
+            "gen-seed                 = 173529",
+            "",
+            "; OPTIONS FOR BONDS",
+            "constraints              = all-bonds",
+            "; Type of constraint algorithm",
+            "constraint-algorithm     = Lincs",
+            "; Do not constrain the start configuration",
+            "continuation             = no",
+            "; Use successive overrelaxation to reduce the number of shake iterations",
+            "Shake-SOR                = no",
+            "; Relative tolerance of shake",
+            "shake-tol                = 0.00001",
+            "; Highest order in the expansion of the constraint coupling matrix",
+            "lincs-order              = 5",
+            "; Number of iterations in the final step of LINCS. 1 is fine for",
+            "; normal simulations, but use 2 to conserve energy in NVE runs.",
+            "; For energy minimization with constraints it should be 4 to 8.",
+            "lincs-iter               = 2",
+            "; Lincs will write a warning to the stderr if in one step a bond",
+            "; rotates over more degrees than",
+            "lincs-warnangle          = 30",
+            "; Convert harmonic bonds to morse potentials",
+            "morse                    = no"
+        ]
+
 
     def _edit_top_file(self, top_file):
 
@@ -630,4 +828,118 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         #for the ligand one battery is more than enough
         return 1
+
+
+    def execute(self):
+        """This method does not run gromacs but
+        creates the input to make a REM simulation on a
+        HPC cluster"""
+
+        if self.Protein.get_ligand_list() == []:
+            return self.Protein
+
+        #crate an empty file for plumed
+        write_on_files.write_file(lines = ['\n'], file_name = "empty_plumed.dat")
+
+        Ligand = self.Protein.get_ligand_list()
+
+        for i in range(len(Ligand)):
+
+            #the input directory that will be created
+            self.HREM_dir = f"{Ligand[i].resname}_only_ligand_HREM"
+
+            
+
+            self.elaborated_top_file = f"{Ligand[i].resname}_only_ligand_elaborated_topology.top"
+
+            self.mdp_file = f"{Ligand[i].resname}_only_ligand_HREM.mdp"
+
+            self.output_tpr_file = f"{Ligand[i].resname}_only_ligand_HREM.tpr"
+
+            #creates the REM directory that will be copied to the HPC cluster
+            os.makedirs(self.HREM_dir, exist_ok=True)
+
+            #create the BATTERY dirs and the scaled dirs
+            for i in range(self.BATTERIES):
+
+                for j in range(self.replicas):
+
+                    os.makedirs(self.HREM_dir + "/" + f"BATTERY{i}" + "/" + f"scaled{j}", exist_ok=True)
+
+                    #copy the empty file for plumed
+                    shutil.copy("empty_plumed.dat", self.HREM_dir + "/" + f"BATTERY{i}" + "/" + f"scaled{j}")
+
+            #write the mdp file
+            self._write_template_on_file()
+            #and copy it in the HREM dir
+            shutil.copy(self.mdp_file, self.HREM_dir)
+
+            #create the elaborated top file for plumed
+            self._interact_with_gromacs(string = [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{Ligand[i].gro_file}", "-p", f"{Ligand[i].top_file}", "-maxwarn", "100", "-pp", f"{self.elaborated_top_file}"])
+
+            #finds the hot residues and edits the elaborated top file accordingly
+            self._edit_top_file(top_file = self.elaborated_top_file)
+
+
+            #use plumed to make the scaled topologies
+
+            hamiltonian_scaling_values = self._get_hamiltonian_scaling_values()
+            scaled_topologies = []
+            for counter, value in enumerate(hamiltonian_scaling_values):
+                #they are already saved in the HREM dir
+                self._plumed_partial_tempering(scaling_value = value,
+                                            input_file = self.elaborated_top_file,
+                                            output_file = self.HREM_dir + "/" + f"{Ligand[i].resname}_scaled_{counter}.top")
+
+                scaled_topologies.append(f"{Ligand[i].resname}_scaled_{counter}.top")
+
+
+            #copy the needed files in the new directories
+            for j in (Ligand[i].gro_file, Ligand[i].top_file, Ligand[i].itp_file, self.only_solvent_box_gro, self.only_solvent_box_top):
+
+                shutil.copy(j, self.HREM_dir)
+
+            
+            #make and copy the workload manager input files
+            #write workload manager input for different workload managers (slurm pbs ...)
+            workload_files = self._write_workloadmanager_inputs()
+            for wl_file in workload_files:
+                shutil.copy(wl_file, self.HREM_dir)
+
+
+            #make and copy the script that will make the tpr files in loco
+            self._make_TPR_files_script(scaled_topologies = scaled_topologies)
+
+
+            #create a file with important info for post processing of the HREM output
+            # key = value
+            important_info = [
+                f"ligand_resname = {Ligand[i].resname}\n",
+                f"ligand_itp = {Ligand[i].itp_file.split('/')[-1]}\n",
+                f"ligand_topology = {Ligand[i].top_file.split('/')[-1]}\n",
+                f"only_solvent_gro = {self.only_solvent_box_gro.split('/')[-1]}\n",
+                f"only_solvent_top = {self.only_solvent_box_top.split('/')[-1]}\n"
+            ]
+
+            write_on_files.write_file(lines = important_info, file_name = self.HREM_dir + "/" + "important_info.dat")
+
+
+            #as gmx2pdb makes some random but needed itp files some times
+            #I lazily copy them all
+            for file_name in os.listdir(os.getcwd()):
+
+                if file_name[-4:] == ".itp":
+                    shutil.copy(file_name, self.HREM_dir)
+
+            #change the absolute #include in relative ones as they would make no sense when the directory will be copied
+            #on a different computer (the HPC cluster)
+            for file_name in os.listdir(self.HREM_dir):
+
+                if file_name[-4:] == ".top":
+                    self._change_absolute_ligand_itp_include_in_relative(top_file = self.HREM_dir + "/" + file_name)
+
+
+
+        return self.Protein
+
 

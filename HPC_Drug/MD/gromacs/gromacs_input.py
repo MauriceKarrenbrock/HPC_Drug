@@ -99,7 +99,7 @@ class GromacsInput(object):
 
         run.subprocess_run(commands = string,
                         shell = False,
-                        error_string = f"Gromacs failure\n{' '.join(self.command_string)}")
+                        error_string = f"Gromacs failure\n{string}")
 
     def _pre_run_hook(self):
         """

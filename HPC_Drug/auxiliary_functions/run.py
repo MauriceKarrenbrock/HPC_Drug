@@ -38,15 +38,33 @@ def subprocess_run(commands,
     cwd :: string , default the current working directory, it is the working directory for the child process
     """
 
-    r = subprocess.run(commands,
-                    shell = shell,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines = universal_newlines,
-                    cwd = cwd)
+    if type(commands[0]) == list:
 
-    print(r.stdout)
-    print(r.stderr)
+        for command in commands:
+            r = subprocess.run(command,
+                            shell = shell,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            universal_newlines = universal_newlines,
+                            cwd = cwd)
 
-    if r.returncode != 0:
-        raise RuntimeError(error_string)
+            print(r.stdout)
+            print(r.stderr)
+
+            if r.returncode != 0:
+                raise RuntimeError(error_string)
+    
+    else:
+
+        r = subprocess.run(commands,
+                            shell = shell,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            universal_newlines = universal_newlines,
+                            cwd = cwd)
+
+        print(r.stdout)
+        print(r.stderr)
+
+        if r.returncode != 0:
+            raise RuntimeError(error_string)

@@ -245,7 +245,7 @@ def get_ligand_resnum(structure, ligand_resnames = None, protein_chain = 'A', pr
     ligand_list = []
 
     for residue in residues:
-        if residue.resname.strip() in ligand_resnames:
+        if (residue.resname.strip().upper() in ligand_resnames) or (residue.resname.strip().lower() in ligand_resnames):
             ligand_list.append([residue.resname.strip(), residue.id[1]])
 
     return ligand_list

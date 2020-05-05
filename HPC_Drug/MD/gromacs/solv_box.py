@@ -27,23 +27,23 @@ class GromacsSolvBoxInput(gromacs_input.GromacsInput):
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path)
 
-        self.output_gro_file = os.getcwd() + f"{self.Protein.protein_id}_solvbox.gro"
+        self.output_gro_file = os.getcwd() + "/" + f"{self.Protein.protein_id}_solvbox.gro"
         
-        self.output_pdb_file = os.getcwd() +  f"{self.Protein.protein_id}_solvbox.pdb"
+        self.output_pdb_file = os.getcwd() + "/" +  f"{self.Protein.protein_id}_solvbox.pdb"
 
-        self.mdp_file = os.getcwd() + f"/{self.Protein.protein_id}_solvbox.mdp"
+        self.mdp_file = os.getcwd() + "/" + f"{self.Protein.protein_id}_solvbox.mdp"
 
-        self.output_tpr_file = os.getcwd() +  f"{self.Protein.protein_id}_solvbox.tpr"
+        self.output_tpr_file = os.getcwd() +  "/" + f"{self.Protein.protein_id}_solvbox.tpr"
         
         self.box_borders = box_borders
 
         #creates the .tpr of the structure + the box of water and then optimizes the system
         self.command_string = [
-            f"{self.MD_program_path}", "editconf", "-f", f"{self.Protein.gro_file}", "-d", f"{self.box_borders}", "-bt", "triclinic", "-angles", "90", "90", "90", "-o", f"{self.output_gro_file}", "\n",
-            f"{self.MD_program_path}", "solvate", "-cp", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-o", f"{self.output_gro_file}", "\n",
-            f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}", "\n",
-            f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}"
-                       ]
+            [f"{self.MD_program_path}", "editconf", "-f", f"{self.Protein.gro_file}", "-d", f"{self.box_borders}", "-bt", "triclinic", "-angles", "90", "90", "90", "-o", f"{self.output_gro_file}"],
+            [f"{self.MD_program_path}", "solvate", "-cp", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-o", f"{self.output_gro_file}"],
+            [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
+            [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}"]
+        ]
 
         self.template = [
                         "; VARIOUS PREPROCESSING OPTIONS",
@@ -227,7 +227,7 @@ class GromacsSolvBoxInput(gromacs_input.GromacsInput):
 
 
 
-class OptOnlyWaterBox(gromacs_input.GromacsInput):
+class OptimizeOnlyWaterBox(gromacs_input.GromacsInput):
 
     """
     Optimizes a box of solvent
@@ -262,8 +262,8 @@ class OptOnlyWaterBox(gromacs_input.GromacsInput):
         self.output_tpr_file = os.getcwd() + "/" + f"only_water_{self.solvent_model}_opt.tpr"
 
         self.command_string = [
-            f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.output_top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}", "\n",
-            f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}"
+            [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.output_top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
+            [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}"]
         ]
         
 
@@ -280,7 +280,7 @@ class OptOnlyWaterBox(gromacs_input.GromacsInput):
                         "; Start time and timestep in ps",
                         "tinit                    = 0",
                         "dt                       = 0.0001",
-                        "nsteps                   = 150000",
+                        "nsteps                   = 60000",
                         "; For exact run continuation or redoing part of a run",
                         "init-step                = 0",
                         "; Part index is updated automatically on checkpointing (keeps files separate)",

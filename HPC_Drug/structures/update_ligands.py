@@ -11,6 +11,8 @@
 This file contains the functions to update existing ligands pdb files, resnums, and structures
 """
 
+import copy
+
 from HPC_Drug.structures import get_ligands
 from HPC_Drug.PDB.structural_information import mmcif_header
 
@@ -31,6 +33,8 @@ def update_ligands(Protein, chain_model_selection = False):
 
     ligand_resnames = []
 
+    old_Protein = copy.deepcopy(Protein)
+
     for lig in Protein.get_ligand_list():
 
         ligand_resnames.append(lig.resname)
@@ -50,7 +54,18 @@ def update_ligands(Protein, chain_model_selection = False):
                                                                                 protein_chain = protein_chain,
                                                                                 protein_model = protein_model))
 
-    return Protein
+    #in order not to loose the info about itp, gro, etc... files
+    for i in range(len(old_Protein.get_ligand_list())):
+
+        old_Protein.get_ligand_list()[i].resnum = Protein.get_ligand_list()[i].resnum
+
+        old_Protein.get_ligand_list()[i].pdb_file = Protein.get_ligand_list()[i].pdb_file
+
+        if old_Protein.get_ligand_list()[i].resname.upper() != Protein.get_ligand_list()[i].resname.upper():
+
+            raise ValueError("Something went wrong during the ligand update")
+
+    return old_Protein
 
 
 

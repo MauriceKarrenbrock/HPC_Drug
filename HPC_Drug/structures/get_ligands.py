@@ -11,6 +11,8 @@
 The function in this file updates Protein._ligands
 """
 
+import os
+
 from HPC_Drug.structures import ligand
 from HPC_Drug.PDB import prody
 
@@ -64,7 +66,7 @@ def get_ligands(Protein, ligand_resnames_resnums):
 
         Ligand.structure = prody_select.resnum(resnum = Ligand.resnum)
 
-        Ligand.write(file_name = f"{Ligand.resname}_lgand{i}.pdb", struct_type = "prody")
+        Ligand.write(file_name = f"{os.getcwd()}/{Ligand.resname}_lgand{i}.pdb", struct_type = "prody")
 
         Protein.add_ligand(Ligand = Ligand)
 
