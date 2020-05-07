@@ -16,6 +16,8 @@ class test_subrocess_run(unittest.TestCase):
 
     def test_with_returncode_0(self):
 
+        import os
+
         mocked_returncode = mock.Mock()
         mocked_returncode.returncode = 0
         mocked_returncode.stdout = ""
@@ -33,7 +35,8 @@ class test_subrocess_run(unittest.TestCase):
                                                                 shell = False,
                                                                 stdout=mocked_pipe,
                                                                 stderr=mocked_pipe,
-                                                                universal_newlines = False)
+                                                                universal_newlines = True,
+                                                                cwd = os.getcwd())
 
                     mocked_print.assert_called()
 

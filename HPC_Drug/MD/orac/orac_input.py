@@ -294,8 +294,11 @@ class OracInput(object):
 
             ligand_structures.append(lig.structure)
 
+        self.Protein.update_structure(struct_type = "prody")
+
         #get the only protein biopython structure
-        protein_structure = prody.ProdySelect(structure = self.Protein.structure)
+        prody_select_obj = prody.ProdySelect(structure = self.Protein.structure)
+        protein_structure = prody_select_obj.protein_and_ions()
         prody.write_pdb(structure = protein_structure, file_name = f"{self.Protein.protein_id}_protein.pdb")
         protein_structure = biopython.parse_pdb(protein_id = self.Protein.protein_id, file_name = f"{self.Protein.protein_id}_protein.pdb")
 
@@ -345,14 +348,17 @@ class OracInput(object):
 
         return string
 
-    def _write_template_on_file(self):
+    def _write_template_on_file(self, template = None):
         """
         private
 
         Writes the objects template on {filename} file
         """
 
-        lines = ["\n".join(self.template)]
+        if template is None:
+            template = self.template
+
+        lines = ["\n".join(template)]
         
         write_on_files.write_file(lines = lines, file_name = self.orac_in_file)
 
@@ -375,13 +381,13 @@ class OracInput(object):
         print("Running Orac")
 
         #Orac reads the input from the stdin
-        with open(self.orac_in_file, 'r') as out_file:
+        with open(self.orac_in_file, 'r') as input_file:
             r = subprocess.run([self.MD_program_path],
                             shell = False,
                             stdout = subprocess.PIPE,
                             stderr = subprocess.PIPE,
-                            stdin = out_file,
-                            universal_newlines=False)
+                            universal_newlines = True,
+                            stdin = input_file)
 
         print(r.stdout)
         print(r.stderr)
