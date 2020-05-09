@@ -219,7 +219,6 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
             "morse                    = no"
         ]
 
-
     def _get_ns_per_day(self):
         """
         private
@@ -575,6 +574,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         # key = value
         important_info = [
             f"ligand_resname = {self.Protein.get_ligand_list()[0].resname}\n", #only takes the first ligand, because actually there should be ony one
+            f"ligand_resnum = {self.Protein.get_ligand_list()[0].resnum}\n",
             f"ligand_itp = {self.Protein.get_ligand_list()[0].itp_file.split('/')[-1]}\n",
             f"protein_topology = {self.Protein.top_file.split('/')[-1]}\n"
         ]
@@ -830,6 +830,27 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
         return 1
 
 
+    def _make_TPR_files_script(self, scaled_topologies, Ligand):
+        """
+        private
+        
+        writes a bash script to create the .tpr files in loco on the HPC cluster
+        it makes both the one for a plumed patched gromacs installation and for a non patched one
+        """
+
+        filename = "Plumed_Patched_MAKE_TPR_FILES.sh"
+
+        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\nIT IS FOR A PLUMED PATCHED GROMACS INSTALLATION\n\n\n"
+
+        for i in range(self.BATTERIES):
+            for j in range(self.replicas):
+                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{self.output_tpr_file} -f {self.mdp_file} -p {scaled_topologies[j]} -c {Ligand.gro_file.rsplit('/', 1)[-1]} \n"
+
+
+        write_on_files.write_file(lines = [string], file_name = self.HREM_dir + "/" + filename)
+
+
+
     def execute(self):
         """This method does not run gromacs but
         creates the input to make a REM simulation on a
@@ -908,7 +929,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
 
             #make and copy the script that will make the tpr files in loco
-            self._make_TPR_files_script(scaled_topologies = scaled_topologies)
+            self._make_TPR_files_script(scaled_topologies = scaled_topologies, Ligand = Ligand[i])
 
 
             #create a file with important info for post processing of the HREM output

@@ -319,10 +319,12 @@ class NoLigandPipeline(Pipeline):
 
         elif self.MD_program == 'gromacs':
 
-            from HPC_Drug.MD.gromacs import make_top, first_opt, solv_box, hrem
+            from HPC_Drug.MD.gromacs import make_top, first_opt, solv_box, hrem, residue_substitution
 
             #makes the necessary resname substitutions for the ForceField
-            Protein = funcs4gromacs.residue_substitution(Protein, self.residue_substitution)
+            Protein = residue_substitution.residue_substitution(Protein = Protein,
+                                                            substitution = self.residue_substitution,
+                                                            ph = self.ph)
 
 
 
@@ -426,68 +428,84 @@ class NoLigandPipeline(Pipeline):
             Protein = ligand_hrem_input.execute()
 
         elif self.MD_program == 'orac':
-            Ligand = Protein.get_ligand_list()
+
+            from HPC_Drug.MD.orac import first_opt, solv_box, hrem, residue_substitution, orac_seqres
+
+            from HPC_Drug.PDB import merge_pdb
 
             #makes the necessary resname substitutions for the ForceField
-            Protein = funcs4orac.residue_substitution(Protein, self.residue_substitution)
+            Protein = residue_substitution.residue_substitution(Protein = Protein,
+                                                            substitution = self.residue_substitution,
+                                                            ph = self.ph)
             
             #update the seqres with the names needed for Orac
-            Protein = funcs4orac.custom_orac_seqres_from_PDB(Protein)
+            Protein = orac_seqres.custom_orac_seqres_from_PDB(Protein)
 
             #Creating a joined pdb of protein + ligand
-            Protein = funcs4orac.join_ligand_and_protein_pdb(Protein, Ligand)
+            Protein = merge_pdb.merge_pdb(Protein = Protein)
 
-            ########
-            #WORK IN PROGRESS
-            ##########
-            #Protein = pipeline_functions.update_sulf_bonds(Protein = Protein)
+            #makes a gro and top for the ligands
+            Protein = update_ligands.update_ligands(Protein = Protein, chain_model_selection = False)
 
             #first structure optimization, with standard tpg and prm (inside lib module)
-            first_opt = funcs4orac.OracFirstOptimization(output_filename = f'{Protein.protein_id}_first_opt.in',
-                                                        Protein = Protein,
-                                                        Ligand = Ligand,
-                                                        protein_tpg_file = self.protein_tpg_file,
-                                                        protein_prm_file = self.protein_prm_file,
+            first_opt_obj = first_opt.OracFirstOptimization(Protein = Protein,
                                                         MD_program_path = self.MD_program_path)
 
 
-            Protein.pdb_file = first_opt.execute()
+            Protein = first_opt_obj.execute()
 
-            if Ligand == None or Ligand == []:
-                raise TypeError('I could not find organic ligands in the structure\n\
-                                Maybe the ones you where looking for are in the important_lists.trash list\n\
-                                In any case I did some optimizations on your protein, hoping it will come in handy')
+            #make fast optimization for the only ligands files
+            first_opt_only_ligand = first_opt.OracFirstOptimizationOnlyLigand(Protein = Protein,
+                                                                    MD_program_path = self.MD_program_path)
 
-            elif len(Ligand) > 1:
-                raise ValueError(f"Found more than one Ligand {Ligand}")
+            Protein = first_opt_only_ligand.execute()
+
+            if Protein.get_ligand_list() == []:
+                raise RuntimeError('I could not find organic ligands in the structure\n\
+                Maybe the ones you where looking for are in the important_lists.trash list\n\
+                In any case I did some optimizations on your protein, hoping it will come in handy')
+
+            elif len(Protein.get_ligand_list()) > 1:
+                raise RuntimeError(f"Found more than one Ligand {Protein.get_ligand_list()}")
         
-            solv_box = funcs4orac.OracSolvBoxInput(output_filename = f"{Protein.protein_id}_solvbox.in",
-                                                Protein = Protein,
-                                                Ligand = Ligand,
-                                                protein_tpg_file = self.protein_tpg_file,
-                                                protein_prm_file = self.protein_prm_file,
+            solv_box_obj = solv_box.OracSolvBoxInput(Protein = Protein,
                                                 MD_program_path = self.MD_program_path,
                                                 solvent_pdb = self.solvent_pdb)
             
-            Protein.pdb_file = solv_box.execute()
+            Protein = solv_box_obj.execute()
 
 
             #Create the REM input
-            rem_input = funcs4orac.OracREMInput(output_filename = f"{Protein.protein_id}_REM.in",
-                                                Protein = Protein,
-                                                Ligand = Ligand,
-                                                protein_tpg_file = self.protein_tpg_file,
-                                                protein_prm_file = self.protein_prm_file,
+            hrem_input_obj = hrem.HREMOracInput(Protein = Protein,
                                                 MD_program_path = self.MD_program_path,
                                                 solvent_pdb = self.solvent_pdb,
                                                 kind_of_processor = self.kind_of_processor,
                                                 number_of_cores_per_node = self.number_of_cores_per_node)
 
-            orac_rem_input_file = rem_input.execute()
+            Protein = hrem_input_obj.execute()
+
+            #optimize a box of only water
+            solv_box_only_water = solv_box.OptimizeOnlyWaterBox(solvent_box = None,
+                                                                tpg_file = Protein.tpg_file,
+                                                                prm_file = Protein.prm_file,
+                                                                MD_program_path = self.MD_program_path,
+                                                                chain = Protein.chain)
+
+            only_water_pdb = solv_box_only_water.execute()
+
+            #make the hrem input for the ligand
+            hrem_only_ligand = hrem.HREMOracInputOnlyLigand(Protein = Protein,
+                                                            solvent_box = only_water_pdb,
+                                                            MD_program_path = self.MD_program_path,
+                                                            number_of_cores_per_node = self.number_of_cores_per_node)
+
+            Protein = hrem_only_ligand.execute()
 
             
         else:
             raise NotImplementedError(self.MD_program)
+
+        return Protein
         
         
 

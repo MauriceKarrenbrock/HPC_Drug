@@ -58,7 +58,7 @@ class GromacsSolvBoxInput(gromacs_input.GromacsInput):
                         "; Start time and timestep in ps",
                         "tinit                    = 0",
                         "dt                       = 0.0001",
-                        "nsteps                   = 150000",
+                        "nsteps                   = 100000",
                         "; For exact run continuation or redoing part of a run",
                         "init-step                = 0",
                         "; Part index is updated automatically on checkpointing (keeps files separate)",
@@ -228,7 +228,6 @@ class GromacsSolvBoxInput(gromacs_input.GromacsInput):
 
 
 class OptimizeOnlyWaterBox(gromacs_input.GromacsInput):
-
     """
     Optimizes a box of solvent
     as deafault uses a copy of the one found in HPC_Drug.lib

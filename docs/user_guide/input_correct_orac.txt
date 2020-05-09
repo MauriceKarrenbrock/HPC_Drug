@@ -1,7 +1,7 @@
 #This is a correct input example
 #Every line beginning with '#' is a comment
 #Error occurs only for wrong keys
-#kase-sensitive
+#case-sensitive
 #------------------------------------------------
 
 #Protein code and desired file type, possible values 'cif' or 'pdb'

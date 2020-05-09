@@ -18,7 +18,7 @@ def get_first_resnum(structure):
     structure :: biopython structure
     """
 
-    r = structure.structure.get_residues()
+    r = structure.get_residues()
 
     for i in r:
         resnum = i.id[1]

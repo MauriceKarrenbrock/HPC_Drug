@@ -19,6 +19,7 @@ from HPC_Drug.files_IO import read_file
 from HPC_Drug.files_IO import write_on_files
 from HPC_Drug.auxiliary_functions import path
 from HPC_Drug.auxiliary_functions import run
+from HPC_Drug.PDB import add_chain_id
 
 class Primadorac(object):
     """
@@ -156,6 +157,9 @@ class Primadorac(object):
                 ligand_resname = ligand_list[i].resname,
                 itp_file = ligand_list[i].itp_file
             )
+
+            #adds the chain id in because primadorac removes it
+            add_chain_id.add_chain_id(pdb_file = ligand_list[i].pdb_file, chain = self.Protein.chain)
 
         return self.Protein
 
