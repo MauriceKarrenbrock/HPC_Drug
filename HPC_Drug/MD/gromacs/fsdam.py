@@ -7,13 +7,16 @@
 # A copy of the license must be included with any copy of the program or part of it  #
 ######################################################################################
 
+import os
 import os.path
 import subprocess
 import copy
 import shutil
+import math
 
 from HPC_Drug.auxiliary_functions import path
 from HPC_Drug.files_IO import read_file, write_on_files
+from HPC_Drug.MD import workload_managers
 from HPC_Drug.MD.gromacs import gro2pdb
 from HPC_Drug.PDB import biopython, prody
 from HPC_Drug import orient
@@ -24,7 +27,10 @@ class FSDAMInputProteinLigand(object):
     def __init__(self,
                 HREM_dir = os.getcwd(),
                 delta_distance = 4.,
-                gromacs_path = "gmx"):
+                gromacs_path = "gmx",
+                cpus_per_node = 64,
+                use_GPU = False,
+                GPU_per_node = 1):
 
         #the root directory of the HREM
         #default is working directory
@@ -33,6 +39,12 @@ class FSDAMInputProteinLigand(object):
         self.delta_distance = delta_distance
 
         self.gromacs_path = path.absolute_programpath(program = gromacs_path)
+
+        self.cpus_per_node = cpus_per_node
+
+        self.use_GPU = use_GPU
+
+        self.GPU_per_node = GPU_per_node
 
 
     def _create_restart_configs(self, reference_distance, have_reference, fsdam_dir):
@@ -327,10 +339,17 @@ class FSDAMInputProteinLigand(object):
                 lines[i] = lines[i][:44] + "{0:8.4f}{0:8.4f}{0:8.4f}\n".format(0.)
 
         write_on_files.write_file(lines = lines, file_name = gro_file)
-
         
-    def _prepare_input(self):
-        pass
+    def _prepare_input(self, ligand_resname, fsdam_dir, top_file):
+        
+        prepare_input = PrepareInputProteinLigand(fsdam_dir = fsdam_dir,
+                            ligand_resname = ligand_resname,
+                            top_file = top_file,
+                            cpus_per_node = self.cpus_per_node,
+                            use_GPU = self.use_GPU,
+                            GPU_per_node = self.GPU_per_node)
+
+        prepare_input.execute()
 
     
     def execute(self):
@@ -432,7 +451,8 @@ class FSDAMInputProteinLigand(object):
         shutil.copy(useful_info["top_file"], fsdam_dir)
 
         #prepares the input files for the 
-        self._prepare_input()
+        self._prepare_input(ligand_resname = useful_info["ligand_resname"],
+                            fsdam_dir = fsdam_dir, top_file = useful_info["top_file"])
 
 
         #go back to the old working directory (attention, if something fails the working dir will remain in the
@@ -570,4 +590,523 @@ class FSDAMInputOnlyLigand(object):
     def execute(self):
         pass
 
-    
+
+
+
+
+class PrepareInputSuperClass(object):
+
+    """
+    It is an ancillary class for the fsdam class
+    this is it's superclass
+    """
+
+    def __init__(self,
+                fsdam_dir,
+                ligand_resname,
+                top_file,
+                cpus_per_node = 64,
+                use_GPU = False,
+                GPU_per_node = 1):
+
+        self.fsdam_dir = fsdam_dir
+
+        self.ligand_resname = ligand_resname
+
+        self.top_file = top_file
+
+        self.cpus_per_node = cpus_per_node
+
+        self.use_GPU = use_GPU
+
+        self.GPU_per_node = GPU_per_node
+
+    def _make_transitionQ_mdp(self, mdp_file_name):
+
+        mdp_lines = []
+
+        write_on_files.write_file(lines = ["\n".join(mdp_lines)], file_name = mdp_file_name)
+
+
+    def _make_transitionVdW_mdp(self, mdp_file_name):
+
+        mdp_lines = []
+
+        write_on_files.write_file(lines = ["\n".join(mdp_lines)], file_name = mdp_file_name)
+
+
+    def _write_make_tpr_script(self, number_of_dirs, mdp_file, gro_file, tpr_file, script_filename):
+
+        script = [
+            "#!/bin/bash\n",
+            f"for i in {{1..{number_of_dirs}}}; do\n",
+            f"    gmx grompp -f {mdp_file} -c fsdam_{number_of_dirs}/{gro_file} -p {self.top_file} -maxwarn 100 -o fsdam_{number_of_dirs}/{tpr_file}\n",
+            "done\n"
+        ]
+
+        write_on_files.write_file(lines = script, file_name = script_filename)
+
+
+    def _make_workload_manager_input(self, number_of_dirs, tpr_file):
+
+        prefix = tpr_file[:-4]
+
+        multidir = ""
+        for i in range(number_of_dirs):
+
+            multidir = multidir + f" fsdam_{i}"
+
+        mpirun_string = "\nmpirun -np {} gmx_mpi mdrun -deffnm {} -s {} -multidir {} "
+
+        if self.use_GPU:
+            #one GPU per fsdam
+
+            nodes = math.ceil(number_of_dirs / self.GPU_per_node)
+
+            tasks = number_of_dirs
+
+            tasks_per_node = self.GPU_per_node
+
+            cpus_per_task = math.ceil(self.cpus_per_node / tasks_per_node)
+
+            GPUs = self.GPU_per_node * nodes
+
+            mpirun_string = mpirun_string.format(cpus_per_task * tasks, prefix, tpr_file, multidir)
+
+        else:
+            #8 cpu per fsdam
+
+            tasks = number_of_dirs
+
+            cpus_per_task = 8
+
+            tasks_per_node = math.floor(self.cpus_per_node / cpus_per_task)
+
+            nodes = math.ceil(number_of_dirs / tasks_per_node)
+
+            GPUs = None
+
+            mpirun_string = mpirun_string.format(cpus_per_task * tasks, prefix, tpr_file, multidir)
+
+
+        #slurm input
+        slurm = workload_managers.SlurmHeader(nodes = nodes,
+                                            tasks = tasks,
+                                            tasks_per_node = tasks_per_node,
+                                            cpus_per_task = cpus_per_task,
+                                            GPUs = GPUs,
+                                            wall_time = "24:00:00",
+                                            output = f"{prefix}_stdout.out",
+                                            error = f"{prefix}_stderr.err",
+                                            account_name = None,
+                                            partition_name = None)
+
+        slurm_header = slurm.execute()
+
+        slurm_header.append(mpirun_string)
+
+        slurm_header = ["\n".join(slurm_header)]
+
+        write_on_files.write_file(lines = slurm_header, file_name = self.fsdam_dir + "/" + f"{prefix}_input.slr")
+
+
+        #pbs input
+        pbs = workload_managers.PBSHeader(nodes = nodes,
+                                            tasks = tasks,
+                                            tasks_per_node = tasks_per_node,
+                                            cpus_per_task = cpus_per_task,
+                                            GPUs = GPUs,
+                                            wall_time = "24:00:00",
+                                            output = f"{prefix}_stdout.out",
+                                            error = f"{prefix}_stderr.err",
+                                            account_name = None,
+                                            partition_name = None)
+
+        pbs_header = pbs.execute()
+
+        pbs_header.append(mpirun_string)
+
+        pbs_header = ["\n".join(slurm_header)]
+
+        write_on_files.write_file(lines = slurm_header, file_name = self.fsdam_dir + "/" + f"{prefix}_input.pbs")
+
+
+
+    def execute(self):
+
+        #creates the mdp files
+        self._make_transitionQ_mdp(self.fsdam_dir + "/" + "transitionQ.mdp")
+        self._make_transitionVdW_mdp(self.fsdam_dir + "/" + "transitionVdW.mdp")
+
+        #creates 200 directories for the fsdam, and moves 200 gro files there
+        #choses randomly 200 gro files out of the available ones
+        from random import shuffle
+        j = 0
+        for i in shuffle(os.listdir(self.fsdam_dir)):
+
+            if i[-4:] == ".gro":
+
+                os.makedirs(self.fsdam_dir + "/" + f"fsdam_{j}", exist_ok = True)
+
+                shutil.move(self.fsdam_dir + "/" + i, self.fsdam_dir + "/" + f"fsdam_{j}" + "/" + "start_fsdam.gro")
+
+                if j > 200:
+                    break
+
+                j = j + 1
+
+                
+        #creates the bash scripts to create the needed tpr files
+        self._write_make_tpr_script(number_of_dirs = j,
+                                mdp_file = "transitionQ.mdp",
+                                gro_file = "start_fsdam.gro",
+                                tpr_file = "transitionQ.tpr",
+                                script_filename = self.fsdam_dir + "/" + "MAKE_TPR_transitionQ.sh")
+
+        self._write_make_tpr_script(number_of_dirs = j,
+                                mdp_file = "transitionVdW.mdp",
+                                gro_file = "transitionQ.gro",
+                                tpr_file = "transitionVdW.tpr",
+                                script_filename = self.fsdam_dir + "/" + "MAKE_TPR_transitionVdW.sh")
+
+        #make the inputs for both Q and VdW
+        self._make_workload_manager_input(number_of_dirs = j, tpr_file = "transitionQ.tpr")
+
+        self._make_workload_manager_input(number_of_dirs = j, tpr_file = "transitionVdW.tpr")
+
+
+
+class PrepareInputProteinLigand(PrepareInputSuperClass):
+
+    def _make_transitionQ_mdp(self, mdp_file_name):
+
+        mdp_lines = [
+            "; VARIOUS PREPROCESSING OPTIONS",
+            "; Preprocessor information: use cpp syntax.",
+            "; e.g.: -I/home/joe/doe -I/home/mary/roe",
+            "include                  =",
+            "; e.g.: -DPOSRES -DFLEXIBLE (note these variable names are case sensitive)",
+            "define                   =",
+            "",
+            "; RUN CONTROL PARAMETERS",
+            "integrator               = md",
+            "; Start time and timestep in ps",
+            "tinit                    = 0",
+            "dt                       = 0.001",
+            "nsteps                   = 1000000",
+            "; For exact run continuation or redoing part of a run",
+            "init-step                = 0",
+            "; Part index is updated automatically on checkpointing (keeps files separate)",
+            "simulation-part          = 1",
+            "; mode for center of mass motion removal",
+            "comm-mode                = Linear",
+            "; number of steps for center of mass motion removal",
+            "nstcomm                  = 100",
+            "; group(s) for center of mass motion removal",
+            "comm-grps                =",
+            "",
+            "; TEST PARTICLE INSERTION OPTIONS",
+            "rtpi                     = 0.05",
+            "",
+            "; OUTPUT CONTROL OPTIONS",
+            "; Output frequency for coords (x), velocities (v) and forces (f)",
+            "nstxout                  = 10000",
+            "nstvout                  = 10000",
+            "nstfout                  = 10000",
+            "; Output frequency for energies to log file and energy file",
+            "nstlog                   = 1000",
+            "nstcalcenergy            = 100",
+            "nstenergy                = 1000",
+            "; Output frequency and precision for .xtc file",
+            "nstxtcout                = 2000",
+            "xtc-precision            = 1000",
+            "; This selects the subset of atoms for the .xtc file. You can",
+            "; select multiple groups. By default all atoms will be written.",
+            "xtc-grps                 =",
+            "; Selection of energy groups",
+            "energygrps               = System",
+            "",
+            "; NEIGHBORSEARCHING PARAMETERS",
+            "; cut-off scheme (group: using charge groups, Verlet: particle based cut-offs)",
+            "; nblist update frequency",
+            "cutoff-scheme            = Verlet",
+            "nstlist                  = 20",
+            "verlet-buffer-tolerance  = 0.0001",
+            "; ns algorithm (simple or grid)",
+            "ns_type                  = grid",
+            "; Periodic boundary conditions: xyz, no, xy",
+            "pbc                      = xyz",
+            "periodic-molecules       = no",
+            "; Allowed energy drift due to the Verlet buffer in kJ/mol/ps per atom,",
+            "; a value of -1 means: use rlist",
+            "; nblist cut-off",
+            "rlist                    = 1.0",
+            "; long-range cut-off for switched potentials",
+            "rlistlong                = -1",
+            "",
+            "; OPTIONS FOR ELECTROSTATICS AND VDW",
+            "; Method for doing electrostatics",
+            "coulombtype              = PME",
+            "rcoulomb-switch          = 0",
+            "rcoulomb                 = 1.0",
+            "; Relative dielectric constant for the medium and the reaction field",
+            "epsilon-r                = 1",
+            "epsilon-rf               = 0",
+            "; Method for doing Van der Waals",
+            "vdw-type                 = Cut-off",
+            "; cut-off lengths",
+            "rvdw-switch              = 0",
+            "rvdw                     = 1.0",
+            "; Apply long range dispersion corrections for Energy and Pressure",
+            "DispCorr                 = EnerPres",
+            "; Extension of the potential lookup tables beyond the cut-off",
+            "table-extension          = 1",
+            "; Separate tables between energy group pairs",
+            "energygrp-table          =",
+            "; Spacing for the PME/PPPM FFT grid",
+            "fourierspacing           = 0.12",
+            "; FFT grid size, when a value is 0 fourierspacing will be used",
+            "fourier-nx               = 0",
+            "fourier-ny               = 0",
+            "fourier-nz               = 0",
+            "; EWALD/PME/PPPM parameters",
+            "pme-order                = 4",
+            "ewald-rtol               = 1e-06",
+            "ewald-geometry           = 3d",
+            "epsilon-surface          =",
+            "optimize-fft             = no",
+            "",
+            "; IMPLICIT SOLVENT ALGORITHM",
+            "implicit-solvent         = No",
+            "",
+            "; OPTIONS FOR WEAK COUPLING ALGORITHMS",
+            "; Temperature coupling",
+            "tcoupl                   = v-rescale",
+            "nsttcouple               = -1",
+            "nh-chain-length          = 1",
+            "; Groups to couple separately",
+            "tc-grps                  = System",
+            "; Time constant (ps) and reference temperature (K)",
+            "tau-t                    = 0.2",
+            "ref-t                    = 298.15",
+            "; pressure coupling",
+            "pcoupl                   = Berendsen",
+            "pcoupltype               = Isotropic",
+            "nstpcouple               = -1",
+            "; Time constant (ps), compressibility (1/bar) and reference P (bar)",
+            "tau-p                    = 0.5",
+            "compressibility          = 4.6e-5",
+            "ref-p                    = 1",
+            "; Scaling of reference coordinates, No, All or COM",
+            "refcoord-scaling         = COM",
+            "",
+            "; GENERATE VELOCITIES FOR STARTUP RUN",
+            "gen-vel                  = no",
+            "gen-temp                 = 500",
+            "gen-seed                 = 173529",
+            "",
+            "; OPTIONS FOR BONDS",
+            "constraints              = all-bonds",
+            "; Type of constraint algorithm",
+            "constraint-algorithm     = Lincs",
+            "; Do not constrain the start configuration",
+            "continuation             = no",
+            "; Use successive overrelaxation to reduce the number of shake iterations",
+            "Shake-SOR                = no",
+            "; Relative tolerance of shake",
+            "shake-tol                = 0.00001",
+            "; Highest order in the expansion of the constraint coupling matrix",
+            "lincs-order              = 5",
+            "; Number of iterations in the final step of LINCS. 1 is fine for",
+            "; normal simulations, but use 2 to conserve energy in NVE runs.",
+            "; For energy minimization with constraints it should be 4 to 8.",
+            "lincs-iter               = 2",
+            "; Lincs will write a warning to the stderr if in one step a bond",
+            "; rotates over more degrees than",
+            "lincs-warnangle          = 30",
+            "; Convert harmonic bonds to morse potentials",
+            "morse                    = no",
+            "",
+            "; Free energy control stuff",
+            "free-energy              = yes",
+            "init-lambda              = 1",
+            "delta-lambda             = -1e-6",
+
+            f"couple-moltype           = {self.ligand_resname}",
+
+            "couple-lambda0           =vdw",
+            "couple-lambda1           =vdw-q",
+            "sc-alpha                 = 0.3",
+            "sc-coul                  = yes",
+            "sc-sigma                 = 0.25",
+            "sc-power                 = 1"
+        ]
+
+        write_on_files.write_file(lines = ["\n".join(mdp_lines)], file_name = mdp_file_name)
+
+
+    def _make_transitionVdW_mdp(self, mdp_file_name):
+
+        mdp_lines = [
+            "; VARIOUS PREPROCESSING OPTIONS",
+            "; Preprocessor information: use cpp syntax.",
+            "; e.g.: -I/home/joe/doe -I/home/mary/roe",
+            "include                  =",
+            "; e.g.: -DPOSRES -DFLEXIBLE (note these variable names are case sensitive)",
+            "define                   =",
+            "",
+            "; RUN CONTROL PARAMETERS",
+            "integrator               = md",
+            "; Start time and timestep in ps",
+            "tinit                    = 0",
+            "dt                       = 0.001",
+            "nsteps                   = 1000000",
+            "; For exact run continuation or redoing part of a run",
+            "init-step                = 0",
+            "; Part index is updated automatically on checkpointing (keeps files separate)",
+            "simulation-part          = 1",
+            "; mode for center of mass motion removal",
+            "comm-mode                = Linear",
+            "; number of steps for center of mass motion removal",
+            "nstcomm                  = 100",
+            "; group(s) for center of mass motion removal",
+            "comm-grps                =",
+            "",
+            "; TEST PARTICLE INSERTION OPTIONS",
+            "rtpi                     = 0.05",
+            "",
+            "; OUTPUT CONTROL OPTIONS",
+            "; Output frequency for coords (x), velocities (v) and forces (f)",
+            "nstxout                  = 10000",
+            "nstvout                  = 10000",
+            "nstfout                  = 10000",
+            "; Output frequency for energies to log file and energy file",
+            "nstlog                   = 1000",
+            "nstcalcenergy            = 100",
+            "nstenergy                = 1000",
+            "; Output frequency and precision for .xtc file",
+            "nstxtcout                = 2000",
+            "xtc-precision            = 1000",
+            "; This selects the subset of atoms for the .xtc file. You can",
+            "; select multiple groups. By default all atoms will be written.",
+            "xtc-grps                 =",
+            "; Selection of energy groups",
+            "energygrps               = System",
+            "",
+            "; NEIGHBORSEARCHING PARAMETERS",
+            "; cut-off scheme (group: using charge groups, Verlet: particle based cut-offs)",
+            "; nblist update frequency",
+            "cutoff-scheme            = Verlet",
+            "nstlist                  = 20",
+            "verlet-buffer-tolerance  = 0.0001",
+            "; ns algorithm (simple or grid)",
+            "ns_type                  = grid",
+            "; Periodic boundary conditions: xyz, no, xy",
+            "pbc                      = xyz",
+            "periodic-molecules       = no",
+            "; Allowed energy drift due to the Verlet buffer in kJ/mol/ps per atom,",
+            "; a value of -1 means: use rlist",
+            "; nblist cut-off",
+            "rlist                    = 1.0",
+            "; long-range cut-off for switched potentials",
+            "rlistlong                = -1",
+            "",
+            "; OPTIONS FOR ELECTROSTATICS AND VDW",
+            "; Method for doing electrostatics",
+            "coulombtype              = PME",
+            "rcoulomb-switch          = 0",
+            "rcoulomb                 = 1.0",
+            "; Relative dielectric constant for the medium and the reaction field",
+            "epsilon-r                = 1",
+            "epsilon-rf               = 0",
+            "; Method for doing Van der Waals",
+            "vdw-type                 = Cut-off",
+            "; cut-off lengths",
+            "rvdw-switch              = 0",
+            "rvdw                     = 1.0",
+            "; Apply long range dispersion corrections for Energy and Pressure",
+            "DispCorr                 = EnerPres",
+            "; Extension of the potential lookup tables beyond the cut-off",
+            "table-extension          = 1",
+            "; Separate tables between energy group pairs",
+            "energygrp-table          =",
+            "; Spacing for the PME/PPPM FFT grid",
+            "fourierspacing           = 0.12",
+            "; FFT grid size, when a value is 0 fourierspacing will be used",
+            "fourier-nx               = 0",
+            "fourier-ny               = 0",
+            "fourier-nz               = 0",
+            "; EWALD/PME/PPPM parameters",
+            "pme-order                = 4",
+            "ewald-rtol               = 1e-06",
+            "ewald-geometry           = 3d",
+            "epsilon-surface          =",
+            "optimize-fft             = no",
+            "",
+            "; IMPLICIT SOLVENT ALGORITHM",
+            "implicit-solvent         = No",
+            "",
+            "; OPTIONS FOR WEAK COUPLING ALGORITHMS",
+            "; Temperature coupling",
+            "tcoupl                   = v-rescale",
+            "nsttcouple               = -1",
+            "nh-chain-length          = 1",
+            "; Groups to couple separately",
+            "tc-grps                  = System",
+            "; Time constant (ps) and reference temperature (K)",
+            "tau-t                    = 0.2",
+            "ref-t                    = 298.15",
+            "; pressure coupling",
+            "pcoupl                   = Berendsen",
+            "pcoupltype               = Isotropic",
+            "nstpcouple               = -1",
+            "; Time constant (ps), compressibility (1/bar) and reference P (bar)",
+            "tau-p                    = 0.5",
+            "compressibility          = 4.6e-5",
+            "ref-p                    = 1",
+            "; Scaling of reference coordinates, No, All or COM",
+            "refcoord-scaling         = COM",
+            "",
+            "; GENERATE VELOCITIES FOR STARTUP RUN",
+            "gen-vel                  = no",
+            "gen-temp                 = 500",
+            "gen-seed                 = 173529",
+            "",
+            "; OPTIONS FOR BONDS",
+            "constraints              = all-bonds",
+            "; Type of constraint algorithm",
+            "constraint-algorithm     = Lincs",
+            "; Do not constrain the start configuration",
+            "continuation             = no",
+            "; Use successive overrelaxation to reduce the number of shake iterations",
+            "Shake-SOR                = no",
+            "; Relative tolerance of shake",
+            "shake-tol                = 0.00001",
+            "; Highest order in the expansion of the constraint coupling matrix",
+            "lincs-order              = 5",
+            "; Number of iterations in the final step of LINCS. 1 is fine for",
+            "; normal simulations, but use 2 to conserve energy in NVE runs.",
+            "; For energy minimization with constraints it should be 4 to 8.",
+            "lincs-iter               = 2",
+            "; Lincs will write a warning to the stderr if in one step a bond",
+            "; rotates over more degrees than",
+            "lincs-warnangle          = 30",
+            "; Convert harmonic bonds to morse potentials",
+            "morse                    = no",
+            "",
+            "; Free energy control stuff",
+            "free-energy              = yes",
+            "init-lambda              = 1",
+            "delta-lambda             = -1e-6",
+
+            f"couple-moltype           = {self.ligand_resname}",
+
+            "couple-lambda0           =none",
+            "couple-lambda1           =vdw",
+            "sc-alpha                 = 0.3",
+            "sc-coul                  = yes",
+            "sc-sigma                 = 0.25",
+            "sc-power                 = 1"
+        ]
+
+        write_on_files.write_file(lines = ["\n".join(mdp_lines)], file_name = mdp_file_name)
