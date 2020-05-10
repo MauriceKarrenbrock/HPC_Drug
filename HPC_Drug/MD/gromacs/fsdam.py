@@ -885,7 +885,7 @@ class PrepareInputSuperClass(object):
 
             cpus_per_task = math.ceil(self.cpus_per_node / tasks_per_node)
 
-            GPUs = self.GPU_per_node * nodes
+            GPUs = tasks
 
             mpirun_string = mpirun_string.format(cpus_per_task * tasks, prefix, tpr_file, multidir)
 

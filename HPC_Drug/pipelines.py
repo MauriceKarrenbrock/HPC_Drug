@@ -28,9 +28,6 @@ from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
 from HPC_Drug.structures import get_ligands
 from HPC_Drug.structures import update_ligands
-from HPC_Drug import funcs4primadorac
-from HPC_Drug import funcs4gromacs
-from HPC_Drug import funcs4orac
 from HPC_Drug import orient
 
 
@@ -63,7 +60,8 @@ def choose_pipeline(*args, **kwargs):
                                 residue_substitution = input_dict['residue_substitution'],
                                 kind_of_processor = input_dict['kind_of_processor'],
                                 number_of_cores_per_node = input_dict['number_of_cores_per_node'],
-                                use_gpu = input_dict['use_gpu'])
+                                use_gpu = input_dict['use_gpu'],
+                                gpu_per_node = input_dict['gpu_per_node'])
 
     else:
         # ligand is given
@@ -94,7 +92,8 @@ class Pipeline(object):
                 residue_substitution = 'standard',
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
-                use_gpu = 'auto'):
+                use_gpu = 'auto',
+                gpu_per_node = 1):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
@@ -147,6 +146,9 @@ class Pipeline(object):
         self.use_gpu = use_gpu.lower().strip()
         if self.use_gpu not in ('auto', 'cpu', 'gpu'):
             raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
+
+
+        self.gpu_per_node = gpu_per_node
 
     def get_protein_file(self):
 
@@ -405,7 +407,8 @@ class NoLigandPipeline(Pipeline):
                                             MD_program_path = self.MD_program_path,
                                             kind_of_processor = self.kind_of_processor,
                                             number_of_cores_per_node = self.number_of_cores_per_node,
-                                            use_gpu = self.use_gpu)
+                                            use_gpu = self.use_gpu,
+                                            gpus_per_node = self.gpu_per_node)
 
             Protein = hrem_input.execute()
 

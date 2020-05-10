@@ -1,7 +1,7 @@
 #This is a correct input example
 #Every line beginning with '#' is a comment
 #Error occurs only for wrong keys
-#case-sensitive
+#kase-sensitive
 #------------------------------------------------
 
 #Protein code and desired file type, possible values 'cif' or 'pdb'
@@ -69,7 +69,7 @@ protein_tpg_file = amber99sb-ildn
 #the solvent model that will be chosen
 #standard is spce
 # from the standard gromacs share directory
-#other options can be none tip3p etc...
+#other options can be none tip3p etch
 #check gromacs pdb2gmx -water documentation for more options
 solvent_pdb = spce
 
@@ -81,9 +81,13 @@ residue_substitution = standard
 #gromacs can use gpu accelerators
 #there are 3 options
 #auto (default)
-#cpu ues only cpu even if gpus are available
+#cpu uses only cpu even if gpus are available
 #gpu forces to use gpus (using auto is HIGHLY RECOMENDED)
 use_gpu = auto
+
+#how many GPUs there are per node, default 1
+#if gpus shall not be used it will be ignored
+gpu_per_node = 1
 
 #The kind of processor present on the HPC cluster
 #default skylake
