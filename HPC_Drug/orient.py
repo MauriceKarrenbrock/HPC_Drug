@@ -483,7 +483,7 @@ class Orient(object):
 
         return [Max, minr]
 
-    def get_first_last_atom_strucure(self, Protein = None, Ligand = None):
+    def get_first_last_atom_structure(self, Protein = None, Ligand = None):
         """Gets the first and last atom of the protein ligand complex (no solvent)"""
 
             

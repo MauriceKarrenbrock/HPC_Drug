@@ -72,6 +72,25 @@ class Protein(structure.Structure):
 
         self._ligands.append(Ligand)
 
+    def clear_ligands(self):
+        """Clears ALL the ligands stored in self._ligands"""
+
+        self._ligands = []
+
+    def update_ligands(self, ligands):
+        """
+        Takes an iterable (list, tuple, etc...) containing HPC_Drug.structures.ligand.Ligand
+        instances and ovewrites self._ligand with this new ones (any information about the old ones will be lost)
+        
+        ligands :: iterable containing the new HPC_Drug.structures.ligand.Ligand instances
+        """
+
+        self.clear_ligands()
+
+        for lig in ligands:
+            self.add_ligand(Ligand = lig)
+            
+
     def get_ligand_list(self):
         """returns the list of ligands (self._ligands) already stored
         it is a pointer to it, not a copy, so pay attention"""

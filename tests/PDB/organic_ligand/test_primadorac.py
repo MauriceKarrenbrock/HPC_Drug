@@ -62,7 +62,6 @@ class test_primadorac(unittest.TestCase):
 
             mocked_run.assert_called_once_with(commands = "string",
                                             shell = False,
-                                            universal_newlines = False,
                                             error_string = "primadorac failure")
 
 

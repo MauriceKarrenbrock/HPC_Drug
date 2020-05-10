@@ -12,6 +12,8 @@ This file contains the classes and functions needed to get the input
 """
 import importlib_resources
 
+from HPC_Drug.auxiliary_functions import path as program_path
+
 class GetInput(object):
     """Generic class to get input"""
 
@@ -124,9 +126,6 @@ class ParseInputFromFile(GetFile):
 
         """Makes the needed casts from string, defines some None to default ecc"""
 
-        if type(input_variables) != dict:
-            raise TypeError('Need a dictionary')
-
         # Protein_model must be an integer
         if input_variables['Protein_model'] != None:
             input_variables['Protein_model'] = int(input_variables['Protein_model'])
@@ -150,8 +149,12 @@ class ParseInputFromFile(GetFile):
             input_variables['ligand_elaboration_program'] = 'primadorac'
         
         if input_variables['ligand_elaboration_program_path'] == None:
-            input_variables['ligand_elaboration_program_path'] = '~/ORAC/trunk/tools/primadorac/primadorac.bash'
-        
+            input_variables['ligand_elaboration_program_path'] = program_path.absolute_programpath(program = '~/ORAC/trunk/tools/primadorac/primadorac.bash')
+        else:
+            input_variables['ligand_elaboration_program_path'] = program_path.absolute_programpath(program = input_variables['ligand_elaboration_program_path'])
+
+        #absolute path of the program path
+        input_variables['MD_program_path'] = program_path.absolute_programpath(program = input_variables['MD_program_path'])
 
 
         if input_variables['MD_program'] == None:
@@ -172,10 +175,10 @@ class ParseInputFromFile(GetFile):
         
         elif input_variables['MD_program'] == 'gromacs':
             if input_variables['protein_tpg_file'] == None:
-                input_variables['protein_tpg_file'] = '6'
+                input_variables['protein_tpg_file'] = 'amber99sb-ildn'
 
             if input_variables['solvent_pdb'] == None:
-                input_variables['solvent_pdb'] = 'amber99sb-ildn.ff/spce.itp'
+                input_variables['solvent_pdb'] = 'spce'
 
 
         #set a default for processor (skylake)

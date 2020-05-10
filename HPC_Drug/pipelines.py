@@ -27,6 +27,7 @@ from HPC_Drug.auxiliary_functions import get_iterable
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
 from HPC_Drug.structures import get_ligands
+from HPC_Drug.structures import update_ligands
 from HPC_Drug import funcs4primadorac
 from HPC_Drug import funcs4gromacs
 from HPC_Drug import funcs4orac
@@ -211,7 +212,9 @@ class GetProteinLigandFilesPipeline(Pipeline):
                                     pdb_file = self.protein_filename,
                                     model = self.model,
                                     chain = self.chain,
-                                    file_type = self.protein_filetype)
+                                    file_type = self.protein_filetype,
+                                    tpg_file = self.protein_tpg_file,
+                                    prm_file = self.protein_prm_file)
         
 
         #Get Protein.substitutions_dict Protein.sulf_bonds
@@ -249,6 +252,25 @@ class GetProteinLigandFilesPipeline(Pipeline):
         #removes the remaining trash ions
         Protein = remove_trash_metal_ions.remove_trash_metal_ions(Protein = Protein)
 
+
+        #quick patch, will do it better
+        #The structure is put in the reference system of the
+        #inertia tensor
+        orient_obj = orient.Orient(Protein = Protein)
+        tmp_1, tmp_2, Rot_matrix = orient_obj.calculate_moment_of_intertia_tensor()
+        tmp_1 = tmp_2 = None
+        Protein.structure = orient_obj.base_change_structure()
+        Protein.write()
+
+        Ligand = Protein.get_ligand_list()
+        for i in range(len(Ligand)):
+            Ligand[i].update_structure(struct_type = "biopython")
+
+            Ligand[i].structure = orient_obj.base_change_structure(structure = Ligand[i].structure, rot_matrix = Rot_matrix)
+
+            Ligand[i].write()
+
+
         return Protein
         
 
@@ -276,7 +298,9 @@ class NoLigandPipeline(Pipeline):
             Protein_chain = self.chain,
             ph = self.ph,
             repairing_method = self.repairing_method,
-            ligand = self.ligand_filename
+            ligand = self.ligand_filename,
+            protein_prm_file = self.protein_prm_file,
+            protein_tpg_file = self.protein_tpg_file
         )
 
         Protein = get_protein_pipeline.execute()
@@ -289,34 +313,18 @@ class NoLigandPipeline(Pipeline):
             ph = self.ph
         )
 
-        #TEMPORARY
-        Ligand = Protein._ligands
-
-
-        #As primadorac renames the ligand resnumber as 1
-        #and it could create problems they are renamed as -(i + 1)
-        #with maximum number -9
-        #Not very robust, for sure not the best solution
-        for i, lgand in enumerate(get_iterable.get_iterable(Ligand)):
-            with open(lgand.pdb_file, 'r') as f:
-                lines = f.readlines()
-            
-            with open(lgand.pdb_file, 'w') as f:
-                for line in lines:
-                    line = list(line)
-                    line[24] = '-'
-                    line[25] = f'{(i + 1) % 10}'
-                    line = ''.join(line)
-                    
-                    f.write(line)
-
+        
         if self.MD_program == None or self.MD_program_path == None:
             raise Exception('Need a MD program and a path')
 
         elif self.MD_program == 'gromacs':
 
+            from HPC_Drug.MD.gromacs import make_top, first_opt, solv_box, hrem, residue_substitution
+
             #makes the necessary resname substitutions for the ForceField
-            Protein = funcs4gromacs.residue_substitution(Protein, self.residue_substitution)
+            Protein = residue_substitution.residue_substitution(Protein = Protein,
+                                                            substitution = self.residue_substitution,
+                                                            ph = self.ph)
 
 
 
@@ -337,168 +345,167 @@ class NoLigandPipeline(Pipeline):
                 f.write(f"{lines[len(lines)-1].strip()}\n")
             #END OF PATCH
 
-            #quick patch, will do it better
-            #The structure must be put in the reference system of the
-            #inertia tensor
-            orient_obj = orient.Orient(Protein = Protein)
-            tmp_1, tmp_2, Rot_matrix = orient_obj.calculate_moment_of_intertia_tensor()
-            tmp_1 = tmp_2 = None
-            Protein.structure = orient_obj.base_change_structure()
-            Protein.write()
-
-            for i in range(len(Ligand)):
-                Ligand[i].update_structure(struct_type = "biopython")
-
-                Ligand[i].structure = orient_obj.base_change_structure(structure = Ligand[i].structure, rot_matrix = Rot_matrix)
-
-                Ligand[i].write()
-
-
 
             
 
             #Make the protein's gro and top file
-            gro_top_maker = funcs4gromacs.GromacsMakeProteinGroTop(output_filename = "choices.txt",
-                                                    Protein = Protein,
-                                                    Ligand = Ligand,
-                                                    protein_tpg_file = self.protein_tpg_file,
-                                                    solvent_model = '7',
+            gro_top_maker = make_top.GromacsMakeProteinGroTop(Protein = Protein,
+                                                    solvent_model = self.solvent_pdb,
                                                     MD_program_path = self.MD_program_path)
             
             Protein = gro_top_maker.execute()
 
             #merges the protein and the ligand in a single gro and top file
-            gro_top_merger = funcs4gromacs.GromacsMakeJoinedProteinLigandTopGro(output_filename = f"{Protein.protein_id}_joined.pdb",
-                                                                                Protein = Protein,
-                                                                                Ligand = Ligand,
-                                                                                protein_tpg_file = self.protein_tpg_file,
-                                                                                solvent_model = self.solvent_pdb,
-                                                                                MD_program_path = self.MD_program_path)
+            gro_top_merger = make_top.GromacsMakeJoinedProteinLigandTopGro(Protein = Protein,
+                                                                        MD_program_path = self.MD_program_path)
 
             Protein = gro_top_merger.execute()
 
-            #makes a fast geometry optimization
-            first_opt = funcs4gromacs.GromacsFirstOptimization(input_filename = f'{Protein.protein_id}_joined_optimized.gro',
-                                                            output_filename = f"{Protein.protein_id}_first_opt.mdp",
-                                                            Protein = Protein,
-                                                            Ligand = Ligand,
-                                                            protein_tpg_file = self.protein_tpg_file,
-                                                            solvent_model = self.solvent_pdb,
-                                                            MD_program_path = self.MD_program_path)
+            #makes a gro and top for the ligands
+            Protein = update_ligands.update_ligands(Protein = Protein, chain_model_selection = False)
 
-            Protein.gro_file = first_opt.execute()
+            only_ligand_top_gro_maker = make_top.GromacsMakeOnlyLigandTopGro(Protein = Protein,
+                                                        MD_program_path = self.MD_program_path,
+                                                        solvent_model = self.solvent_pdb)
 
-            if Ligand == None or Ligand == []:
-                raise TypeError('I could not find organic ligands in the structure\n\
-                                Maybe the ones you where looking for are in the important_lists.trash list\n\
-                                In any case I did some optimizations on your protein, hoping it will come in handy')
+            Protein = only_ligand_top_gro_maker.execute()
 
-            elif len(Ligand) > 1:
-                raise ValueError(f"Found more than one Ligand {Ligand}")
+
+
+            #makes a fast geometry optimization of the protein ligand system
+            first_opt_obj = first_opt.GromacsFirstOptimization(Protein = Protein,
+                                                        MD_program_path = self.MD_program_path)
+
+            Protein = first_opt_obj.execute()
+
+            #make fast optimization for the only ligands files
+            first_opt_only_ligand = first_opt.GromacsFirstOptimizationOnlyLigand(Protein = Protein,
+                                                                    MD_program_path = self.MD_program_path)
+
+            Protein = first_opt_only_ligand.execute()
+
+
+            if Protein.get_ligand_list() == []:
+                raise RuntimeError('I could not find organic ligands in the structure\n\
+                Maybe the ones you where looking for are in the important_lists.trash list\n\
+                In any case I did some optimizations on your protein, hoping it will come in handy')
+
+            elif len(Protein.get_ligand_list()) > 1:
+                raise RuntimeError(f"Found more than one Ligand {Protein.get_ligand_list()}")
 
             #makes and optimizes a solvent box
-            solv_box = funcs4gromacs.GromacsSolvBoxInput(f"{Protein.protein_id}_solv_box.gro",
-                                        output_filename = f'{Protein.protein_id}_solv_box.mdp',
-                                        Protein = Protein,
-                                        Ligand = Ligand,
-                                        protein_tpg_file = self.protein_tpg_file,
-                                        solvent_model = self.solvent_pdb,
-                                        MD_program_path = self.MD_program_path,
-                                        box_borders = '0.8')
+            solv_box_obj = solv_box.GromacsSolvBoxInput(Protein = Protein,
+                                                MD_program_path = self.MD_program_path,
+                                                box_borders = '0.8')
 
-            Protein.gro_file = solv_box.execute()
+            Protein = solv_box_obj.execute()
 
             #create the REM input for Plumed patched gromacs
-            rem_input = funcs4gromacs.GromacsREMInput(input_filename = f"{Protein.protein_id}_REM",
-                                                    output_filename = f"{Protein.protein_id}_REM.mdp",
-                                                    Protein = Protein,
-                                                    Ligand = Ligand,
-                                                    protein_tpg_file = self.protein_tpg_file,
-                                                    MD_program_path = self.MD_program_path,
+            hrem_input = hrem.GromacsHREMInput(Protein = Protein,
+                                            MD_program_path = self.MD_program_path,
+                                            kind_of_processor = self.kind_of_processor,
+                                            number_of_cores_per_node = self.number_of_cores_per_node,
+                                            use_gpu = self.use_gpu)
+
+            Protein = hrem_input.execute()
+
+            #optimize a box of water
+            opt_water = solv_box.OptimizeOnlyWaterBox(force_fileld = Protein.tpg_file,
                                                     solvent_model = self.solvent_pdb,
-                                                    kind_of_processor = self.kind_of_processor,
-                                                    number_of_cores_per_node = self.number_of_cores_per_node,
-                                                    use_gpu = self.use_gpu)
+                                                    MD_program_path = self.MD_program_path)
 
-            gromacs_rem_input_file = rem_input.execute()
+            only_solvent_box_gro, only_solvent_box_top = opt_water.execute()
 
+            #create a HREM dir for the ligand
+            ligand_hrem_input = hrem.GromacsHREMOnlyLigand(Protein,
+                                                only_solvent_box_gro = only_solvent_box_gro,
+                                                only_solvent_box_top = only_solvent_box_top,
+                                                MD_program_path = self.MD_program_path,
+                                                kind_of_processor = self.kind_of_processor,
+                                                number_of_cores_per_node = self.number_of_cores_per_node,
+                                                use_gpu = self.use_gpu)
 
-            #create the REM input for native gromacs REM (tricking it in thinking it is doing a temperature REM)
-            native_rem_input = funcs4gromacs.GromacsNativeREMInput(input_filename = f"{Protein.protein_id}_REM",
-                                                    output_filename = f"{Protein.protein_id}_REM.mdp",
-                                                    Protein = Protein,
-                                                    Ligand = Ligand,
-                                                    protein_tpg_file = self.protein_tpg_file,
-                                                    MD_program_path = self.MD_program_path,
-                                                    solvent_model = self.solvent_pdb,
-                                                    kind_of_processor = self.kind_of_processor,
-                                                    number_of_cores_per_node = self.number_of_cores_per_node,
-                                                    use_gpu = self.use_gpu)
-
-            gromacs_nativerem_input_file = native_rem_input.execute()
+            Protein = ligand_hrem_input.execute()
 
         elif self.MD_program == 'orac':
 
+            from HPC_Drug.MD.orac import first_opt, solv_box, hrem, residue_substitution, orac_seqres
+
+            from HPC_Drug.PDB import merge_pdb
+
             #makes the necessary resname substitutions for the ForceField
-            Protein = funcs4orac.residue_substitution(Protein, self.residue_substitution)
+            Protein = residue_substitution.residue_substitution(Protein = Protein,
+                                                            substitution = self.residue_substitution,
+                                                            ph = self.ph)
             
             #update the seqres with the names needed for Orac
-            Protein = funcs4orac.custom_orac_seqres_from_PDB(Protein)
+            Protein = orac_seqres.custom_orac_seqres_from_PDB(Protein)
 
             #Creating a joined pdb of protein + ligand
-            Protein = funcs4orac.join_ligand_and_protein_pdb(Protein, Ligand)
+            Protein = merge_pdb.merge_pdb(Protein = Protein)
 
-            ########
-            #WORK IN PROGRESS
-            ##########
-            #Protein = pipeline_functions.update_sulf_bonds(Protein = Protein)
+            #makes a gro and top for the ligands
+            Protein = update_ligands.update_ligands(Protein = Protein, chain_model_selection = False)
 
             #first structure optimization, with standard tpg and prm (inside lib module)
-            first_opt = funcs4orac.OracFirstOptimization(output_filename = f'{Protein.protein_id}_first_opt.in',
-                                                        Protein = Protein,
-                                                        Ligand = Ligand,
-                                                        protein_tpg_file = self.protein_tpg_file,
-                                                        protein_prm_file = self.protein_prm_file,
+            first_opt_obj = first_opt.OracFirstOptimization(Protein = Protein,
                                                         MD_program_path = self.MD_program_path)
 
 
-            Protein.pdb_file = first_opt.execute()
+            Protein = first_opt_obj.execute()
 
-            if Ligand == None or Ligand == []:
-                raise TypeError('I could not find organic ligands in the structure\n\
-                                Maybe the ones you where looking for are in the important_lists.trash list\n\
-                                In any case I did some optimizations on your protein, hoping it will come in handy')
+            #make fast optimization for the only ligands files
+            first_opt_only_ligand = first_opt.OracFirstOptimizationOnlyLigand(Protein = Protein,
+                                                                    MD_program_path = self.MD_program_path)
 
-            elif len(Ligand) > 1:
-                raise ValueError(f"Found more than one Ligand {Ligand}")
+            Protein = first_opt_only_ligand.execute()
+
+            if Protein.get_ligand_list() == []:
+                raise RuntimeError('I could not find organic ligands in the structure\n\
+                Maybe the ones you where looking for are in the important_lists.trash list\n\
+                In any case I did some optimizations on your protein, hoping it will come in handy')
+
+            elif len(Protein.get_ligand_list()) > 1:
+                raise RuntimeError(f"Found more than one Ligand {Protein.get_ligand_list()}")
         
-            solv_box = funcs4orac.OracSolvBoxInput(output_filename = f"{Protein.protein_id}_solvbox.in",
-                                                Protein = Protein,
-                                                Ligand = Ligand,
-                                                protein_tpg_file = self.protein_tpg_file,
-                                                protein_prm_file = self.protein_prm_file,
+            solv_box_obj = solv_box.OracSolvBoxInput(Protein = Protein,
                                                 MD_program_path = self.MD_program_path,
                                                 solvent_pdb = self.solvent_pdb)
             
-            Protein.pdb_file = solv_box.execute()
+            Protein = solv_box_obj.execute()
 
 
             #Create the REM input
-            rem_input = funcs4orac.OracREMInput(output_filename = f"{Protein.protein_id}_REM.in",
-                                                Protein = Protein,
-                                                Ligand = Ligand,
-                                                protein_tpg_file = self.protein_tpg_file,
-                                                protein_prm_file = self.protein_prm_file,
+            hrem_input_obj = hrem.HREMOracInput(Protein = Protein,
                                                 MD_program_path = self.MD_program_path,
                                                 solvent_pdb = self.solvent_pdb,
                                                 kind_of_processor = self.kind_of_processor,
                                                 number_of_cores_per_node = self.number_of_cores_per_node)
 
-            orac_rem_input_file = rem_input.execute()
+            Protein = hrem_input_obj.execute()
+
+            #optimize a box of only water
+            solv_box_only_water = solv_box.OptimizeOnlyWaterBox(solvent_box = None,
+                                                                tpg_file = Protein.tpg_file,
+                                                                prm_file = Protein.prm_file,
+                                                                MD_program_path = self.MD_program_path,
+                                                                chain = Protein.chain)
+
+            only_water_pdb = solv_box_only_water.execute()
+
+            #make the hrem input for the ligand
+            hrem_only_ligand = hrem.HREMOracInputOnlyLigand(Protein = Protein,
+                                                            solvent_box = only_water_pdb,
+                                                            MD_program_path = self.MD_program_path,
+                                                            number_of_cores_per_node = self.number_of_cores_per_node)
+
+            Protein = hrem_only_ligand.execute()
 
             
         else:
             raise NotImplementedError(self.MD_program)
+
+        return Protein
         
         
 

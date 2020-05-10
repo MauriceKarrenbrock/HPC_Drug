@@ -1,7 +1,7 @@
 #This is a correct input example
 #Every line beginning with '#' is a comment
 #Error occurs only for wrong keys
-#kase-sensitive
+#case-sensitive
 #------------------------------------------------
 
 #Protein code and desired file type, possible values 'cif' or 'pdb'
@@ -61,14 +61,17 @@ MD_program = gromacs
 MD_program_path = gmx
 
 #protein ff
-#if omitted default one is 6 that in standard gromacs is
-# AMBER99SB-ILDN protein, nucleic AMBER94 (Lindorff-Larsen et al., Proteins 78, 1950-58, 2010)
-protein_tpg_file = 6
+#insert the name of the .ff dir without the .ff
+#it is case sensitive
+#if omitted default one is amber99sb-ildn
+protein_tpg_file = amber99sb-ildn
 
 #the solvent model that will be chosen
-#standard is amber99sb-ildn.ff/spce.itp
+#standard is spce
 # from the standard gromacs share directory
-solvent_pdb = amber99sb-ildn.ff/spce.itp
+#other options can be none tip3p etc...
+#check gromacs pdb2gmx -water documentation for more options
+solvent_pdb = spce
 
 #there can be custom residue substitutions for metal binding residues
 #default standard
