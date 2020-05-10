@@ -937,7 +937,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
             important_info = [
                 f"ligand_resname = {Ligand[i].resname}\n",
                 f"ligand_itp = {Ligand[i].itp_file.split('/')[-1]}\n",
-                f"ligand_topology = {Ligand[i].top_file.split('/')[-1]}\n",
+                f"ligand_top = {Ligand[i].top_file.split('/')[-1]}\n",
                 f"only_solvent_gro = {self.only_solvent_box_gro.split('/')[-1]}\n",
                 f"only_solvent_top = {self.only_solvent_box_top.split('/')[-1]}\n"
             ]

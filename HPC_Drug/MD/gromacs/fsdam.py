@@ -469,11 +469,27 @@ class FSDAMInputProteinLigand(object):
 
 class FSDAMInputOnlyLigand(object):
 
-    def __init__(self):
-        pass
+    def __init__(self,
+                HREM_dir = os.getcwd(),
+                gromacs_path = "gmx",
+                cpus_per_node = 64,
+                use_GPU = False,
+                GPU_per_node = 1):
+
+        #the root directory of the HREM
+        #default is working directory
+        self.HREM_dir = HREM_dir
+        
+        self.gromacs_path = path.absolute_programpath(program = gromacs_path)
+
+        self.cpus_per_node = cpus_per_node
+
+        self.use_GPU = use_GPU
+
+        self.GPU_per_node = GPU_per_node
 
 
-    def _create_itp_files(self, input_itp_filename, ligand_annihilation_itp_filename, ligand_creation_itp_filename):
+    def _create_itp_files(self, input_itp_filename, itp_filename):
 
 
         #make the two itp files, ligand annihilation and ligand creation
@@ -585,10 +601,210 @@ class FSDAMInputOnlyLigand(object):
                 ligand_creation_itp[i] = ligand_creation_itp[i] + "\n"
 
         #writing it in the right place
-        write_on_files.write_file(lines = ligand_creation_itp, file_name = ligand_creation_itp_filename)
+        write_on_files.write_file(lines = ligand_creation_itp, file_name = itp_filename)
+
+
+    def _merge_ligand_solvent_files(self, fsdam_dir, solvent_gro):
+        
+        only_solvent = read_file.read_file(file_name = solvent_gro)
+
+        #removing possible empty lines from end of the list
+        lines_to_remove = []
+        for i in range(len(only_solvent) - 1, 0, -1):
+
+            if only_solvent[i].strip() == "":
+                lines_to_remove.append(i)
+
+            else:
+                break
+
+        if lines_to_remove != []:
+
+            del only_solvent[lines_to_remove[-1]:lines_to_remove[0] + 1]
+
+
+        solvent_atoms = int(only_solvent[1].strip())
+
+        box = only_solvent[-1]
+
+        #remove the useless lines
+        del only_solvent[0:2]
+
+        del only_solvent[-1]
+
+        #add the solvent box to any gro file in fsdam_dir
+        for item in os.listdir(fsdam_dir):
+
+            if item[-4:] == ".gro":
+
+                ligand_gro = read_file.read_file(fsdam_dir + "/" + item)
+
+                ligand_gro[1] = f" {solvent_atoms + int(ligand_gro[1].strip())} \n"
+
+                #removing possible empty lines from end of the list
+                lines_to_remove = []
+                for i in range(len(ligand_gro) - 1, 0, -1):
+
+                    if ligand_gro[i].strip() == "":
+                        lines_to_remove.append(i)
+
+                    else:
+                        break
+
+                if lines_to_remove != []:
+
+                    del ligand_gro[lines_to_remove[-1]:lines_to_remove[0] + 1]
+
+                #temporarely remove the box line
+                del ligand_gro[-1]
+
+                residue_number = int(ligand_gro[-1][0:5].strip()) + 1
+
+                atom_number = int(ligand_gro[-1][15:20]) + 1
+
+                old_residue_number = int(only_solvent[0][0:5].strip())
+
+                for line in only_solvent:
+
+                    if int(only_solvent[0][0:5].strip()) != old_residue_number:
+
+                        residue_number = residue_number + 1
+
+                        old_residue_number = int(only_solvent[0][0:5].strip())
+
+                    ligand_gro.append("{:>5}{}{:>5}{}".format(residue_number, line[5:10], atom_number, line[20:]))
+
+                    atom_number = atom_number + 1
+
+                ligand_gro.append(box)
+
+                write_on_files.write_file(lines = ligand_gro, file_name = fsdam_dir + "/" + item)
+
+
+
+    def _create_restart_configs(self,fsdam_dir, only_solvent_gro):
+        """
+        Private
+
+        Makes the starting files for fs-dam and writes them in the RESTART dir
+        """
+
+        i = 0
+        while os.path.exists(f"BATTERY{i}"):
+
+            subprocess.run(f"echo System | {self.gromacs_path} trjconv -f BATTERY{i}/scaled0/traj_comp.xtc -s BATTERY{i}/scaled0/topol.tpr -pbc mol -b 80 -o {fsdam_dir}/BATTERY{i}_.gro -sep yes -ur compact", shell = True)
+            
+            i = i + 1
+
+        self._merge_ligand_solvent_files(fsdam_dir = fsdam_dir, solvent_gro = only_solvent_gro)
+
+
+    def _edit_top(self, ligand_top, only_solvent_top):
+
+        only_solvent_lines = read_file.read_file(file_name = only_solvent_top)
+
+        for i in range(len(only_solvent_lines) - 1, -1, -1):
+
+            if only_solvent_lines[i].strip() != "":
+
+                solvent_line = only_solvent_lines
+
+                break
+
+        ligand_lines = read_file.read_file(file_name = ligand_top)
+
+        ligand_lines.append(solvent_line)
+
+        write_on_files.write_file(lines = ligand_lines, file_name = ligand_top)
+
+    
+    def _prepare_input(self, ligand_resname, fsdam_dir, top_file):
+        
+        prepare_input = PrepareInputOnlyLigand(fsdam_dir = fsdam_dir,
+                            ligand_resname = ligand_resname,
+                            top_file = top_file,
+                            cpus_per_node = self.cpus_per_node,
+                            use_GPU = self.use_GPU,
+                            GPU_per_node = self.GPU_per_node)
+
+        prepare_input.execute()
+
     
     def execute(self):
-        pass
+        
+        #move to the HREM directory
+        if self.HREM_dir != os.getcwd():
+            
+            changed_dir = True
+
+            old_dir = os.getcwd()
+
+            os.chdir(self.HREM_dir)
+
+        else:
+
+            changed_dir = False
+
+            old_dir = None
+
+
+        fsdam_dir = "RESTART"
+
+        os.makedirs(fsdam_dir, exist_ok=True)
+
+        #lazily copy all the itp files in the new dir
+        for i in os.listdir(os.getcwd()):
+
+            if i[-4:] == ".itp":
+
+                shutil.copy(i, fsdam_dir)
+
+        #making some defaults
+        useful_info = {
+            f"ligand_resname" : "LIG",
+            f"ligand_itp" : "LIG.itp",
+            f"ligand_top" : "LIG.top",
+            f"only_solvent_gro" : None,
+            f"only_solvent_top" : None
+        }
+
+        lines = read_file.read_file(file_name = "important_info.dat")
+        for line in lines:
+
+            line = line.strip()
+            line = line.split("=")
+            useful_info[line[0].strip()] = line[1].strip()
+
+        self._create_restart_configs(fsdam_dir = fsdam_dir, only_solvent_gro = useful_info["only_solvent_gro"])
+
+
+        #creates the two new itp files (ligand creation and annihilation)
+        self._create_itp_files(input_itp_filename = useful_info['ligand_itp'],
+                            itp_filename = f"{fsdam_dir}/{useful_info['ligand_itp']}")
+
+        
+        #edit top file
+        self._edit_top(ligand_top = useful_info["top_file"], only_solvent_top = useful_info["only_solvent_top"])
+
+        #copy the protein ligand top in the protein_ligand dir
+        shutil.copy(useful_info["top_file"], fsdam_dir)
+
+        #prepares the input files for the 
+        self._prepare_input(ligand_resname = useful_info["ligand_resname"],
+                            fsdam_dir = fsdam_dir,
+                            top_file = useful_info["top_file"])
+
+
+        #go back to the old working directory (attention, if something fails the working dir will remain in the
+        # HREM_dir!! (use try: except: in case needed))
+
+        if changed_dir:
+
+            os.chdir(old_dir)
+
+
+
+
 
 
 
@@ -1108,5 +1324,27 @@ class PrepareInputProteinLigand(PrepareInputSuperClass):
             "sc-sigma                 = 0.25",
             "sc-power                 = 1"
         ]
+
+        write_on_files.write_file(lines = ["\n".join(mdp_lines)], file_name = mdp_file_name)
+
+
+
+
+
+
+class PrepareInputOnlyLigand(PrepareInputSuperClass):
+
+    def _make_transitionQ_mdp(self, mdp_file_name):
+
+        #TO DO
+        mdp_lines = []
+
+        write_on_files.write_file(lines = ["\n".join(mdp_lines)], file_name = mdp_file_name)
+
+
+    def _make_transitionVdW_mdp(self, mdp_file_name):
+
+        #TO DO
+        mdp_lines = []
 
         write_on_files.write_file(lines = ["\n".join(mdp_lines)], file_name = mdp_file_name)
