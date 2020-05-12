@@ -26,7 +26,6 @@ from HPC_Drug import important_lists
 
 
 class GromacsHREMInput(gromacs_input.GromacsInput):
-    #WORK IN PROGRESS
     
     def __init__(self,
                 Protein,
@@ -974,11 +973,11 @@ class MakeWorkloadManagerInput(object):
 
         if self.gpu == "cpu":
 
+            cpus_per_task = 8
             tasks = self.BATTERIES * self.replicas
             nodes = math.ceil((tasks) / (math.floor((self.cpus_per_node) / (cpus_per_task))))
             wall_time = "24:00:00"
             tasks_per_node = math.floor(self.cpus_per_node / cpus_per_task)
-            cpus_per_task = 8
             GPUs = None
             output = "HREM_stdout.out"
             error = "HREM_stderr.err"
