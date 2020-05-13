@@ -247,22 +247,18 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         tinit = 0
         timestep = 0.00150 #ps
-        
-        #ps calculated in 24 hours by one mpi_run (BATTERIES)
-        number_of_steps = self._get_ns_per_day() * 1.E+3
-        #number of steps (integer)
-        number_of_steps = math.ceil( number_of_steps / timestep )
 
-        string = f"tinit = {tinit} \ndt = {timestep} \nnsteps = {number_of_steps}\n"
+        number_of_steps = 8000000
+
+        string = f"tinit                    = {tinit} \ndt                       = {timestep} \nnsteps                   = {number_of_steps}\n"
 
         return string
+
 
     def _get_BATTERIES(self):
         """Get's the number of batteries for REM"""
 
-        ns_per_day = self._get_ns_per_day()
-
-        BATTERIES = math.ceil( 32. / ns_per_day )
+        BATTERIES = 5
 
         return BATTERIES
 
