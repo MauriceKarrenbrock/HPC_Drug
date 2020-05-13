@@ -208,7 +208,7 @@ class OptimizeOnlyWaterBox(orac_input.OracInput):
 
         self.orac_in_file = os.getcwd() + "/only_water_orac.in"
     
-        self.output_pdb_file = self.solvent_box
+        self.output_pdb_file = "optimized_only_solvent_box.pdb"
 
         self.Protein = protein.Protein(protein_id = "slvt",
                                     pdb_file = self.solvent_box,
@@ -238,6 +238,8 @@ class OptimizeOnlyWaterBox(orac_input.OracInput):
 
             self._write_box(),
 
+            f"READ_PDB {self.solvent_box}",
+
             "&END",
             "#",
             "# reads the force fields",
@@ -254,9 +256,9 @@ class OptimizeOnlyWaterBox(orac_input.OracInput):
             "       tip3",
             "   END",
             "&END",
-            "&SOLUTE  !reads complex pdb file",
+            "&SOLVENT",
 
-            f"   COORDINATES {self.solvent_box}",
+            f"ADD_UNITS {self._get_number_of_residues()}",
 
             "&END",
             "&SIMULATION  ! simulation parameters (same for all)",
@@ -322,6 +324,23 @@ class OptimizeOnlyWaterBox(orac_input.OracInput):
             "&END"                                              
         ]
 
+    def _get_number_of_residues(self):
+        """
+        private
+        """
+
+        from HPC_Drug.PDB import biopython
+
+        structure = biopython.parse_pdb("slvt", self.solvent_box)
+
+        residues = 0
+        for residue in structure.get_residues():
+
+            residues = residues + 1
+
+        return residues
+
+
     def _create_selfbox(self):
         """
         private
@@ -340,8 +359,6 @@ class OptimizeOnlyWaterBox(orac_input.OracInput):
         """
         returns the optimized pdb of the water box
         """
-
-        self._write_chain_in_pdb()
 
         #writes self.orac_in_file
         self._write_template_on_file()

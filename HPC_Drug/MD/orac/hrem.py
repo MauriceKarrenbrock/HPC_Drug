@@ -20,6 +20,7 @@ from HPC_Drug.files_IO import read_file
 from HPC_Drug.files_IO import write_on_files
 from HPC_Drug.auxiliary_functions import path
 from HPC_Drug import important_lists
+from HPC_Drug import orient
 from HPC_Drug.MD import workload_managers
 
 class HREMOracInput(orac_input.OracInput):
@@ -398,8 +399,17 @@ class HREMOracInputOnlyLigand(HREMOracInput):
 
         self.number_of_cores_per_node = number_of_cores_per_node
 
+        self.orac_in_file = f"HREM.in"
+
         #dummy useless value
         self.kind_of_processor = 'skylake'
+
+        #an instance of orient.Orient class
+        self.orient = orient.Orient(self.Protein, self.Protein.get_ligand_list())
+
+        self.BATTERIES = self._get_BATTERIES()
+
+        self.replicas = 8
 
 
     def _make_template(self, Ligand):
@@ -597,21 +607,18 @@ class HREMOracInputOnlyLigand(HREMOracInput):
 
         for i in range(len(Ligand)):
 
-            hrem_dir = f"{Ligand[i].resname}_only_ligand_HREM"
+            self.HREM_dir = f"{Ligand[i].resname}_only_ligand_HREM"
 
             #creates the REM directory that will be copied to the HPC cluster
-            os.makedirs(f"{hrem_dir}/RESTART", exist_ok=True)
+            os.makedirs(f"{self.HREM_dir}/RESTART", exist_ok=True)
 
             #copy the Ligand files in the directory
-            shutil.copy(Ligand[i].prm_file, hrem_dir)
-            shutil.copy(Ligand[i].tpg_file, hrem_dir)
-            shutil.copy(Ligand[i].pdb_file, hrem_dir)
+            shutil.copy(Ligand[i].prm_file, self.HREM_dir)
+            shutil.copy(Ligand[i].tpg_file, self.HREM_dir)
+            shutil.copy(Ligand[i].pdb_file, self.HREM_dir)
 
             #copy the solvent box
-            shutil.copy(self.solvent_box, hrem_dir)
-
-
-            self.orac_in_file = f"HREM.in"
+            shutil.copy(self.solvent_box, self.HREM_dir)
 
             #create the template
 
@@ -622,7 +629,11 @@ class HREMOracInputOnlyLigand(HREMOracInput):
             self._write_template_on_file()
 
             #copy the .in file in the hrem dir
-            shutil.copy(self.orac_in_file, hrem_dir)
+            shutil.copy(self.orac_in_file, self.HREM_dir)
+
+            #write workload manager input for different workload managers (slurm pbs ...)
+            #already in the self.HREM_dir
+            self._write_workloadmanager_inputs()
 
         return self.Protein
 
