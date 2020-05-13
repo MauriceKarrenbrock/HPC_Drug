@@ -16,25 +16,24 @@ import math
 import shutil
 import subprocess
 
+from HPC_Drug.MD import workload_managers
 from HPC_Drug.MD.gromacs import gromacs_input
 from HPC_Drug.files_IO import read_file
 from HPC_Drug.files_IO import write_on_files
 from HPC_Drug.auxiliary_functions import path
 from HPC_Drug import orient
 from HPC_Drug import important_lists
-from HPC_Drug import funcs4slurm
-from HPC_Drug import funcs4pbs
 
 
 class GromacsHREMInput(gromacs_input.GromacsInput):
-    #WORK IN PROGRESS
     
     def __init__(self,
                 Protein,
                 MD_program_path = 'gmx',
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
-                use_gpu = 'auto'):
+                use_gpu = 'auto',
+                gpus_per_node = 1):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path)
@@ -47,7 +46,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         self.mdp_file = f"{self.Protein.protein_id}_HREM.mdp"
 
-        self.output_tpr_file = f"{self.Protein.protein_id}_HREM.tpr"
+        self.output_tpr_file = f"HREM.tpr"
 
         self.kind_of_processor = kind_of_processor
         self.number_of_cores_per_node = number_of_cores_per_node
@@ -62,6 +61,8 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         self.use_gpu = use_gpu.lower().strip()
         if self.use_gpu not in ('auto', 'cpu', 'gpu'):
             raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
+
+        self.gpus_per_node = gpus_per_node
 
         self.BATTERIES = self._get_BATTERIES()
         #the replicas for BATTERY
@@ -361,77 +362,25 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
     def _write_workloadmanager_inputs(self):
         """private method called by self.execute()"""
 
-        file_list = []
+        
+        wl_manager = MakeWorkloadManagerInput(tpr_file = self.output_tpr_file,
+                                            HREM_dir = self.HREM_dir,
+                                            BATTERIES = self.BATTERIES,
+                                            replicas = self.replicas,
+                                            gpu = self.use_gpu,
+                                            gpu_per_node = self.gpus_per_node,
+                                            cpus_per_node = self.number_of_cores_per_node)
 
-        #making a nested list the firs dimension reppresents the mpirun
-        #and the second the various directories that will be called
-        #with each mpirun (gmx -multidir)
-        multidir = [[] for x in range(self.BATTERIES)]
-
-        for i in range(self.BATTERIES):
-            for j in range(self.replicas):
-
-                multidir[i].append(f"BATTERY{i}/scaled{j}")
- 
-        slurm = funcs4slurm.SlurmInput(MD_input_file = self.output_tpr_file,
-                                    MD_input_directories = multidir,
-                                    slurm_input_file = f'{self.mdp_file.rsplit(".", 1)[0]}.slr',
-                                    MD_program = 'gromacs',
-                                    MD_calculation_type = 'rem',
-                                    number_of_cores_per_node = self.number_of_cores_per_node,
-                                    max_time = "24:00:00",
-                                    ntasks = self.BATTERIES * 8,
-                                    cpus_per_task = 8,
-                                    std_out = f'{self.mdp_file.rsplit(".", 1)[0]}.out',
-                                    std_err = f'{self.mdp_file.rsplit(".", 1)[0]}.err',
-                                    use_gpu = self.use_gpu,
-                                    plumed = True)
-
-        file_list.append(slurm.write())
-
-        pbs = funcs4pbs.SlurmInput(MD_input_file = self.output_tpr_file,
-                                    MD_input_directories = multidir,
-                                    slurm_input_file = f'{self.mdp_file.rsplit(".", 1)[0]}.pbs',
-                                    MD_program = 'gromacs',
-                                    MD_calculation_type = 'rem',
-                                    number_of_cores_per_node = self.number_of_cores_per_node,
-                                    max_time = "24:00:00",
-                                    ntasks = self.BATTERIES * 8,
-                                    cpus_per_task = 8,
-                                    std_out = f'{self.mdp_file.rsplit(".", 1)[0]}.out',
-                                    std_err = f'{self.mdp_file.rsplit(".", 1)[0]}.err',
-                                    use_gpu = self.use_gpu,
-                                    plumed = True)
-
-        file_list.append(pbs.write())
-
-        return file_list
+        wl_manager.execute()
 
     def _make_TPR_files_script(self, scaled_topologies):
         """
         private
         
         writes a bash script to create the .tpr files in loco on the HPC cluster
-        it makes both the one for a plumed patched gromacs installation and for a non patched one
         """
 
-        # #For NOT plumed patched gromacs
-
-        # filename = "Not_Patched_MAKE_TPR_FILES.sh"
-
-        # string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\nIT IS FOR A NOT PATCHED GROMACS INSTALLATION\n\n\n"
-
-        # for i in range(self.BATTERIES):
-        #     for j in range(self.replicas):
-        #         string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{self.output_tpr_file} -f BATTERY{i}/{self.mdp_file}{j}.mdp -p BATTERY{i}/{scaled_topologies[j]} -c BATTERY{i}/{self.Protein.gro_file.rsplit('/', 1)[-1]} \n"
-
-
-        # write_on_files.write_file(lines = [string], file_name = self.HREM_dir + "/" + filename)
-        
-
-        #For PLUMED PATCHED gromacs
-
-        filename = "Plumed_Patched_MAKE_TPR_FILES.sh"
+        filename = "MAKE_TPR_FILES.sh"
 
         string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\nIT IS FOR A PLUMED PATCHED GROMACS INSTALLATION\n\n\n"
 
@@ -559,11 +508,10 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
             shutil.copy(lgand.itp_file, self.HREM_dir)
 
         
-        #make and copy the workload manager input files
+
         #write workload manager input for different workload managers (slurm pbs ...)
-        workload_files = self._write_workloadmanager_inputs()
-        for wl_file in workload_files:
-            shutil.copy(wl_file, self.HREM_dir)
+        #already in the self.HREM_dir
+        self._write_workloadmanager_inputs()
 
 
         #make and copy the script that will make the tpr files in loco
@@ -615,13 +563,15 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                 MD_program_path = 'gmx',
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
-                use_gpu = 'auto'):
+                use_gpu = 'auto',
+                gpus_per_node = 1):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path,
                         kind_of_processor = kind_of_processor,
                         number_of_cores_per_node = number_of_cores_per_node,
-                        use_gpu = use_gpu)
+                        use_gpu = use_gpu,
+                        gpus_per_node = gpus_per_node)
 
         self.only_solvent_box_gro = only_solvent_box_gro
         self.only_solvent_box_top = only_solvent_box_top
@@ -838,7 +788,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
         it makes both the one for a plumed patched gromacs installation and for a non patched one
         """
 
-        filename = "Plumed_Patched_MAKE_TPR_FILES.sh"
+        filename = "MAKE_TPR_FILES.sh"
 
         string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\nIT IS FOR A PLUMED PATCHED GROMACS INSTALLATION\n\n\n"
 
@@ -875,7 +825,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
             self.mdp_file = f"{Ligand[i].resname}_only_ligand_HREM.mdp"
 
-            self.output_tpr_file = f"{Ligand[i].resname}_only_ligand_HREM.tpr"
+            self.output_tpr_file = f"HREM.tpr"
 
             #creates the REM directory that will be copied to the HPC cluster
             os.makedirs(self.HREM_dir, exist_ok=True)
@@ -921,12 +871,10 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                 shutil.copy(j, self.HREM_dir)
 
             
-            #make and copy the workload manager input files
             #write workload manager input for different workload managers (slurm pbs ...)
-            workload_files = self._write_workloadmanager_inputs()
-            for wl_file in workload_files:
-                shutil.copy(wl_file, self.HREM_dir)
-
+            #already in the self.HREM_dir
+            self._write_workloadmanager_inputs()
+            
 
             #make and copy the script that will make the tpr files in loco
             self._make_TPR_files_script(scaled_topologies = scaled_topologies, Ligand = Ligand[i])
@@ -937,7 +885,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
             important_info = [
                 f"ligand_resname = {Ligand[i].resname}\n",
                 f"ligand_itp = {Ligand[i].itp_file.split('/')[-1]}\n",
-                f"ligand_topology = {Ligand[i].top_file.split('/')[-1]}\n",
+                f"ligand_top = {Ligand[i].top_file.split('/')[-1]}\n",
                 f"only_solvent_gro = {self.only_solvent_box_gro.split('/')[-1]}\n",
                 f"only_solvent_top = {self.only_solvent_box_top.split('/')[-1]}\n"
             ]
@@ -964,3 +912,128 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
         return self.Protein
 
 
+
+
+
+class MakeWorkloadManagerInput(object):
+
+    def __init__(self,
+                tpr_file,
+                HREM_dir,
+                BATTERIES = 1,
+                replicas = 8,
+                gpu = "auto",
+                gpu_per_node = 1,
+                cpus_per_node = 64):
+
+
+        self.tpr_file = tpr_file
+        self.HREM_dir = HREM_dir
+        self.BATTERIES = BATTERIES
+        self.replicas = replicas
+        self.gpu = gpu
+        self.gpu_per_node = gpu_per_node
+        self.cpus_per_node = cpus_per_node
+
+
+    def write_gromacs_mpirun_string(self, cpus_per_task):
+        """private"""
+
+        def gpu_options(use_gpu):
+            if use_gpu == 'auto':
+                return ""
+
+            else:
+                string = f" -nb {use_gpu} -pme {use_gpu} -bonded {use_gpu} -update {use_gpu} -pmefft {use_gpu}"
+                
+                if use_gpu == 'gpu':
+                    string = string + " -npme 1"
+
+                return string
+
+        def multidir_string(battery):
+            
+            string = " -multidir "
+
+            for i in range(self.replicas):
+                string = string + f" BATTERY{battery}/scaled{i} "
+
+            return string
+
+
+        string = ""            
+
+        for i in range(self.BATTERIES):
+            
+            string = string + f"mpirun -np {cpus_per_task * self.replicas} gmx_mpi mdrun {gpu_options(use_gpu = self.gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no {multidir_string(i)} -s {self.tpr_file} & \n"
+
+        string = string + "wait\n"
+
+        return string
+
+    def execute(self):
+
+        if self.gpu == "cpu":
+
+            cpus_per_task = 8
+            tasks = self.BATTERIES * self.replicas
+            nodes = math.ceil((tasks) / (math.floor((self.cpus_per_node) / (cpus_per_task))))
+            wall_time = "24:00:00"
+            tasks_per_node = math.floor(self.cpus_per_node / cpus_per_task)
+            GPUs = None
+            output = "HREM_stdout.out"
+            error = "HREM_stderr.err"
+
+            mpirun_string = self.write_gromacs_mpirun_string(cpus_per_task = cpus_per_task)
+
+        else:
+
+            tasks = self.BATTERIES * self.replicas
+            nodes = math.ceil((tasks) / self.gpu_per_node)
+            wall_time = "24:00:00"
+            tasks_per_node = self.gpu_per_node
+            cpus_per_task = math.ceil(self.cpus_per_node / tasks_per_node)
+            GPUs = tasks
+            output = "HREM_stdout.out"
+            error = "HREM_stderr.err"
+
+            mpirun_string = self.write_gromacs_mpirun_string(cpus_per_task = cpus_per_task)
+
+        slurm = workload_managers.SlurmHeader(nodes = nodes,
+                                            tasks = tasks,
+                                            tasks_per_node = tasks_per_node,
+                                            cpus_per_task = cpus_per_task,
+                                            GPUs = GPUs,
+                                            wall_time = wall_time,
+                                            output = output,
+                                            error = error)
+
+        slurm_header = slurm.execute()
+
+        slurm_header.append(mpirun_string)
+
+        slurm_header = ["\n".join(slurm_header)]
+
+        write_on_files.write_file(lines = slurm_header, file_name = self.HREM_dir + "/" + f"HREM_input.slr")
+
+
+
+        pbs = workload_managers.PBSHeader(nodes = nodes,
+                                            tasks = tasks,
+                                            tasks_per_node = tasks_per_node,
+                                            cpus_per_task = cpus_per_task,
+                                            GPUs = GPUs,
+                                            wall_time = wall_time,
+                                            output = output,
+                                            error = error)
+
+        pbs_header = pbs.execute()
+
+        pbs_header.append(mpirun_string)
+
+        pbs_header = ["\n".join(pbs_header)]
+
+        write_on_files.write_file(lines = pbs_header, file_name = self.HREM_dir + "/" + f"HREM_input.pbs")
+
+
+    

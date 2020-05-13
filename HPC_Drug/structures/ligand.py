@@ -31,6 +31,9 @@ class Ligand(structure.Structure):
 
 
         self.resname = resname
+        if self.resname is not None:
+            #I need to know that the resname is always upper case
+            self.resname = self.resname.upper()
         
         self.file_type = file_type
 

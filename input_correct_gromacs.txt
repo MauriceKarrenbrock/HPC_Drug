@@ -81,9 +81,13 @@ residue_substitution = standard
 #gromacs can use gpu accelerators
 #there are 3 options
 #auto (default)
-#cpu ues only cpu even if gpus are available
+#cpu uses only cpu even if gpus are available
 #gpu forces to use gpus (using auto is HIGHLY RECOMENDED)
 use_gpu = auto
+
+#how many GPUs there are per node, default 1
+#if gpus shall not be used it will be ignored
+gpu_per_node = 1
 
 #The kind of processor present on the HPC cluster
 #default skylake

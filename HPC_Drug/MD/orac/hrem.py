@@ -17,10 +17,10 @@ import shutil
 
 from HPC_Drug.MD.orac import orac_input
 from HPC_Drug.files_IO import read_file
+from HPC_Drug.files_IO import write_on_files
 from HPC_Drug.auxiliary_functions import path
 from HPC_Drug import important_lists
-from HPC_Drug import funcs4slurm
-from HPC_Drug import funcs4pbs
+from HPC_Drug.MD import workload_managers
 
 class HREMOracInput(orac_input.OracInput):
     """
@@ -39,10 +39,18 @@ class HREMOracInput(orac_input.OracInput):
                         MD_program_path= MD_program_path,
                         solvent_pdb = solvent_pdb)
         
+
         self.orac_in_file = f'{Protein.protein_id}_HREM.in'
 
         self.kind_of_processor = kind_of_processor
+
         self.number_of_cores_per_node = number_of_cores_per_node
+
+        self.HREM_dir = f"{self.Protein.protein_id}_HREM"
+
+        self.replicas = 8
+
+        self.BATTERIES = self._get_BATTERIES()
 
         self.template = [
             f"!!! THIS INPUT IS FOR {self.kind_of_processor} ARCHITECTURES",
@@ -221,7 +229,7 @@ class HREMOracInput(orac_input.OracInput):
 
         Ligand = self.Protein.get_ligand_list()
     
-        if Ligand == None or Ligand == []:
+        if Ligand == []:
             return ''
 
         Protein = self.Protein
@@ -311,42 +319,20 @@ class HREMOracInput(orac_input.OracInput):
         Private
         """
 
-        BATTERIES = self._get_BATTERIES()
+        BATTERIES = self.BATTERIES
 
         return f"BATTERIES    {BATTERIES}"
 
     def _write_workloadmanager_inputs(self):
         """private method called by self.execute()"""
         
-        file_list = []
- 
-        slurm = funcs4slurm.SlurmInput(MD_input_file = self.orac_in_file,
-                                    slurm_input_file = f'{self.orac_in_file.rsplit(".", 1)[0]}.slr',
-                                    MD_program = 'orac',
-                                    MD_calculation_type = 'rem',
-                                    number_of_cores_per_node = self.number_of_cores_per_node,
-                                    max_time = "24:00:00",
-                                    ntasks = self._get_BATTERIES() * 8,
-                                    cpus_per_task = 8,
-                                    std_out = f'{self.orac_in_file.rsplit(".", 1)[0]}.out',
-                                    std_err = f'{self.orac_in_file.rsplit(".", 1)[0]}.err')
+        wl_manager = MakeWorkloadManagerInput(in_file = self.orac_in_file,
+                                            HREM_dir = self.HREM_dir,
+                                            BATTERIES = self.BATTERIES,
+                                            replicas = self.replicas,
+                                            cpus_per_node = self.number_of_cores_per_node)
 
-        file_list.append(slurm.write())
-
-        pbs = funcs4pbs.SlurmInput(MD_input_file = self.orac_in_file,
-                                    slurm_input_file = f'{self.orac_in_file.rsplit(".", 1)[0]}.pbs',
-                                    MD_program = 'orac',
-                                    MD_calculation_type = 'rem',
-                                    number_of_cores_per_node = self.number_of_cores_per_node,
-                                    max_time = "24:00:00",
-                                    ntasks = self._get_BATTERIES() * 8,
-                                    cpus_per_task = 8,
-                                    std_out = f'{self.orac_in_file.rsplit(".", 1)[0]}.out',
-                                    std_err = f'{self.orac_in_file.rsplit(".", 1)[0]}.err')
-
-        file_list.append(pbs.write())
-
-        return file_list
+        wl_manager.execute()
 
 
 
@@ -360,41 +346,36 @@ class HREMOracInput(orac_input.OracInput):
         return Protein
         """
 
-        hrem_dir = f"{self.Protein.protein_id}_HREM"
-
         #creates the REM directory that will be copied to the HPC cluster
-        os.makedirs(f"{hrem_dir}/RESTART", exist_ok=True)
+        os.makedirs(f"{self.HREM_dir}/RESTART", exist_ok=True)
 
         #for any existing ligand
         for ligand in self.Protein.get_ligand_list():
             #copy the ligand topology file to the new directory
-            shutil.copy(ligand.tpg_file, hrem_dir)
+
+            shutil.copy(ligand.tpg_file, self.HREM_dir)
             #copy the ligand parameter file to the new directory
-            shutil.copy(ligand.prm_file, hrem_dir)
+            shutil.copy(ligand.prm_file, self.HREM_dir)
 
         #copy the protein topology file to the new directory
-        shutil.copy(self.Protein.tpg_file, hrem_dir)
+        shutil.copy(self.Protein.tpg_file, self.HREM_dir)
         #copy the protein parameter file to the new directory
-        shutil.copy(self.Protein.prm_file, hrem_dir)
+        shutil.copy(self.Protein.prm_file, self.HREM_dir)
 
         #copy the protein pdb file to the new directory
-        shutil.copy(self.Protein.pdb_file, hrem_dir)
+        shutil.copy(self.Protein.pdb_file, self.HREM_dir)
 
 
         #writes the orac input
         self._write_template_on_file()
         
         #copy the orac input file to the REM directory
-        shutil.copy(self.orac_in_file, hrem_dir)
-
+        shutil.copy(self.orac_in_file, self.HREM_dir)
         
 
         #write workload manager input for different workload managers (slurm pbs ...)
-        workload_files = self._write_workloadmanager_inputs()
-
-        #copy the workload manager files to the REM directory
-        for item in workload_files:
-            shutil.copy(item, hrem_dir)
+        #already in the self.HREM_dir
+        self._write_workloadmanager_inputs()
 
 
         return self.Protein
@@ -629,7 +610,8 @@ class HREMOracInputOnlyLigand(HREMOracInput):
             #copy the solvent box
             shutil.copy(self.solvent_box, hrem_dir)
 
-            self.orac_in_file = f"{Ligand[i].resname}_only_ligand_HREM.in"
+
+            self.orac_in_file = f"HREM.in"
 
             #create the template
 
@@ -647,4 +629,77 @@ class HREMOracInputOnlyLigand(HREMOracInput):
 
 
 
+class MakeWorkloadManagerInput(object):
+
+    def __init__(self,
+                in_file,
+                HREM_dir,
+                BATTERIES = 1,
+                replicas = 8,
+                cpus_per_node = 64):
+
+
+        self.in_file = in_file
+        self.HREM_dir = HREM_dir
+        self.BATTERIES = BATTERIES
+        self.replicas = replicas
+        self.cpus_per_node = cpus_per_node
+
+
+    def write_orac_mpirun_string(self):
+        """private"""
+
+            
+        string = f"mpirun orac < {self.in_file}\n"
+
+        return string
+
+    def execute(self):
+
+        cpus_per_task = 8
+        tasks = self.BATTERIES * self.replicas
+        nodes = math.ceil((tasks) / (math.floor((self.cpus_per_node) / (cpus_per_task))))
+        wall_time = "24:00:00"
+        tasks_per_node = math.floor(self.cpus_per_node / cpus_per_task)
+        GPUs = None
+        output = "HREM_stdout.out"
+        error = "HREM_stderr.err"
+
+        mpirun_string = self.write_orac_mpirun_string()
+
+        slurm = workload_managers.SlurmHeader(nodes = nodes,
+                                            tasks = tasks,
+                                            tasks_per_node = tasks_per_node,
+                                            cpus_per_task = cpus_per_task,
+                                            GPUs = GPUs,
+                                            wall_time = wall_time,
+                                            output = output,
+                                            error = error)
+
+        slurm_header = slurm.execute()
+
+        slurm_header.append(mpirun_string)
+
+        slurm_header = ["\n".join(slurm_header)]
+
+        write_on_files.write_file(lines = slurm_header, file_name = self.HREM_dir + "/" + f"HREM_input.slr")
+
+
+
+        pbs = workload_managers.PBSHeader(nodes = nodes,
+                                            tasks = tasks,
+                                            tasks_per_node = tasks_per_node,
+                                            cpus_per_task = cpus_per_task,
+                                            GPUs = GPUs,
+                                            wall_time = wall_time,
+                                            output = output,
+                                            error = error)
+
+        pbs_header = pbs.execute()
+
+        pbs_header.append(mpirun_string)
+
+        pbs_header = ["\n".join(pbs_header)]
+
+        write_on_files.write_file(lines = pbs_header, file_name = self.HREM_dir + "/" + f"HREM_input.pbs")
 

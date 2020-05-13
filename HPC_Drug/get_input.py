@@ -66,7 +66,8 @@ class ParseInputFromFile(GetFile):
                             'kind_of_processor',
                             'number_of_cores_per_node',
                             'residue_substitution',
-                            'use_gpu')
+                            'use_gpu',
+                            'gpu_per_node')
 
         
         self.input_variables = self.read_input()
@@ -203,6 +204,12 @@ class ParseInputFromFile(GetFile):
 
         if input_variables['use_gpu'] == None:
             input_variables['use_gpu'] = 'auto'
+
+        if input_variables['gpu_per_node'] is None:
+            input_variables['gpu_per_node'] = 1
+        
+        else:
+            input_variables['gpu_per_node'] = int(input_variables['gpu_per_node'])
         
         return input_variables
 
