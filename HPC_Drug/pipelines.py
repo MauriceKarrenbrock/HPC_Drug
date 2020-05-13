@@ -426,7 +426,8 @@ class NoLigandPipeline(Pipeline):
                                                 MD_program_path = self.MD_program_path,
                                                 kind_of_processor = self.kind_of_processor,
                                                 number_of_cores_per_node = self.number_of_cores_per_node,
-                                                use_gpu = self.use_gpu)
+                                                use_gpu = self.use_gpu,
+                                                gpus_per_node = self.gpu_per_node)
 
             Protein = ligand_hrem_input.execute()
 

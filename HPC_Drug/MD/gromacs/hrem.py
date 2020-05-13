@@ -563,13 +563,15 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                 MD_program_path = 'gmx',
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
-                use_gpu = 'auto'):
+                use_gpu = 'auto',
+                gpus_per_node = 1):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path,
                         kind_of_processor = kind_of_processor,
                         number_of_cores_per_node = number_of_cores_per_node,
-                        use_gpu = use_gpu)
+                        use_gpu = use_gpu,
+                        gpus_per_node = gpus_per_node)
 
         self.only_solvent_box_gro = only_solvent_box_gro
         self.only_solvent_box_top = only_solvent_box_top
@@ -1031,7 +1033,7 @@ class MakeWorkloadManagerInput(object):
 
         pbs_header = ["\n".join(pbs_header)]
 
-        write_on_files.write_file(lines = slurm_header, file_name = self.HREM_dir + "/" + f"HREM_input.pbs")
+        write_on_files.write_file(lines = pbs_header, file_name = self.HREM_dir + "/" + f"HREM_input.pbs")
 
 
     

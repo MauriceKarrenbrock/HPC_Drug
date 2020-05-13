@@ -87,7 +87,7 @@ class SlurmHeader(WorkloadManagerHeader):
             
             f"#SBATCH --ntasks-per-node={self.tasks_per_node}",
             
-            f"#SBATCH --cpus-per-task={self.cpus_per_task} ##usually 8",
+            f"#SBATCH --cpus-per-task={self.cpus_per_task}",
 
             self._write_gpu_string(),
 
@@ -116,7 +116,7 @@ class SlurmHeader(WorkloadManagerHeader):
         if self.GPUs is None:
             return ""
 
-        return f"--gres=gpu:{self.GPUs}"
+        return f"#SBATCH --gres=gpu:{self.GPUs}"
 
     def _write_partition_string(self):
         """private"""

@@ -699,5 +699,5 @@ class MakeWorkloadManagerInput(object):
 
         pbs_header = ["\n".join(pbs_header)]
 
-        write_on_files.write_file(lines = slurm_header, file_name = self.HREM_dir + "/" + f"HREM_input.pbs")
+        write_on_files.write_file(lines = pbs_header, file_name = self.HREM_dir + "/" + f"HREM_input.pbs")
 

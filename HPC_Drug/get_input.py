@@ -208,6 +208,9 @@ class ParseInputFromFile(GetFile):
         if input_variables['gpu_per_node'] is None:
             input_variables['gpu_per_node'] = 1
         
+        else:
+            input_variables['gpu_per_node'] = int(input_variables['gpu_per_node'])
+        
         return input_variables
 
         
