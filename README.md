@@ -18,11 +18,11 @@ agpl v3
 
 # Citation
 
-Maurice Karrenbrock. HPC_Drug: a python middleware for Drug Discovery on HPC systems. Master's Thesis Università degli Studi di Firenze, Firenze, Italy, June, 2020.
+Maurice Karrenbrock. HPC_Drug: a python application for Drug Development on High Performance Computing systems. Master's Thesis Università degli Studi di Firenze, Firenze, Italy, June, 2020.
 ```
 @mastersthesis{HPC_Drug_mastersthesis,
     author  = "Maurice Karrenbrock",
-    title   = "{HPC\_Drug: a python middleware for Drug Discovery on HPC systems}",
+    title   = "{HPC\_Drug: a python application for Drug Development on High Performance Computing systems}",
     school  = "Università degli Studi di Firenze",
     year    = 2020,
     address = "Firenze, Italy",
