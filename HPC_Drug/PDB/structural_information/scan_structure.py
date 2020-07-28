@@ -348,7 +348,18 @@ def get_metalbinding_disulf_ligands(Protein, trash = important_lists.trash, meta
                                                                             protein_chain = Protein.chain,
                                                                             protein_model = Protein.model)
 
-    Protein.substitutions_dict = {**metal_binding_dict, **disulf_binding_dict}
+
+    #I don't want the disulf_binding_dict to overwrite the metal_binding_dict elements during the merging
+    #because of course if there are multiple CYS binding one metal they will be near enough
+    #to be included in the disulf_binding_dict (false positives)
+    for key in disulf_binding_dict.keys():
+
+        if key not in metal_binding_dict.keys():
+
+            metal_binding_dict[key] = disulf_binding_dict[key]
+
+
+    Protein.substitutions_dict = metal_binding_dict
 
     organic_ligand_list = get_organic_ligands_with_no_header(structure = Protein.structure,
                                                             protein_chain = Protein.chain,

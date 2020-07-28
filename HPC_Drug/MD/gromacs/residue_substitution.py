@@ -37,16 +37,19 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
 
     Protein.update_structure(struct_type = "biopython")
 
+    print(Protein.substitutions_dict)
+
     #I iterate through the structure
     for model in Protein.structure:
         for chain in model:
             for residue in chain:
 
                 #search for the right residues
-                res_id = str(residue.id[1])
+                res_id = residue.id[1]
 
                 #check if they are bounding a metal and are not a disulfide bond
                 if res_id in Protein.substitutions_dict.keys():
+                    print("DENTRO")
                     if Protein.substitutions_dict[res_id][2] in important_lists.metals:
 
                         #make substitutions with the selected function
@@ -70,6 +73,8 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
 
 
     Protein.write(file_name = Protein.pdb_file, struct_type = 'biopython')
+
+    raise Exception("AAAAAAAA")
 
     return Protein
 
@@ -113,8 +118,8 @@ def custom_zinc_gromacs_substitutions(input_list):
     elif resname == 'HIE' and input_list[2] == 'ZN':
         resname = 'HEZ'
 
-    elif resname == 'CIM' and input_list[2] == 'ZN':
-        resname = 'CIZ'
+    elif resname == 'CYM' and input_list[2] == 'ZN':
+        resname = 'CYZ'
 
     return resname
 
