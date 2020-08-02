@@ -37,7 +37,6 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
 
     Protein.update_structure(struct_type = "biopython")
 
-    print(Protein.substitutions_dict)
 
     #I iterate through the structure
     for model in Protein.structure:
@@ -49,7 +48,6 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
 
                 #check if they are bounding a metal and are not a disulfide bond
                 if res_id in Protein.substitutions_dict.keys():
-                    print("DENTRO")
                     if Protein.substitutions_dict[res_id][2] in important_lists.metals:
 
                         #make substitutions with the selected function
@@ -73,8 +71,6 @@ def residue_substitution(Protein, substitution = 'standard', ph = 7.0):
 
 
     Protein.write(file_name = Protein.pdb_file, struct_type = 'biopython')
-
-    raise Exception("AAAAAAAA")
 
     return Protein
 
