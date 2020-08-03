@@ -42,36 +42,36 @@ def get_metal_binding_residues(mmcif2dict, metals = important_lists.metals):
     #I check for residues binding metals
     #In the end I get a dictionary that has as key the residue number
     #and as vaue a tuple with (resname, binding atom, metal) for metal binding residues
-    if '_structure_conn.conn_type_id' in _mmcif2dict.keys():
-        for i, bound_type in enumerate(_mmcif2dict['_structure_conn.conn_type_id']):
+    if '_struct_conn.conn_type_id' in _mmcif2dict.keys():
+        for i, bound_type in enumerate(_mmcif2dict['_struct_conn.conn_type_id']):
 
             if bound_type == 'metalc':
 
-                if _mmcif2dict['_structure_conn.ptnr1_label_comp_id'][i]\
+                if _mmcif2dict['_struct_conn.ptnr1_label_comp_id'][i]\
                     in metals\
-                    or _mmcif2dict['_structure_conn.ptnr2_label_comp_id'][i]\
+                    or _mmcif2dict['_struct_conn.ptnr2_label_comp_id'][i]\
                     in metals:
 
-                    if _mmcif2dict['_structure_conn.ptnr1_label_comp_id'][i] in metals:
+                    if _mmcif2dict['_struct_conn.ptnr1_label_comp_id'][i] in metals:
                         metal_index = '1'
                         res_index = '2'
-                    elif _mmcif2dict['_structure_conn.ptnr2_label_comp_id'][i] in metals:
+                    elif _mmcif2dict['_struct_conn.ptnr2_label_comp_id'][i] in metals:
                         metal_index = '2'
                         res_index = '1'
 
                     # substitutions[resnum] = (res_label_comp_id, res_label_atom_id, metal_label_comp_id)
-                    substitutions[int(_mmcif2dict[f'_structure_conn.ptnr{res_index}_auth_seq_id'][i].strip())] = (
-                                    _mmcif2dict[f'_structure_conn.ptnr{res_index}_label_comp_id'][i],
-                                    _mmcif2dict[f'_structure_conn.ptnr{res_index}_label_atom_id'][i],
-                                    _mmcif2dict[f'_structure_conn.ptnr{metal_index}_label_comp_id'][i]
+                    substitutions[int(_mmcif2dict[f'_struct_conn.ptnr{res_index}_auth_seq_id'][i].strip())] = (
+                                    _mmcif2dict[f'_struct_conn.ptnr{res_index}_label_comp_id'][i],
+                                    _mmcif2dict[f'_struct_conn.ptnr{res_index}_label_atom_id'][i],
+                                    _mmcif2dict[f'_struct_conn.ptnr{metal_index}_label_comp_id'][i]
                                     )
                 
                 else:
                     string = f"Not implemented metal bound, going on pretending nothing happened\n\
                     More info:\n\
-                    _structure_conn.ptnr1_label_comp_id = \
+                    _struct_conn.ptnr1_label_comp_id = \
                     {_mmcif2dict['_structure_conn.ptnr1_label_comp_id'][i]}\n\
-                    _structure_conn.ptnr2_label_comp_id = \
+                    _struct_conn.ptnr2_label_comp_id = \
                     {_mmcif2dict['_structure_conn.ptnr2_label_comp_id'][i]}" 
 
                     print(string)
@@ -108,21 +108,21 @@ def get_disulf_bonds(mmcif2dict):
     #Create a tuple with ('CYS', 'SG', 'disulf') for the disulfide bonds.
     #Separately I create a list composed of tuples containing the resnumbers
     #of the 2 CYS that bound through disulfide bond
-    if '_structure_conn.conn_type_id' in _mmcif2dict.keys():
-        for i, bound_type in enumerate(_mmcif2dict['_structure_conn.conn_type_id']):
+    if '_struct_conn.conn_type_id' in _mmcif2dict.keys():
+        for i, bound_type in enumerate(_mmcif2dict['_struct_conn.conn_type_id']):
 
             if bound_type == 'disulf':
 
                 #if it is present ptnr1_auth_seq_id is the resnumber that remains when transforming it in a pdb
                 try:
 
-                    sulf_bond_tmp = [int(_mmcif2dict['_structure_conn.ptnr1_auth_seq_id'][i].strip()),
-                                    int(_mmcif2dict['_structure_conn.ptnr2_auth_seq_id'][i].strip())]
+                    sulf_bond_tmp = [int(_mmcif2dict['_struct_conn.ptnr1_auth_seq_id'][i].strip()),
+                                    int(_mmcif2dict['_struct_conn.ptnr2_auth_seq_id'][i].strip())]
 
                 except:
 
-                    sulf_bond_tmp = [int(_mmcif2dict['_structure_conn.ptnr1_label_seq_id'][i].strip()),
-                                    int(_mmcif2dict['_structure_conn.ptnr2_label_seq_id'][i].strip())]
+                    sulf_bond_tmp = [int(_mmcif2dict['_struct_conn.ptnr1_label_seq_id'][i].strip()),
+                                    int(_mmcif2dict['_struct_conn.ptnr2_label_seq_id'][i].strip())]
 
                 sulf_bond_tmp.sort()
 
