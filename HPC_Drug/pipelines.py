@@ -319,17 +319,21 @@ class NoLigandPipeline(Pipeline):
         if self.MD_program == None or self.MD_program_path == None:
             raise Exception('Need a MD program and a path')
 
-        elif self.MD_program == 'gromacs':
+        from HPC_Drug.MD import residue_renaming
 
-            from HPC_Drug.MD.gromacs import make_top, first_opt, solv_box, hrem, residue_substitution
+        #makes the necessary resname substitutions for the ForceField
+        residue_renamer = residue_renaming.ResidueRenamer(Protein = Protein,
+                                                        MD_program = self.MD_program,
+                                                        substitution = self.residue_substitution,
+                                                        ph = self.ph)
 
-            #makes the necessary resname substitutions for the ForceField
-            Protein = residue_substitution.residue_substitution(Protein = Protein,
-                                                            substitution = self.residue_substitution,
-                                                            ph = self.ph)
+        Protein = residue_renamer.execute()
 
+        if self.MD_program == 'gromacs':
 
+            from HPC_Drug.MD.gromacs import make_top, first_opt, solv_box, hrem
 
+            
             #a patch to add possible missing TER lines in pdb files
             #adressing issues #2733 and #2736 on biopython github
             #Will be removed when the issues will be solved
@@ -433,14 +437,10 @@ class NoLigandPipeline(Pipeline):
 
         elif self.MD_program == 'orac':
 
-            from HPC_Drug.MD.orac import first_opt, solv_box, hrem, residue_substitution, orac_seqres
+            from HPC_Drug.MD.orac import first_opt, solv_box, hrem, orac_seqres
 
             from HPC_Drug.PDB import merge_pdb
 
-            #makes the necessary resname substitutions for the ForceField
-            Protein = residue_substitution.residue_substitution(Protein = Protein,
-                                                            substitution = self.residue_substitution,
-                                                            ph = self.ph)
             
             #update the seqres with the names needed for Orac
             Protein = orac_seqres.custom_orac_seqres_from_PDB(Protein)
