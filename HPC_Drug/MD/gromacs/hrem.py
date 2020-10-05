@@ -33,7 +33,8 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
                 use_gpu = 'auto',
-                gpus_per_node = 1):
+                gpus_per_node = 1,
+                number_of_replicas = 8):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path)
@@ -66,7 +67,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         self.BATTERIES = self._get_BATTERIES()
         #the replicas for BATTERY
-        self.replicas = 8
+        self.replicas = number_of_replicas
 
         self.temperature = 298.15
 
@@ -396,19 +397,19 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
     def _get_hamiltonian_scaling_values(self):
         """
         Scales the hamiltonian with a geometrical progression
-        scale(m) =scale^(m/(nprocs−1)) with scale = 0.2 and nprocs = 8
+        scale(m) =scale^(m/(nprocs−1)) with scale = 0.2 and nprocs = self.replicas
         0 <= m <= nprocs -1
 
         for more information check the orac manual http://www.chim.unifi.it/orac/orac-manual.pdf
         page 123 """
 
-        nprocs = 8.0
+        nprocs = self.replicas
         scale = 0.2
 
         #instantiating the list and putting the value for scale^0 = 1.0
         hamiltonian_scaling_values = [1.0]
 
-        for m in range(1, 8):
+        for m in range(1, nprocs):
 
             scale_m = scale ** ( m / (nprocs -1) )
 
@@ -564,7 +565,8 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
                 use_gpu = 'auto',
-                gpus_per_node = 1):
+                gpus_per_node = 1,
+                number_of_replicas = 8):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path,
@@ -578,7 +580,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         self.BATTERIES = self._get_BATTERIES()
         #the replicas for BATTERY
-        self.replicas = 8
+        self.replicas = number_of_replicas
 
         #as to make a hrem on gromacs you have to trick it in thinking it is doing a temperature rem
         #the temperature will be changed during the process
