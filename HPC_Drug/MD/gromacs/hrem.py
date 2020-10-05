@@ -294,26 +294,35 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         is_atoms = False
         for i in range(len(lines)):
 
-            #if the line is empty i can go on with the for loop
+            #if the line is empty or a comment i can go on with the for loop
             if lines[i].strip() != "":
-                tmp_line = lines[i].strip().split()
+                if lines[i].strip()[0] != ";":
+                
+                    tmp_line = lines[i].strip().split()
+
+                else:
+                    continue
+            
             else:
                 continue
 
             #check if we are in the atoms part
-            if tmp_line[0].replace(" ", "") == "[atoms]":
+            if lines[i].strip().replace(" ", "").split(";")[0] == "[atoms]":
                 is_atoms = True
+
+                continue
 
             #end of atoms part
             elif tmp_line[0][0] == "[":
                 is_atoms = False
 
+                continue
+
             if is_atoms:
 
-                #if it is not a comment
-                if tmp_line[0][0] != ";":
+                if len(tmp_line) >= 4:
 
-                    #not heat solvent
+                    #do not heat solvent
                     if tmp_line[3].strip() == "SOL":
                         continue
 
@@ -322,14 +331,15 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
                         tmp_line[1] = tmp_line[1] + "_"
 
-                        lines[i] = " ".join(tmp_line)
+                        lines[i] = " ".join(tmp_line) + "\n"
 
                     #heat the near residues
                     elif tmp_line[2].strip() in hot_ids:
 
                         tmp_line[1] = tmp_line[1] + "_"
 
-                        lines[i] = " ".join(tmp_line)
+                        lines[i] = " ".join(tmp_line) + "\n"
+
 
         write_on_files.write_file(lines = lines, file_name = top_file)
 
@@ -344,7 +354,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         command = [plumed, "partial_tempering", f"{scaling_value}"]
 
-        print("Running Plumed")
+        print(f"Running Plumed, with scaling value {scaling_value}")
 
         with open(input_file, "r") as input_file_handle:
             with open(output_file, "w") as output_file_handle:
@@ -737,45 +747,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
         ]
 
 
-    def _edit_top_file(self, top_file):
-
-        #read the topology
-        lines = read_file.read_file(file_name = top_file)
-
-
-        #heat the right atoms
-
-        #auxiliary bool variable
-        is_atoms = False
-        for i in range(len(lines)):
-
-            #if the line is empty i can go on with the for loop
-            if lines[i].strip() != "":
-                tmp_line = lines[i].strip().split()
-            else:
-                continue
-
-            #check if we are in the atoms part
-            if tmp_line[0].replace(" ", "") == "[atoms]":
-                is_atoms = True
-
-            #end of atoms part
-            elif tmp_line[0][0] == "[":
-                is_atoms = False
-
-            if is_atoms:
-
-                #if it is not a comment
-                if tmp_line[0][0] != ";":
-
-                    #not heat solvent
-                    if tmp_line[3].strip() != "SOL":
-                        tmp_line[1] = tmp_line[1] + "_"
-
-                        lines[i] = " ".join(tmp_line)
-
-        write_on_files.write_file(lines = lines, file_name = top_file)
-
+ 
     def _get_BATTERIES(self):
 
         #for the ligand one battery is more than enough
