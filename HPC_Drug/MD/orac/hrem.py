@@ -56,7 +56,7 @@ class HREMOracInput(orac_input.OracInput):
 
         self.template = [
             f"!!! THIS INPUT IS FOR {self.kind_of_processor} ARCHITECTURES",
-            f"#&T NTHREADS    {self.replicas}   CACHELINE   16",
+            f"#&T NTHREADS    8   CACHELINE   16",
             "#&T NT-LEVEL1   4   CACHELINE   16",
             "#&T NT-LEVEL2   4   CACHELINE   16",
             "&REM",
@@ -417,7 +417,7 @@ class HREMOracInputOnlyLigand(HREMOracInput):
     def _make_template(self, Ligand):
 
         self.template = [
-            f"#&T NTHREADS    {self.replicas}   CACHELINE   16",
+            f"#&T NTHREADS    8   CACHELINE   16",
             "#&T NT-LEVEL1   4   CACHELINE   16",
             "#&T NT-LEVEL2   4   CACHELINE   16",
             "&REM",
