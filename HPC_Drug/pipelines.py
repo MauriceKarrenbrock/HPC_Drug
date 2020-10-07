@@ -61,7 +61,8 @@ def choose_pipeline(*args, **kwargs):
                                 kind_of_processor = input_dict['kind_of_processor'],
                                 number_of_cores_per_node = input_dict['number_of_cores_per_node'],
                                 use_gpu = input_dict['use_gpu'],
-                                gpu_per_node = input_dict['gpu_per_node'])
+                                gpu_per_node = input_dict['gpu_per_node'],
+                                number_of_hrem_replicas_per_battery = input_dict['number_of_hrem_replicas_per_battery'])
 
     else:
         # ligand is given
@@ -93,7 +94,8 @@ class Pipeline(object):
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
                 use_gpu = 'auto',
-                gpu_per_node = 1):
+                gpu_per_node = 1,
+                number_of_hrem_replicas_per_battery = 8):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
@@ -149,6 +151,8 @@ class Pipeline(object):
 
 
         self.gpu_per_node = gpu_per_node
+
+        self.number_of_hrem_replicas_per_battery = number_of_hrem_replicas_per_battery
 
     def get_protein_file(self):
 
@@ -412,7 +416,8 @@ class NoLigandPipeline(Pipeline):
                                             kind_of_processor = self.kind_of_processor,
                                             number_of_cores_per_node = self.number_of_cores_per_node,
                                             use_gpu = self.use_gpu,
-                                            gpus_per_node = self.gpu_per_node)
+                                            gpus_per_node = self.gpu_per_node,
+                                            number_of_replicas = self.number_of_hrem_replicas_per_battery)
 
             Protein = hrem_input.execute()
 
@@ -432,7 +437,8 @@ class NoLigandPipeline(Pipeline):
                                                 kind_of_processor = self.kind_of_processor,
                                                 number_of_cores_per_node = self.number_of_cores_per_node,
                                                 use_gpu = self.use_gpu,
-                                                gpus_per_node = self.gpu_per_node)
+                                                gpus_per_node = self.gpu_per_node,
+                                                number_of_replicas = self.number_of_hrem_replicas_per_battery)
 
             Protein = ligand_hrem_input.execute()
 
@@ -485,7 +491,8 @@ class NoLigandPipeline(Pipeline):
                                                 MD_program_path = self.MD_program_path,
                                                 solvent_pdb = self.solvent_pdb,
                                                 kind_of_processor = self.kind_of_processor,
-                                                number_of_cores_per_node = self.number_of_cores_per_node)
+                                                number_of_cores_per_node = self.number_of_cores_per_node,
+                                                number_of_replicas = self.number_of_hrem_replicas_per_battery)
 
             Protein = hrem_input_obj.execute()
 
@@ -502,7 +509,8 @@ class NoLigandPipeline(Pipeline):
             hrem_only_ligand = hrem.HREMOracInputOnlyLigand(Protein = Protein,
                                                             solvent_box = only_water_pdb,
                                                             MD_program_path = self.MD_program_path,
-                                                            number_of_cores_per_node = self.number_of_cores_per_node)
+                                                            number_of_cores_per_node = self.number_of_cores_per_node,
+                                                            number_of_replicas = self.number_of_hrem_replicas_per_battery)
 
             Protein = hrem_only_ligand.execute()
 

@@ -1,7 +1,7 @@
 #This is a correct input example
 #Every line beginning with '#' is a comment
 #Error occurs only for wrong keys
-#kase-sensitive
+#case-sensitive
 #------------------------------------------------
 
 #Protein code and desired file type, possible values 'cif' or 'pdb'
@@ -69,7 +69,7 @@ protein_tpg_file = amber99sb-ildn
 #the solvent model that will be chosen
 #standard is spce
 # from the standard gromacs share directory
-#other options can be none tip3p etch
+#other options can be none tip3p etc...
 #check gromacs pdb2gmx -water documentation for more options
 solvent_pdb = spce
 
@@ -97,3 +97,6 @@ kind_of_processor = skylake
 # how many cores there are on the HPC cluster on each node
 #default 64
 number_of_cores_per_node = 64
+
+#number of HREM replicas per each Battery, default 8
+number_of_hrem_replicas_per_battery = 8

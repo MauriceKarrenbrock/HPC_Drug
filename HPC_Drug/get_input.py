@@ -67,7 +67,8 @@ class ParseInputFromFile(GetFile):
                             'number_of_cores_per_node',
                             'residue_substitution',
                             'use_gpu',
-                            'gpu_per_node')
+                            'gpu_per_node',
+                            'number_of_hrem_replicas_per_battery')
 
         
         self.input_variables = self.read_input()
@@ -210,6 +211,15 @@ class ParseInputFromFile(GetFile):
         
         else:
             input_variables['gpu_per_node'] = int(input_variables['gpu_per_node'])
+
+        if input_variables['number_of_hrem_replicas_per_battery'] is None:
+            input_variables['number_of_hrem_replicas_per_battery'] = 8
+
+        elif input_variables['number_of_hrem_replicas_per_battery'] == 0 or input_variables['number_of_hrem_replicas_per_battery'] == 1:
+            raise ValueError("The number of Hrem replicas must be greater than 1")
+
+        else:
+            input_variables['number_of_hrem_replicas_per_battery'] = int(input_variables['number_of_hrem_replicas_per_battery'].strip())
         
         return input_variables
 

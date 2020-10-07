@@ -34,7 +34,8 @@ class HREMOracInput(orac_input.OracInput):
                 MD_program_path = 'orac',
                 solvent_pdb = None,
                 kind_of_processor = 'skylake',
-                number_of_cores_per_node = 64):
+                number_of_cores_per_node = 64,
+                number_of_replicas = 8):
 
         super().__init__(Protein = Protein,
                         MD_program_path= MD_program_path,
@@ -49,13 +50,13 @@ class HREMOracInput(orac_input.OracInput):
 
         self.HREM_dir = f"{self.Protein.protein_id}_HREM"
 
-        self.replicas = 8
+        self.replicas = number_of_replicas
 
         self.BATTERIES = self._get_BATTERIES()
 
         self.template = [
             f"!!! THIS INPUT IS FOR {self.kind_of_processor} ARCHITECTURES",
-            "#&T NTHREADS    8   CACHELINE   16",
+            f"#&T NTHREADS    8   CACHELINE   16",
             "#&T NT-LEVEL1   4   CACHELINE   16",
             "#&T NT-LEVEL2   4   CACHELINE   16",
             "&REM",
@@ -389,7 +390,8 @@ class HREMOracInputOnlyLigand(HREMOracInput):
                 Protein,
                 solvent_box,
                 MD_program_path = 'orac',
-                number_of_cores_per_node = 64):
+                number_of_cores_per_node = 64,
+                number_of_replicas = 8):
 
         self.Protein = Protein
         
@@ -409,13 +411,13 @@ class HREMOracInputOnlyLigand(HREMOracInput):
 
         self.BATTERIES = self._get_BATTERIES()
 
-        self.replicas = 8
+        self.replicas = number_of_replicas
 
 
     def _make_template(self, Ligand):
 
         self.template = [
-            "#&T NTHREADS    8   CACHELINE   16",
+            f"#&T NTHREADS    8   CACHELINE   16",
             "#&T NT-LEVEL1   4   CACHELINE   16",
             "#&T NT-LEVEL2   4   CACHELINE   16",
             "&REM",
