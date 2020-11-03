@@ -82,9 +82,10 @@ class Orient(object):
 
         for atom in atom_list:
             try:
-                atom.mass = self.self.atom_weights[atom.name[0].capitalize()]
+                atom.mass = self.atom_weights[atom.element.capitalize()]
+                
             except:
-                atom.mass = 1.0
+                atom.mass = 'ukn'
 
             masses.append(atom.mass)
 
