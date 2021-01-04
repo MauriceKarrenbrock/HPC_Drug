@@ -1,5 +1,5 @@
 ######################################################################################
-# Copyright (c) 2020-2020 Maurice Karrenbrock                                        #
+# Copyright (c) 2020-2021 Maurice Karrenbrock                                        #
 #                                                                                    #
 # This software is open-source and is distributed under the                          #
 # GNU Affero General Public License v3 (agpl v3 license)                             #
