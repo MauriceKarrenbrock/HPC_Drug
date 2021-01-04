@@ -16,6 +16,9 @@ import math
 import shutil
 import subprocess
 
+import FSDAMGromacs.mdp_files as _mdp_files
+import FSDAMGromacs.get_pbc_atom as _pbc_atom
+
 from HPC_Drug.MD import workload_managers
 from HPC_Drug.MD.gromacs import gromacs_input
 from HPC_Drug.files_IO import read_file
@@ -23,6 +26,7 @@ from HPC_Drug.files_IO import write_on_files
 from HPC_Drug.auxiliary_functions import path
 from HPC_Drug import orient
 from HPC_Drug import important_lists
+import HPC_Drug.MD.gromacs.add_dummy_atom as _dummy_atom
 
 
 class GromacsHREMInput(gromacs_input.GromacsInput):
@@ -220,6 +224,41 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
             "; Convert harmonic bonds to morse potentials",
             "morse                    = no"
         ]
+
+    def _add_COMCOM_restrain_and_dummy_atom(self):
+
+        self.Protein = _dummy_atom.add_heavy_dummy_atom(self.Protein)
+
+        #get protein pbc atom
+        protein_pbc_atom = _pbc_atom.get_protein_pbc_atom(self.Protein.gro_file)
+
+        COM_pull_template = _mdp_files.create_COMCOM_pulling_strings(
+            COM_pull_goups=[
+                'Protein',
+                f'{self.Protein.get_ligand_list()[0].resname}',
+                'DUM'
+            ],
+            harmonic_kappa=[
+                [
+                    'Protein', f'{self.Protein.get_ligand_list()[0].resname}', 120
+                ],
+
+                [
+                    'Protein', 'DUM', 120
+                ],
+
+                [
+                    f'{self.Protein.get_ligand_list()[0].resname}', 'DUM', 0
+                ]
+            ],
+            pbc_atoms=(
+                protein_pbc_atom,
+                0,
+                0
+            )
+        )
+
+        self.template += COM_pull_template
 
     def _get_ns_per_day(self):
         """
@@ -467,6 +506,8 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         """This method does not run gromacs but
         creates the input to make a REM simulation on a
         HPC cluster"""
+
+        self._add_COMCOM_restrain_and_dummy_atom()
 
         #crate an empty file for plumed
         write_on_files.write_file(lines = ['\n'], file_name = "empty_plumed.dat")

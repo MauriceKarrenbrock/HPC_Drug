@@ -7,6 +7,8 @@ ProDy>=1.10.11
 scipy>=1.4.1
 plumed>=2.6.0 # conda install -c conda-forge plumed
 python<=3.6.9 # the program uses the importlib_resources backport to importlib.resources will make a python>=3.7 version as soon as possible
+git+https://github.com/MauriceKarrenbrock/FSDAMGromacs.git #FSDAMGromacs
+git+https://github.com/MauriceKarrenbrock/PythonPDBStructures.git #PythonPDBStructures
 
 #not python requirements
 #primadorac http://www.chim.unifi.it/orac
