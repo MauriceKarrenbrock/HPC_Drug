@@ -38,7 +38,7 @@ def choose_pipeline(*args, **kwargs):
     input_dict = kwargs
 
     # Protein is a pdb file
-    if (input_dict['ligand_in_protein'] == None or input_dict['ligand_in_protein'] == 'yes'):
+    if (input_dict['ligand_in_protein'] is None or input_dict['ligand_in_protein'] == 'yes'):
         #ligand will be taken from protein file (at your own risk)
         
         return NoLigandPipeline(protein = input_dict['protein'],
@@ -62,7 +62,14 @@ def choose_pipeline(*args, **kwargs):
                                 number_of_cores_per_node = input_dict['number_of_cores_per_node'],
                                 use_gpu = input_dict['use_gpu'],
                                 gpu_per_node = input_dict['gpu_per_node'],
-                                number_of_hrem_replicas_per_battery = input_dict['number_of_hrem_replicas_per_battery'])
+                                number_of_hrem_replicas_per_battery_bound =input_dict['number_of_hrem_replicas_per_battery_bound'],
+                                number_of_hrem_replicas_per_battery_unbound =input_dict['number_of_hrem_replicas_per_battery_unbound'],
+                                bound_batteries = input_dict['bound_batteries'],
+                                unbound_batteries = input_dict['unbound_batteries'],
+                                n_steps_bound=input_dict['n_steps_bound'],
+                                n_steps_unbound=input_dict['n_steps_unbound'],
+                                timestep_bound=input_dict['timestep_bound'],
+                                timestep_unbound=input_dict['timestep_unbound'])
 
     else:
         # ligand is given
@@ -95,7 +102,14 @@ class Pipeline(object):
                 number_of_cores_per_node = 64,
                 use_gpu = 'auto',
                 gpu_per_node = 1,
-                number_of_hrem_replicas_per_battery = 8):
+                number_of_hrem_replicas_per_battery_bound =8,
+                number_of_hrem_replicas_per_battery_unbound =8,
+                bound_batteries = None,
+                unbound_batteries = None,
+                n_steps_bound=None,
+                n_steps_unbound=None,
+                timestep_bound=None,
+                timestep_unbound=None):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
@@ -152,7 +166,15 @@ class Pipeline(object):
 
         self.gpu_per_node = gpu_per_node
 
-        self.number_of_hrem_replicas_per_battery = number_of_hrem_replicas_per_battery
+        self.number_of_hrem_replicas_per_battery_bound = number_of_hrem_replicas_per_battery_bound
+        self.number_of_hrem_replicas_per_battery_unbound = number_of_hrem_replicas_per_battery_unbound
+        self.bound_batteries = bound_batteries
+        self.unbound_batteries = unbound_batteries
+
+        self.n_steps_bound = n_steps_bound
+        self.n_steps_unbound = n_steps_unbound
+        self.timestep_bound = timestep_bound
+        self.timestep_unbound = timestep_unbound
 
     def get_protein_file(self):
 
@@ -263,8 +285,7 @@ class GetProteinLigandFilesPipeline(Pipeline):
         #The structure is put in the reference system of the
         #inertia tensor
         orient_obj = orient.Orient(Protein = Protein)
-        tmp_1, tmp_2, Rot_matrix = orient_obj.calculate_moment_of_intertia_tensor()
-        tmp_1 = tmp_2 = None
+        _, _, Rot_matrix = orient_obj.calculate_moment_of_intertia_tensor()
         Protein.structure = orient_obj.base_change_structure()
         Protein.write()
 
@@ -417,7 +438,10 @@ class NoLigandPipeline(Pipeline):
                                             number_of_cores_per_node = self.number_of_cores_per_node,
                                             use_gpu = self.use_gpu,
                                             gpus_per_node = self.gpu_per_node,
-                                            number_of_replicas = self.number_of_hrem_replicas_per_battery)
+                                            number_of_replicas = self.number_of_hrem_replicas_per_battery_bound,
+                                            batteries = self.bound_batteries,
+                                            n_steps=self.n_steps_bound,
+                                            timestep=self.timestep_bound)
 
             Protein = hrem_input.execute()
 
@@ -438,7 +462,10 @@ class NoLigandPipeline(Pipeline):
                                                 number_of_cores_per_node = self.number_of_cores_per_node,
                                                 use_gpu = self.use_gpu,
                                                 gpus_per_node = self.gpu_per_node,
-                                                number_of_replicas = self.number_of_hrem_replicas_per_battery)
+                                                number_of_replicas = self.number_of_hrem_replicas_per_battery_unbound,
+                                                batteries = self.unbound_batteries,
+                                                n_steps=self.n_steps_unbound,
+                                                timestep=self.timestep_unbound)
 
             Protein = ligand_hrem_input.execute()
 
@@ -492,7 +519,7 @@ class NoLigandPipeline(Pipeline):
                                                 solvent_pdb = self.solvent_pdb,
                                                 kind_of_processor = self.kind_of_processor,
                                                 number_of_cores_per_node = self.number_of_cores_per_node,
-                                                number_of_replicas = self.number_of_hrem_replicas_per_battery)
+                                                number_of_replicas = self.number_of_hrem_replicas_per_battery_bound)
 
             Protein = hrem_input_obj.execute()
 
@@ -510,7 +537,7 @@ class NoLigandPipeline(Pipeline):
                                                             solvent_box = only_water_pdb,
                                                             MD_program_path = self.MD_program_path,
                                                             number_of_cores_per_node = self.number_of_cores_per_node,
-                                                            number_of_replicas = self.number_of_hrem_replicas_per_battery)
+                                                            number_of_replicas = self.number_of_hrem_replicas_per_battery_unbound)
 
             Protein = hrem_only_ligand.execute()
 

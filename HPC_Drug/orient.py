@@ -20,6 +20,8 @@ import Bio.PDB.vectors
 from math import sqrt
 from numpy import *
 import prody as true_prody_module
+
+import PythonPDBStructures.geometry as _geometry
 #import sys
 
 from HPC_Drug import important_lists
@@ -64,50 +66,17 @@ class Orient(object):
             Pp = Bio.PDB.PDBParser()
             entity = Pp.get_structure(self.Protein.protein_id, self.Protein.pdb_file)
         
-        # Structure, Model, Chain, Residue
-        if isinstance(entity, Entity.Entity):
-            atom_list = entity.get_atoms()
-        # List of Atoms
-        elif hasattr(entity, '__iter__') and [x for x in entity if x.level == 'A']:
-            atom_list = entity
-        else: # Some other weirdo object
-            raise ValueError("Center of Mass can only be calculated from the following objects:\n"
-                                "Structure, Model, Chain, Residue, list of Atoms.")
-        class COM:
-            def __init__(self,coord):
-                self.coord=coord
+        output_np_array_COM = _geometry.get_center_of_mass(structure=entity, geometric=geometric)
 
-        positions = [ [], [], [] ] # [ [X1, X2, ..] , [Y1, Y2, ...] , [Z1, Z2, ...] ]
-        masses = []
+        class COM(object):
 
-        for atom in atom_list:
-            try:
-                atom.mass = self.atom_weights[atom.element.capitalize()]
-                
-            except:
-                atom.mass = 'ukn'
+            def __init__(self, coord):
 
-            masses.append(atom.mass)
+                self.coord = coord
 
-            for i, coord in enumerate(atom.coord.tolist()):
-                positions[i].append(coord)
-
-        # If there is a single atom with undefined mass complain loudly.
-        if 'ukn' in set(masses) and not geometric:
-            raise ValueError("Some Atoms don't have an element assigned.\n"
-                            "Try adding them manually or calculate the geometrical center of mass instead.")
-
-        if geometric:
-            com = COM([sum(coord_list)/len(masses) for coord_list in positions])
-            return com
-        else:
-            w_pos = [ [], [], [] ]
-            for atom_index, atom_mass in enumerate(masses):
-                w_pos[0].append(positions[0][atom_index]*atom_mass)
-                w_pos[1].append(positions[1][atom_index]*atom_mass)
-                w_pos[2].append(positions[2][atom_index]*atom_mass)
-            com = COM([sum(coord_list)/sum(masses) for coord_list in w_pos])
-            return com
+        #cast from array to list for retro compatibility
+        #and also the COM object is for retro compatibility
+        return COM(list(output_np_array_COM))
 
     def calculate_moment_of_intertia_tensor(self, structure = None):
         """
@@ -574,6 +543,36 @@ class Orient(object):
                                                     chain_model_selection = True)
         Ligand.resnum = TMP_list[0][1]
 
+
+        #------------------------------------------------------
+        #a helper function
+        def is_valid_residue(residue, Ligand):
+            """helper function
+
+            needed to check if the given residue shall be checked
+
+            Returns
+            ------------
+            bool
+            """
+
+            not_wanted_resnames = list(important_lists.metals) + list(important_lists.trash) + ['DUM']
+
+            valid = True
+
+            #all this things make it false
+            if residue.id[1] == Ligand.resnum:
+                valid = False
+                
+            elif residue.resname in not_wanted_resnames:
+                valid = False
+                
+            elif residue.id[0].strip() != '':
+                valid = False
+
+            return valid
+        #------------------------------------------------------
+
         output_list = []
 
         #this list is needed to avoid counting the same residue twice
@@ -590,11 +589,10 @@ class Orient(object):
                         
                         #checking if I didn't already count it (dont't want to count a residue twice)
                         if residue.id[1] not in already_counted_list:
-                            #checking if it's a valid residue
-                            is_valid_residue = residue.id[1] != Ligand.resnum and residue.resname not in important_lists.metals and residue.resname not in important_lists.trash and residue.id[0].strip() == ''
-                            if is_valid_residue:
 
-                                COM_ligand_atom, COM_residue, distance = self.center_mass_distance(get_iterable.get_iterable(atom), residue)
+                            if is_valid_residue(residue=residue, Ligand=Ligand):
+
+                                _, _, distance = self.center_mass_distance(get_iterable.get_iterable(atom), residue)
 
                                 if distance <= residue_dist:
 

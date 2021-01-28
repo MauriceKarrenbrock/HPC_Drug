@@ -52,14 +52,10 @@
 				
 				\item ligand = it is the (absolute) path to the pdb file of the ligand if ligand\_in\_protein = yes
 				
-				\#The program with which elaborate the ligand (optimization and potential)
-				\#default primadorac (amber force field)
-				
 				\item ligand\_elaboration\_program = The program with which elaborate the ligand (optimization and force field), default primadorac (amber force field)
 				
 				\item ligand\_elaboration\_program\_path = the (absolute) path to the ligand\_elaboration\_program executable
 
-				
 				\item MD\_program = The molecular dynamics MD program of choice, default gromacs, a working executable of the program must be present on your PC
 				
 				\item MD\_program\_path = the (absolute) path to the MD program executable
@@ -78,7 +74,18 @@
 
 				\item gpu\_per\_node = the number of GPUs per node, default 1, if GPUs shall not be used will be ignored
 				
-				\item number\_of\_hrem\_replicas\_per\_battery = the number of HREM replicas per each Battery, default 8
+				\item number_of_hrem_replicas_per_battery_bound = the number of HREM replicas per each Battery bound state, default 8
+
+				\item number_of_hrem_replicas_per_battery_unbound = the number of HREM replicas per each Battery unbound state, default 8
+
+				\item bound_batteries = number of bound batteries per HREM, default auto
+				
+				\item unbound_batteries = number of unbound batteries per HREM, default auto
+				
+				\item n_steps_bound = number of MD steps (reference state) for bound HREM, dafault auto
+				\item n_steps_unbound = number of MD steps (reference state) for unbound HREM, dafault auto
+				\item timestep_bound = timestep for bound HREM, dafault auto
+				\item timestep_unbound = timestep for unbound HREM, dafault auto
 				
 			\end{itemize}
 	

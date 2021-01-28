@@ -29,7 +29,13 @@ from HPC_Drug.MD.orac import get_resnum_cutoff
 
 
 import os
-import importlib_resources
+try: # python>=3.7
+
+    import importlib.resources as importlib_resources
+
+except ImportError: # python<=3.6
+
+    import importlib_resources
 import subprocess
 
 class OracInput(object):

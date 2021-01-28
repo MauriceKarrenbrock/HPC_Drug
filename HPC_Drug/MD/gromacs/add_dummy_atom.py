@@ -34,7 +34,6 @@ def add_heavy_dummy_atom(Protein):
         the updated protein
     """
 
-    #TODO
     #find protein center of mass
     structure = _prody_utils.parse_pdb(Protein.pdb_file)
 
@@ -63,7 +62,7 @@ def add_heavy_dummy_atom(Protein):
         input_gro_file=Protein.gro_file,
         output_gro_file=Protein.gro_file,
         coordinates=COM,
-        velocities=None,
+        velocities=(0., 0., 0.),
         atom_name='DU',
         atom_residue_name='DUM'
     )

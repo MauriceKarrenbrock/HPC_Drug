@@ -1,12 +1,12 @@
 biopython>=1.77 #development version (github) is strongly suggested due to some bugfixes
-importlib-resources>=1.0.2
+importlib # importlib-resources for python<=3.6
 numpy>=1.18.1
 OpenMM>=7.5.0 #development version (conda install -c omnia-dev openmm) is strongly suggested due to some bugfixes
 pdbfixer>=1.6 #development version (github) is strongly suggested due to some bugfixes
 ProDy>=1.10.11
 scipy>=1.4.1
 plumed>=2.6.0 # conda install -c conda-forge plumed
-python<=3.6.9 # the program uses the importlib_resources backport to importlib.resources will make a python>=3.7 version as soon as possible
+python>=3.6
 git+https://github.com/MauriceKarrenbrock/FSDAMGromacs.git #FSDAMGromacs
 git+https://github.com/MauriceKarrenbrock/PythonPDBStructures.git #PythonPDBStructures
 

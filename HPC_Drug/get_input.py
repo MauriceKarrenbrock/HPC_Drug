@@ -10,7 +10,14 @@
 """
 This file contains the classes and functions needed to get the input
 """
-import importlib_resources
+try: # python>=3.7
+
+    import importlib.resources as importlib_resources
+
+except ImportError: # python<=3.6
+
+    import importlib_resources
+
 
 from HPC_Drug.auxiliary_functions import path as program_path
 
@@ -68,7 +75,14 @@ class ParseInputFromFile(GetFile):
                             'residue_substitution',
                             'use_gpu',
                             'gpu_per_node',
-                            'number_of_hrem_replicas_per_battery')
+                            'number_of_hrem_replicas_per_battery_bound',
+                            'number_of_hrem_replicas_per_battery_unbound',
+                            'bound_batteries',
+                            'unbound_batteries',
+                            'n_steps_bound',
+                            'n_steps_unbound',
+                            'timestep_bound',
+                            'timestep_unbound')
 
         
         self.input_variables = self.read_input()
@@ -212,14 +226,44 @@ class ParseInputFromFile(GetFile):
         else:
             input_variables['gpu_per_node'] = int(input_variables['gpu_per_node'])
 
-        if input_variables['number_of_hrem_replicas_per_battery'] is None:
-            input_variables['number_of_hrem_replicas_per_battery'] = 8
+        if input_variables['number_of_hrem_replicas_per_battery_bound'] is None:
+            input_variables['number_of_hrem_replicas_per_battery_bound'] = 8
 
-        elif input_variables['number_of_hrem_replicas_per_battery'] == 0 or input_variables['number_of_hrem_replicas_per_battery'] == 1:
-            raise ValueError("The number of Hrem replicas must be greater than 1")
+        elif input_variables['number_of_hrem_replicas_per_battery_bound'] == 0 or input_variables['number_of_hrem_replicas_per_battery_bound'] == 1:
+            raise ValueError("The number of bound HREM replicas must be greater than 1")
 
         else:
-            input_variables['number_of_hrem_replicas_per_battery'] = int(input_variables['number_of_hrem_replicas_per_battery'].strip())
+            input_variables['number_of_hrem_replicas_per_battery_bound'] = int(input_variables['number_of_hrem_replicas_per_battery_bound'].strip())
+        
+
+        if input_variables['number_of_hrem_replicas_per_battery_unbound'] is None:
+            input_variables['number_of_hrem_replicas_per_battery_unbound'] = 8
+
+        elif input_variables['number_of_hrem_replicas_per_battery_unbound'] == 0 or input_variables['number_of_hrem_replicas_per_battery_unbound'] == 1:
+            raise ValueError("The number of bound HREM replicas must be greater than 1")
+
+        else:
+            input_variables['number_of_hrem_replicas_per_battery_unbound'] = int(input_variables['number_of_hrem_replicas_per_battery_unbound'].strip())
+
+        for i in ('bound_batteries', 'unbound_batteries', 'n_steps_bound', 'n_steps_unbound'):
+
+            if input_variables[i] == 'auto':
+
+                input_variables[i] = None
+
+            elif input_variables[i] is not None:
+
+                input_variables[i] = int(input_variables[i])
+
+        for i in ('timestep_bound', 'timestep_unbound'):
+
+            if input_variables[i] == 'auto':
+
+                input_variables[i] = None
+
+            elif input_variables[i] is not None:
+
+                input_variables[i] = float(input_variables[i])
         
         return input_variables
 

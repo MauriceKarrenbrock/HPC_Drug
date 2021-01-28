@@ -98,5 +98,17 @@ kind_of_processor = skylake
 #default 64
 number_of_cores_per_node = 64
 
-#number of HREM replicas per each Battery, default 8
-number_of_hrem_replicas_per_battery = 8
+#number of HREM replicas per each Battery for bound and unbound state, default 8
+number_of_hrem_replicas_per_battery_bound = 8
+
+number_of_hrem_replicas_per_battery_unbound = 8
+
+#number of bound and unbound batteries per HREM, default auto
+bound_batteries = auto
+unbound_batteries = auto
+
+#number of MD steps (reference state) for bound and unbound HREM and timesteps, dafault auto
+n_steps_bound = auto
+n_steps_unbound = auto
+timestep_bound = auto
+timestep_unbound = auto

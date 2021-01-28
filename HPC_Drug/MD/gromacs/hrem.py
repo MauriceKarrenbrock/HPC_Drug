@@ -38,7 +38,10 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
                 number_of_cores_per_node = 64,
                 use_gpu = 'auto',
                 gpus_per_node = 1,
-                number_of_replicas = 8):
+                number_of_replicas = 8,
+                batteries = None,
+                n_steps=None,
+                timestep=None):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path)
@@ -69,11 +72,34 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         self.gpus_per_node = gpus_per_node
 
-        self.BATTERIES = self._get_BATTERIES()
+        if batteries is None:
+            
+            self.BATTERIES = self._get_BATTERIES()
+
+        else:
+
+            self.BATTERIES = batteries
+
         #the replicas for BATTERY
         self.replicas = number_of_replicas
 
         self.temperature = 298.15
+
+        if timestep is None:
+
+            self.timestep = 0.00150
+
+        else:
+
+            self.timestep = timestep
+
+        if n_steps is None:
+
+            self.n_steps = self._get_ns_per_day() * 1.E+3
+
+        else:
+
+            self.n_steps = n_steps
 
         self.template = [
             "; VARIOUS PREPROCESSING OPTIONS",
@@ -286,14 +312,8 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         """writes the tinit timestep and number of steps string"""
 
         tinit = 0
-        timestep = 0.00150 #ps
 
-        #ps calculated in 24 hours by one mpi_run (BATTERIES)
-        number_of_steps = self._get_ns_per_day() * 1.E+3
-        #number of steps (integer)
-        number_of_steps = math.ceil( number_of_steps / timestep )
-
-        string = f"tinit = {tinit} \ndt = {timestep} \nnsteps = {number_of_steps}\n"
+        string = f"tinit = {tinit} \ndt = {self.timestep} \nnsteps = {self.n_steps}\n"
 
         return string
 
@@ -490,12 +510,12 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
             if lines[i].strip()[:8] == "#include":
 
-                if lines[i].split()[1].replace('"', '').strip() in ligand_itp_files:
+                if lines[i].split()[1].replace('"', '').strip() in ligand_itp_files or 'DUM' in lines[i]:
 
                     itp_file = lines[i].split()[1].replace('"', '').strip()
                     itp_file = itp_file.split("/")[-1]
 
-                    lines[i] = f'#include "{itp_file}"'
+                    lines[i] = f'#include "{itp_file}"\n'
 
         write_on_files.write_file(lines = lines, file_name = top_file)
 
@@ -618,7 +638,10 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                 number_of_cores_per_node = 64,
                 use_gpu = 'auto',
                 gpus_per_node = 1,
-                number_of_replicas = 8):
+                number_of_replicas = 8,
+                batteries = None,
+                n_steps=None,
+                timestep=None):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path,
@@ -630,13 +653,36 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
         self.only_solvent_box_gro = only_solvent_box_gro
         self.only_solvent_box_top = only_solvent_box_top
 
-        self.BATTERIES = self._get_BATTERIES()
+        if batteries is None:
+        
+            self.BATTERIES = self._get_BATTERIES()
+
+        else:
+
+            self.BATTERIES = batteries
+
         #the replicas for BATTERY
         self.replicas = number_of_replicas
 
         #as to make a hrem on gromacs you have to trick it in thinking it is doing a temperature rem
         #the temperature will be changed during the process
         self.temperature = 298.15
+
+        if timestep is None:
+
+            self.timestep = 0.00150
+
+        else:
+
+            self.timestep = timestep
+
+        if n_steps is None:
+
+            self.n_steps = self._get_ns_per_day() * 1.E+3
+
+        else:
+
+            self.n_steps = n_steps
 
         self.template = [
             "; VARIOUS PREPROCESSING OPTIONS",
@@ -847,14 +893,14 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
             os.makedirs(self.HREM_dir, exist_ok=True)
 
             #create the BATTERY dirs and the scaled dirs
-            for i in range(self.BATTERIES):
+            for k in range(self.BATTERIES):
 
                 for j in range(self.replicas):
 
-                    os.makedirs(self.HREM_dir + "/" + f"BATTERY{i}" + "/" + f"scaled{j}", exist_ok=True)
+                    os.makedirs(self.HREM_dir + "/" + f"BATTERY{k}" + "/" + f"scaled{j}", exist_ok=True)
 
                     #copy the empty file for plumed
-                    shutil.copy("empty_plumed.dat", self.HREM_dir + "/" + f"BATTERY{i}" + "/" + f"scaled{j}")
+                    shutil.copy("empty_plumed.dat", self.HREM_dir + "/" + f"BATTERY{k}" + "/" + f"scaled{j}")
 
             #write the mdp file
             self._write_template_on_file()
@@ -981,7 +1027,7 @@ class MakeWorkloadManagerInput(object):
 
         for i in range(self.BATTERIES):
             
-            string = string + f"mpirun -np {cpus_per_task * self.replicas} gmx_mpi mdrun {gpu_options(use_gpu = self.gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no {multidir_string(i)} -s {self.tpr_file} & \n"
+            string = string + f"mpirun -np {cpus_per_task * self.replicas} gmx_mpi mdrun {gpu_options(use_gpu = self.gpu)} -v -plumed empty_plumed.dat -replex 100 -hrex -dlb no {multidir_string(i)} -s {self.tpr_file} -deffnm HREM & \n"
 
         string = string + "wait\n"
 
