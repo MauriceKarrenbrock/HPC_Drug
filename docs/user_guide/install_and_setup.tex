@@ -20,21 +20,11 @@
 	\begin{enumerate}
 		\item download and install miniconda https://docs.conda.io/en/latest/miniconda.html
 		
-		\item create a conda environment with python 3.6.9 (recommended), scipy\cite{scipy}, numpy\cite{numpy}, and pip: \emph{conda create -n HPC\_Drug python=3.6.9 scipy numpy pip}
+		\item create a conda environment with this command: \emph{conda env create -f environment.yml} the environment.yml file can be found in the root directory and the newly created environment will be called HPC\_Drug . As the dependencies of any package can change at any time the environment.yml file might not be up to date, in case install the missing packages manually. Of course if you prefer to have more control over the process you can install everything manually (but it would take some time)
 		
 		\item activate the environment: \emph{conda activate HPC\_Drug}
 		
-		\item install importlib-resources: \emph{pip install importlib-resources} (it is a back port of importlib for python 3.6)
-		
-		\item install OpenMM\cite{openmm}: \emph{conda install -c omnia -c conda-forge openmm} (you can find the full installation guide here\\ http://docs.openmm.org/latest/userguide/application.html\#installing-openmm); if you need to use mmCIF files you will have to use their development version: \emph{conda install -c omnia-dev openmm} due to some important bug fixes
-		
-		\item install pdbfixer\cite{pdbfixer}: download it from github https://github.com/openmm/pdbfixer go in the just installed root directory and type \emph{pip install .}
-		
-		\item install ProDy\cite{prody}: download it from GitHub https://github.com/prody/ProDy go in the just installed root directory and type \emph{pip install .}
-		
-		\item install Biopython\cite{biopython}: download it from GitHub https://github.com/biopython/biopython go in the just installed root directory and type \emph{pip install .}
-		
-		\item install plumed\cite{plumed}: if you don't need some of the advanced functionalities of plumed (we won't need them) simpli type \emph{conda install -c conda-forge plumed}, otherwise you can find all the needed information on the plumed website https://www.plumed.org
+		\item install plumed\cite{plumed}: if you don't need some of the advanced functionalities of plumed (we won't need them) you already installed it while creating the conda environment (good job!), otherwise you can find all the needed information on the plumed website https://www.plumed.org
 		
 		\item install primadorac\cite{primadorac} and Orac\cite{orac} (they are distributed together): download Orac from it's website http://www.chim.unifi.it/orac and follow the installation guide on the documentation. (As it is a quite challenging task below you will find a little help paragraph for this step)
 		

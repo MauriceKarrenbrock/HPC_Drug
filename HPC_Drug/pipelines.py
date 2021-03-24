@@ -427,7 +427,7 @@ class NoLigandPipeline(Pipeline):
             #makes and optimizes a solvent box
             solv_box_obj = solv_box.GromacsSolvBoxInput(Protein = Protein,
                                                 MD_program_path = self.MD_program_path,
-                                                box_borders = '0.8')
+                                                box_borders = '1.2')
 
             Protein = solv_box_obj.execute()
 
