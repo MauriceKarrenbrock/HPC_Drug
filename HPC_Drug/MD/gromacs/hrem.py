@@ -41,7 +41,8 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
                 number_of_replicas = 8,
                 batteries = None,
                 n_steps=None,
-                timestep=None):
+                timestep=None,
+                constraints='h-bonds'):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path)
@@ -95,11 +96,17 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         if n_steps is None:
 
-            self.n_steps = self._get_ns_per_day() * 1.E+3
+            self.n_steps = int(self._get_ns_per_day() * 1.E+3)
 
         else:
 
-            self.n_steps = n_steps
+            self.n_steps = int(n_steps)
+
+        if constraints is None:
+
+            constraints = 'h-bonds'
+
+        self.constraints = constraints
 
         self.template = [
             "; VARIOUS PREPROCESSING OPTIONS",
@@ -229,7 +236,9 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
             "gen-seed                 = 173529",
             "",
             "; OPTIONS FOR BONDS",
-            "constraints              = h-bonds",
+
+            f"constraints              = {self.constraints}",
+
             "; Type of constraint algorithm",
             "constraint-algorithm     = Lincs",
             "; Do not constrain the start configuration",
@@ -641,7 +650,8 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                 number_of_replicas = 8,
                 batteries = None,
                 n_steps=None,
-                timestep=None):
+                timestep=None,
+                constraints='h-bonds'):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path,
@@ -678,11 +688,17 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         if n_steps is None:
 
-            self.n_steps = self._get_ns_per_day() * 1.E+3
+            self.n_steps = int(self._get_ns_per_day() * 1.E+3)
 
         else:
 
-            self.n_steps = n_steps
+            self.n_steps = int(n_steps)
+
+        if constraints is None:
+
+            constraints = 'h-bonds'
+
+        self.constraints = constraints
 
         self.template = [
             "; VARIOUS PREPROCESSING OPTIONS",
@@ -790,7 +806,9 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
             "gen-seed                 = 173529",
             "",
             "; OPTIONS FOR BONDS",
-            "constraints              = h-bonds",
+            
+            f"constraints              = {self.constraints}",
+            
             "; Type of constraint algorithm",
             "constraint-algorithm     = Lincs",
             "; Do not constrain the start configuration",

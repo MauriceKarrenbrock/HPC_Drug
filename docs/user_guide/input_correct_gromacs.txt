@@ -98,6 +98,17 @@ kind_of_processor = skylake
 #default 64
 number_of_cores_per_node = 64
 
+
+########################################################
+# ADVANCED OPTIONS, USE ONLY IF EXPERT
+########################################################
+
+#the box shape and dimentions for the protein ligand system (bound)
+#box borders is the distance in nm between the protein and the box, default 1.2
+box_borders = 1.2
+#cubic and triclinic are the only 2 options, default cubic, the boxes will always have 90 angles
+box_shape = cubic
+
 #number of HREM replicas per each Battery for bound and unbound state, default 8
 number_of_hrem_replicas_per_battery_bound = 8
 
@@ -108,7 +119,13 @@ bound_batteries = auto
 unbound_batteries = auto
 
 #number of MD steps (reference state) for bound and unbound HREM and timesteps, dafault auto
-n_steps_bound = auto
-n_steps_unbound = auto
-timestep_bound = auto
-timestep_unbound = auto
+n_steps_bound_hrem = auto
+n_steps_unbound_hrem = auto
+timestep_bound_hrem = auto
+timestep_unbound_hrem = auto
+
+#kind of restraint in the bound and unbound HREM, default auto
+#the sintax is the same of the gromacs mdp file: none, h-bonds, all-bonds
+#auto will work most of the times
+constraints_bound_hrem = auto
+constraints_unbound_hrem = auto

@@ -31,50 +31,28 @@ from HPC_Drug.structures import update_ligands
 from HPC_Drug import orient
 
 
-def choose_pipeline(*args, **kwargs):
+def choose_pipeline(**kwargs):
     """Takes the parsed program input
     and returns the right pipeline class"""
-    
-    input_dict = kwargs
+
+    try:
+
+        ligand_in_protein = kwargs.pop('ligand_in_protein')
+
+    except KeyError:
+
+        ligand_in_protein = None
 
     # Protein is a pdb file
-    if (input_dict['ligand_in_protein'] is None or input_dict['ligand_in_protein'] == 'yes'):
+    if ligand_in_protein in (None, 'yes'):
         #ligand will be taken from protein file (at your own risk)
         
-        return NoLigandPipeline(protein = input_dict['protein'],
-                                protein_filetype = input_dict['protein_filetype'],
-                                local = input_dict['local'],
-                                filepath = input_dict['filepath'],
-                                ligand = input_dict['ligand'],
-                                ligand_elaboration_program = input_dict['ligand_elaboration_program'],
-                                ligand_elaboration_program_path = input_dict['ligand_elaboration_program_path'],
-                                Protein_model = input_dict['Protein_model'],
-                                Protein_chain = input_dict['Protein_chain'],
-                                ph = input_dict['ph'],
-                                repairing_method = input_dict['repairing_method'],
-                                MD_program = input_dict['MD_program'],
-                                MD_program_path = input_dict['MD_program_path'],
-                                protein_prm_file = input_dict['protein_prm_file'],
-                                protein_tpg_file = input_dict['protein_tpg_file'],
-                                solvent_pdb = input_dict['solvent_pdb'],
-                                residue_substitution = input_dict['residue_substitution'],
-                                kind_of_processor = input_dict['kind_of_processor'],
-                                number_of_cores_per_node = input_dict['number_of_cores_per_node'],
-                                use_gpu = input_dict['use_gpu'],
-                                gpu_per_node = input_dict['gpu_per_node'],
-                                number_of_hrem_replicas_per_battery_bound =input_dict['number_of_hrem_replicas_per_battery_bound'],
-                                number_of_hrem_replicas_per_battery_unbound =input_dict['number_of_hrem_replicas_per_battery_unbound'],
-                                bound_batteries = input_dict['bound_batteries'],
-                                unbound_batteries = input_dict['unbound_batteries'],
-                                n_steps_bound=input_dict['n_steps_bound'],
-                                n_steps_unbound=input_dict['n_steps_unbound'],
-                                timestep_bound=input_dict['timestep_bound'],
-                                timestep_unbound=input_dict['timestep_unbound'])
+        return NoLigandPipeline(**kwargs)
 
     else:
         # ligand is given
 
-        return LigandPipeline()
+        return LigandPipeline(**kwargs)
         
 
 class Pipeline(object):
@@ -106,10 +84,14 @@ class Pipeline(object):
                 number_of_hrem_replicas_per_battery_unbound =8,
                 bound_batteries = None,
                 unbound_batteries = None,
-                n_steps_bound=None,
-                n_steps_unbound=None,
-                timestep_bound=None,
-                timestep_unbound=None):
+                n_steps_bound_hrem=None,
+                n_steps_unbound_hrem=None,
+                timestep_bound_hrem=None,
+                timestep_unbound_hrem=None,
+                constraints_bound_hrem=None,
+                constraints_unbound_hrem=None,
+                box_shape=None,
+                box_borders=None):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
@@ -171,10 +153,15 @@ class Pipeline(object):
         self.bound_batteries = bound_batteries
         self.unbound_batteries = unbound_batteries
 
-        self.n_steps_bound = n_steps_bound
-        self.n_steps_unbound = n_steps_unbound
-        self.timestep_bound = timestep_bound
-        self.timestep_unbound = timestep_unbound
+        self.n_steps_bound_hrem = n_steps_bound_hrem
+        self.n_steps_unbound_hrem = n_steps_unbound_hrem
+        self.timestep_bound_hrem = timestep_bound_hrem
+        self.timestep_unbound_hrem = timestep_unbound_hrem
+
+        self.constraints_bound_hrem = constraints_bound_hrem
+        self.constraints_unbound_hrem = constraints_unbound_hrem
+        self.box_shape = box_shape
+        self.box_borders = box_borders
 
     def get_protein_file(self):
 
@@ -427,7 +414,8 @@ class NoLigandPipeline(Pipeline):
             #makes and optimizes a solvent box
             solv_box_obj = solv_box.GromacsSolvBoxInput(Protein = Protein,
                                                 MD_program_path = self.MD_program_path,
-                                                box_borders = '1.2')
+                                                box_borders = self.box_borders,
+                                                box_shape = self.box_shape)
 
             Protein = solv_box_obj.execute()
 
@@ -440,8 +428,9 @@ class NoLigandPipeline(Pipeline):
                                             gpus_per_node = self.gpu_per_node,
                                             number_of_replicas = self.number_of_hrem_replicas_per_battery_bound,
                                             batteries = self.bound_batteries,
-                                            n_steps=self.n_steps_bound,
-                                            timestep=self.timestep_bound)
+                                            n_steps=self.n_steps_bound_hrem,
+                                            timestep=self.timestep_bound_hrem,
+                                            constraints=self.constraints_bound_hrem)
 
             Protein = hrem_input.execute()
 
@@ -464,8 +453,9 @@ class NoLigandPipeline(Pipeline):
                                                 gpus_per_node = self.gpu_per_node,
                                                 number_of_replicas = self.number_of_hrem_replicas_per_battery_unbound,
                                                 batteries = self.unbound_batteries,
-                                                n_steps=self.n_steps_unbound,
-                                                timestep=self.timestep_unbound)
+                                                n_steps=self.n_steps_unbound_hrem,
+                                                timestep=self.timestep_unbound_hrem,
+                                                constraints=self.constraints_unbound_hrem)
 
             Protein = ligand_hrem_input.execute()
 

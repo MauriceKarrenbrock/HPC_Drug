@@ -23,12 +23,24 @@ from HPC_Drug.files_IO import read_file
 
 
 class GromacsSolvBoxInput(gromacs_input.GromacsInput): 
-    """Creates and optimizes a water box around the protein"""
+    """Creates and optimizes a water box around the protein
+    
+    Parameters
+    --------------
+    Protein : HPC_Drug.structures.protein.Protein
+    MD_program_path : str, default= looks for gmx in the path and current directory
+        it must be the absolute path to the executable
+    box_borders : float, default=1.2
+        how far the box wall should be from the most outer atom of the structure in NM
+    box_shape : str, default=cubic
+        the shape of the box, the only accepted options are cubic and triclinic (rectangular, 90 angles)
+    """
 
     def __init__(self,
                 Protein = None,
                 MD_program_path = 'gmx',
-                box_borders = '1.2'):
+                box_borders = 1.2,
+                box_shape = 'cubic'):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path)
@@ -41,11 +53,25 @@ class GromacsSolvBoxInput(gromacs_input.GromacsInput):
 
         self.output_tpr_file = os.getcwd() +  "/" + f"{self.Protein.protein_id}_solvbox.tpr"
         
+        if box_borders is None:
+
+            box_borders = 1.2
+        
         self.box_borders = box_borders
+
+        if box_shape is None:
+
+            box_shape = 'cubic'
+
+        elif box_shape not in ('cubic', 'triclinic'):
+
+            raise ValueError(f'box_shape can only be cubic or triclinic, not {box_shape}')
+
+        self.box_shape = box_shape
 
         #creates the .tpr of the structure + the box of water and then optimizes the system
         self.command_string = [
-            [f"{self.MD_program_path}", "editconf", "-f", f"{self.Protein.gro_file}", "-d", f"{self.box_borders}", "-bt", "triclinic", "-angles", "90", "90", "90", "-o", f"{self.output_gro_file}"],
+            [f"{self.MD_program_path}", "editconf", "-f", f"{self.Protein.gro_file}", "-d", f"{self.box_borders}", "-bt", f"{box_shape}", "-angles", "90", "90", "90", "-o", f"{self.output_gro_file}"],
             [f"{self.MD_program_path}", "solvate", "-cp", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-o", f"{self.output_gro_file}"],
             [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
             [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}"]

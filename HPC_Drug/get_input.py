@@ -18,6 +18,9 @@ except ImportError: # python<=3.6
 
     import importlib_resources
 
+import warnings
+from collections import defaultdict
+
 
 from HPC_Drug.auxiliary_functions import path as program_path
 
@@ -79,22 +82,22 @@ class ParseInputFromFile(GetFile):
                             'number_of_hrem_replicas_per_battery_unbound',
                             'bound_batteries',
                             'unbound_batteries',
-                            'n_steps_bound',
-                            'n_steps_unbound',
-                            'timestep_bound',
-                            'timestep_unbound')
+                            'n_steps_bound_hrem',
+                            'n_steps_unbound_hrem',
+                            'timestep_bound_hrem',
+                            'timestep_unbound_hrem',
+                            'constraints_bound_hrem',
+                            'constraints_unbound_hrem'
+                            'box_shape',
+                            'box_borders')
 
         
         self.input_variables = self.read_input()
 
         
     def _create_input_dict(self):
-        input_dict = {}
-
-        for key in self.possible_keys:
-            input_dict[key] = None
         
-        return input_dict
+        return defaultdict(lambda : None)
 
     def read_input(self):
         """It returns a dictionary
@@ -108,31 +111,33 @@ class ParseInputFromFile(GetFile):
 
             for line in f:
 
+                #remove comments
+                line = line.split('#')[0]
                 line = line.strip()
 
-                # the '#' identifies a comment
-                if len(line) == 0:
-                    continue
-                elif line[0] == '#':
-                    continue
+                if line:
 
-                line = line.split('=')
+                    line = line.split('=')
 
-                if len(line) == 2:
+                    if len(line) == 2:
 
-                    key, value = line
+                        key, value = line
 
-                    key = key.strip()
-                    value = value.strip()
+                        key = key.strip()
+                        value = value.strip()
 
-                    if key in self.possible_keys:
+                        #warn that you might have misspelled an input
+                        if key not in self.possible_keys:
+
+                            tmp_string = "\n".join(self.possible_keys)
+
+                            warnings.warn(f'{key} is an unknown input argument maybe you meant one of this ones?\n'
+                            f'{tmp_string}')
+                        
                         input_variables[key] = value
-
+                    
                     else:
-                        raise ValueError('InvalidInputKey ', key)
-                
-                else:
-                    raise ValueError(f"Input must be key = value not like this: '{line}'")
+                        raise ValueError(f"Input must be key = value not like this: '{line}'")
 
         input_variables = self._refine_input(input_variables)    
         
@@ -149,7 +154,7 @@ class ParseInputFromFile(GetFile):
         elif input_variables['Protein_model'] == None:
             input_variables['Protein_model'] = 0
 
-        #The standar chain is 'A'
+        #The standard chain is 'A'
         if input_variables['Protein_chain'] == None:
             input_variables['Protein_chain'] = 'A'
         #need it uppercase
@@ -245,7 +250,7 @@ class ParseInputFromFile(GetFile):
         else:
             input_variables['number_of_hrem_replicas_per_battery_unbound'] = int(input_variables['number_of_hrem_replicas_per_battery_unbound'].strip())
 
-        for i in ('bound_batteries', 'unbound_batteries', 'n_steps_bound', 'n_steps_unbound'):
+        for i in ('bound_batteries', 'unbound_batteries', 'n_steps_bound_hrem', 'n_steps_unbound_hrem'):
 
             if input_variables[i] == 'auto':
 
@@ -255,7 +260,7 @@ class ParseInputFromFile(GetFile):
 
                 input_variables[i] = int(input_variables[i])
 
-        for i in ('timestep_bound', 'timestep_unbound'):
+        for i in ('timestep_bound_hrem', 'timestep_unbound_hrem'):
 
             if input_variables[i] == 'auto':
 
@@ -264,6 +269,16 @@ class ParseInputFromFile(GetFile):
             elif input_variables[i] is not None:
 
                 input_variables[i] = float(input_variables[i])
+
+        for i in ('constraints_bound_hrem', 'constraints_unbound_hrem'):
+
+            if input_variables[i] == 'auto':
+
+                input_variables[i] = None
+
+        if input_variables['box_borders'] is not None:
+
+            input_variables['box_borders'] = float(input_variables['box_borders'])
         
         return input_variables
 
