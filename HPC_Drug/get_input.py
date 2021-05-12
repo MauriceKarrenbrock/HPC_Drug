@@ -87,7 +87,7 @@ class ParseInputFromFile(GetFile):
                             'timestep_bound_hrem',
                             'timestep_unbound_hrem',
                             'constraints_bound_hrem',
-                            'constraints_unbound_hrem'
+                            'constraints_unbound_hrem',
                             'box_shape',
                             'box_borders')
 
