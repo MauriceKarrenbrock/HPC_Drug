@@ -473,17 +473,16 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         
 
-    def _get_hamiltonian_scaling_values(self):
+    def _get_hamiltonian_scaling_values(self, scale=0.2):
         """
         Scales the hamiltonian with a geometrical progression
-        scale(m) =scale^(m/(nprocs−1)) with scale = 0.2 and nprocs = self.replicas
+        scale(m) =scale^(m/(nprocs−1)) with scale = 0.2 (default) and nprocs = self.replicas
         0 <= m <= nprocs -1
 
         for more information check the orac manual http://www.chim.unifi.it/orac/orac-manual.pdf
         page 123 """
 
         nprocs = self.replicas
-        scale = 0.2
 
         #instantiating the list and putting the value for scale^0 = 1.0
         hamiltonian_scaling_values = [1.0]
@@ -912,7 +911,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
             #use plumed to make the scaled topologies
 
-            hamiltonian_scaling_values = self._get_hamiltonian_scaling_values()
+            hamiltonian_scaling_values = self._get_hamiltonian_scaling_values(scale=0.1)
             scaled_topologies = []
             for counter, value in enumerate(hamiltonian_scaling_values):
                 #they are already saved in the HREM dir
