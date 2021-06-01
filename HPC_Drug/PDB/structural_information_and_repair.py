@@ -23,6 +23,12 @@ class InfoRepair(object):
     disulf bonds and organic ligand's renames and resnumbers
     from a Protein instance
     and REPAIR the PDB (or mmCIF) file
+
+    Parameters
+    ------------------
+    Protein : HPC_Drug.structures.protein.Protein
+    repairing_method str or bool, default=pdbfixer
+        if False no repairing will be done
     """
 
     def __init__(self, Protein, repairing_method = "pdbfixer"):
@@ -47,8 +53,11 @@ class InfoRepair(object):
     def _repair(self):
         """private"""
         
-        self.Protein = repair.repair(Protein = self.Protein,
-                                    repairing_method = self.repairing_method)
+        if self.repairing_method != False:
+            self.Protein = repair.repair(Protein = self.Protein,
+                                        repairing_method = self.repairing_method)
+        else:
+            pass
 
 
     def _pdb(self):

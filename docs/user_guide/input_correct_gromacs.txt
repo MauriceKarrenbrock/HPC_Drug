@@ -25,6 +25,7 @@ ph = 7.0
 #adding missing atoms, missing hydrogens and substituting
 #non standard residues with standard ones
 #default is pdbfixer (needs openmm and conda environment)
+# if none no repairing and no residue renaming will be done
 
 repairing_method = pdbfixer
 

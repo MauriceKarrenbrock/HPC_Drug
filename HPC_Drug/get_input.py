@@ -279,6 +279,10 @@ class ParseInputFromFile(GetFile):
         if input_variables['box_borders'] is not None:
 
             input_variables['box_borders'] = float(input_variables['box_borders'])
+
+
+        if input_variables['repairing_method'].lower() == 'none':
+            input_variables['repairing_method'] = False
         
         return input_variables
 

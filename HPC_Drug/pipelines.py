@@ -333,13 +333,14 @@ class NoLigandPipeline(Pipeline):
 
         from HPC_Drug.MD import residue_renaming
 
-        #makes the necessary resname substitutions for the ForceField
-        residue_renamer = residue_renaming.ResidueRenamer(Protein = Protein,
-                                                        MD_program = self.MD_program,
-                                                        substitution = self.residue_substitution,
-                                                        ph = self.ph)
+        if self.repairing_method != False:
+            #makes the necessary resname substitutions for the ForceField
+            residue_renamer = residue_renaming.ResidueRenamer(Protein = Protein,
+                                                            MD_program = self.MD_program,
+                                                            substitution = self.residue_substitution,
+                                                            ph = self.ph)
 
-        Protein = residue_renamer.execute()
+            Protein = residue_renamer.execute()
 
         if self.MD_program == 'gromacs':
 
