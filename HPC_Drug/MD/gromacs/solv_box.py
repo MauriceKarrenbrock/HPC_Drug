@@ -74,7 +74,7 @@ class GromacsSolvBoxInput(gromacs_input.GromacsInput):
             [f"{self.MD_program_path}", "editconf", "-f", f"{self.Protein.gro_file}", "-d", f"{self.box_borders}", "-bt", f"{box_shape}", "-angles", "90", "90", "90", "-o", f"{self.output_gro_file}"],
             [f"{self.MD_program_path}", "solvate", "-cp", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-o", f"{self.output_gro_file}"],
             [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
-            [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}"]
+            [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}", '-ntmpi', '1']
         ]
 
         self.template = [
@@ -294,7 +294,7 @@ class OptimizeOnlyWaterBox(gromacs_input.GromacsInput):
 
         self.command_string = [
             [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.output_top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
-            [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}"]
+            [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}", '-ntmpi', '1']
         ]
         
 
