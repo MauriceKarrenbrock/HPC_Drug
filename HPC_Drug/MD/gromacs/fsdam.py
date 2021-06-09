@@ -78,8 +78,8 @@ class FSDAMInputPreprocessing(object):
 
             number_of_files = _extract_frames.extract_frames(
                 delta_steps=100,
-                trajectory=f'BATTERY{i}/scaled0/traj.trr',
-                topology=f'BATTERY{i}/scaled0/topol.tpr',
+                trajectory=f'BATTERY{i}/scaled0/HREM.trr',
+                topology=f'BATTERY{i}/scaled0/HREM.tpr',
                 output_name=f'{fsdam_dir}/BATTERY{i}_',
                 output_format='gro',
                 starting=100,
