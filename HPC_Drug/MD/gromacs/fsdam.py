@@ -9,12 +9,10 @@
 
 import os
 import os.path
-import subprocess
-import copy
 import shutil
-import math
 import random
 from pathlib import Path
+import warnings
 
 import mdtraj
 
@@ -64,6 +62,9 @@ class FSDAMInputPreprocessing(object):
 
         self.number_of_frames_to_use = int(number_of_frames_to_use)
 
+        if constrains is not None:
+            warnings.warn('Constraints is not implemented yet, the default (all-atoms) will be used '
+            'instead, you can change the mdp file manually')
         self.constrains = constrains
 
 
@@ -136,9 +137,9 @@ class FSDAMInputPreprocessing(object):
             vdw_timestep_ps = self.vdw_timestep_ps,
             q_timestep_ps = self.q_timestep_ps,
             vdw_number_of_steps = self.vdw_number_of_steps,
-            q_number_of_steps = self.q_number_of_steps,
-            constrains=self.constrains
-            )
+            q_number_of_steps = self.q_number_of_steps)
+            #constrains=self.constrains TODO
+            
 
         return output_dictionary
 
