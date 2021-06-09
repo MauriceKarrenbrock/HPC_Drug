@@ -14,21 +14,15 @@ import copy
 import shutil
 import math
 import random
+from pathlib import Path
 
 import mdtraj
 
 import PythonPDBStructures.trajectories.extract_frames as _extract_frames
 
-import FSDAMGromacs.get_pbc_atom as _pbc_atom
 import FSDAMGromacs.pipelines.preprocessing as _preprocessing
 
-from HPC_Drug.auxiliary_functions import path
 from HPC_Drug.files_IO import read_file, write_on_files
-from HPC_Drug.MD import workload_managers
-from HPC_Drug.MD.gromacs import gro2pdb
-from HPC_Drug.PDB import biopython, prody
-from HPC_Drug import orient
-
 
 class FSDAMInputPreprocessing(object):
 
@@ -85,7 +79,7 @@ class FSDAMInputPreprocessing(object):
         while os.path.exists(f"BATTERY{i}"):
 
             number_of_files = _extract_frames.extract_frames(
-                delta_steps=100,
+                delta_steps=1,
                 trajectory=f'BATTERY{i}/scaled0/HREM.trr',
                 topology=f'BATTERY{i}/scaled0/HREM.tpr',
                 output_name=f'{fsdam_dir}/BATTERY{i}_',
@@ -96,18 +90,13 @@ class FSDAMInputPreprocessing(object):
 
             for k in range(number_of_files):
 
-                output_files.append(f'{fsdam_dir}/BATTERY{i}_{k}.gro')
+                output_files.append(Path(f'{fsdam_dir}/BATTERY{i}_{k}.gro').resolve())
             
             i = i + 1
 
         return output_files
 
     def _make_input_files(self, ligand_resname, top_file, starting_structures):
-
-        for i, item in enumerate(starting_structures):
-
-            starting_structures[i] = item.lsplit('/', 1)[-1]
-
 
         if self.creation:
 
@@ -165,7 +154,7 @@ class FSDAMInputPreprocessing(object):
         filename = f"{fsdamdir}/MAKE_Q_TPR_FILES.sh"
 
         string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE Q TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\n"
-        string += "if you are annihilating make first Q then VDW, if you are creating viceversa\n\n\n"
+        string += "#if you are annihilating make first Q then VDW, if you are creating viceversa\n\n\n"
 
         string += '\n'.join(q_lines)
         write_on_files.write_file(lines = [string], file_name = filename)
@@ -174,7 +163,7 @@ class FSDAMInputPreprocessing(object):
         filename = f"{fsdamdir}/MAKE_VDW_TPR_FILES.sh"
 
         string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE VDW TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\n"
-        string += "if you are annihilating make first Q then VDW, if you are creating viceversa\n\n\n"
+        string += "#if you are annihilating make first Q then VDW, if you are creating viceversa\n\n\n"
 
         string += '\n'.join(vdw_lines)
         write_on_files.write_file(lines = [string], file_name = filename)
