@@ -159,6 +159,7 @@ class FSDAMInputPreprocessing(object):
         string += "#if you are annihilating make first Q then VDW, if you are creating viceversa\n\n\n"
 
         string += '\n'.join(q_lines)
+        string = string.replace(f'{fsdamdir}/', '')
         write_on_files.write_file(lines = [string], file_name = filename)
 
         #VDW TPR file
@@ -168,6 +169,7 @@ class FSDAMInputPreprocessing(object):
         string += "#if you are annihilating make first Q then VDW, if you are creating viceversa\n\n\n"
 
         string += '\n'.join(vdw_lines)
+        string = string.replace(f'{fsdamdir}/', '')
         write_on_files.write_file(lines = [string], file_name = filename)
 
     def _select_frames_to_use(self, files, not_used_dir):
