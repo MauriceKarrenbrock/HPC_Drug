@@ -1,4 +1,4 @@
-name: HPC_Drug_test
+name: HPC_Drug
 channels:
   - omnia
   - conda-forge
@@ -39,7 +39,7 @@ dependencies:
     - joblib
     - kiwisolver
     - matplotlib
-    - MDAnalysis
+    - MDAnalysis>=1.1.1
     - mmtf-python
     - mock
     - msgpack

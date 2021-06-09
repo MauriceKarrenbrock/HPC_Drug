@@ -14,26 +14,61 @@ from HPC_Drug.auxiliary_functions import path
 from HPC_Drug.MD.gromacs import fsdam
 
 
-parser = argparse.ArgumentParser(description="This script creates the input for FS-DAM both for the boded and unbonded system. For Gromacs\n You must run this script in the HREM root directory")
+parser = argparse.ArgumentParser(
+    description="This script creates the input for FS-DAM both for the boded and unbonded system. "
+    "For Gromacs\n You must run this script in the HREM root directory",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-parser.add_argument('--program-path', action = "store", default = "gmx", help = "The absolute path to the chosen program executable")
+parser.add_argument('--program-path',
+    action = "store",
+    default = "gmx",
+    type=str,
+    help = "The absolute path to the chosen program executable")
 
-parser.add_argument('--hrem-type', action="store", default="protein-ligand", choices = ["protein-ligand", "only-ligand"], help = "If the HREM dir contains the output of the ligand alone (unbound) or the protein-ligand system (bound) (default)")
+parser.add_argument('--hrem-type',
+    action="store",
+    default="protein-ligand",
+    type=str,
+    choices = ["protein-ligand", "only-ligand"],
+    help = "If the HREM dir contains the output of the ligand alone (unbound) or the protein-ligand system (bound) (default)")
 
-parser.add_argument('--vdw-timestep-ps', action="store", default=None, help = "The timestep for the vdw transformation, the default will work most of the times")
+parser.add_argument('--vdw-timestep-ps',
+    action="store",
+    default=None,
+    type=float,
+    help = "The timestep for the vdw transformation, the default will work most of the times")
 
-parser.add_argument('--q-timestep-ps', action="store", default=None, help = "The timestep for the q transformation, the default will work most of the times")
+parser.add_argument('--q-timestep-ps',
+    action="store",
+    default=None,
+    type=float,
+    help = "The timestep for the q transformation, the default will work most of the times")
 
-parser.add_argument('--vdw-number-of-steps', action="store", default=None, help = "The number of steps for the q transformation, the default will work most of the times")
+parser.add_argument('--vdw-number-of-steps',
+    action="store",
+    default=None,
+    type=int,
+    help = "The number of steps for the q transformation, the default will work most of the times")
 
 parser.add_argument('--q-number-of-steps', action="store", default=None, help = "The number of steps for the q transformation, the default will work most of the times")
 
-parser.add_argument('--pbc-atoms', action="store", default=None,
-    help = "The pbc atoms (see gromacs documentation) are only needed when making a protein-ligand transformation, the program will try to get them autonomously but it might be unable to do it in complex situations")
+parser.add_argument('--pbc-atoms',
+    action="store",
+    default=None,
+    type=str,
+    help = "The pbc atoms (see gromacs documentation), COMMA SEPARATED LIST, are only needed when making a protein-ligand transformation, the program will try to get them autonomously but it might be unable to do it in complex situations")
 
-parser.add_argument('--number-of-frames-to-use', action="store", default=200, help = "The number of alchemical transformations to do, a good default is 200 protein ligand and 400 ligand only, default=200")
+parser.add_argument('--number-of-frames-to-use',
+    action="store",
+    default=200,
+    type=int,
+    help = "The number of alchemical transformations to do, a good default is 200 protein ligand and 400 ligand only, default=200")
 
-parser.add_argument('--constrains', action="store", default=None, choices = ['none', 'h-bonds', 'all-bonds'],
+parser.add_argument('--constrains',
+    action="store",
+    default=None,
+    type=str,
+    choices = ['none', 'h-bonds', 'all-bonds'],
     help = "how to constraints vibrations, same syntax as gromacs mdp file default=all-bonds")
 
 parsed_input = parser.parse_args()
@@ -47,6 +82,11 @@ if parsed_input.hrem_type == "protein-ligand":
 elif parsed_input.hrem_type == "only-ligand":
 
     creation=True
+
+# From comma separated list to list of int
+parsed_input.pbc_atoms = parsed_input.pbc_atoms.split(',')
+for i, atom in enumerate(parsed_input.pbc_atoms):
+    parsed_input.pbc_atoms[i] = int(atom)
 
 fsdam_obj = fsdam.FSDAMInputPreprocessing(gromacs_path = parsed_input.program_path,
                 vdw_timestep_ps=parsed_input.vdw_timestep_ps,

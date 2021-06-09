@@ -48,19 +48,19 @@ class FSDAMInputPreprocessing(object):
 
         self.gromacs_path = gromacs_path
 
-        self.vdw_timestep_ps = vdw_timestep_ps
+        self.vdw_timestep_ps = float(vdw_timestep_ps)
 
-        self.q_timestep_ps = q_timestep_ps
+        self.q_timestep_ps = float(q_timestep_ps)
 
-        self.vdw_number_of_steps = vdw_number_of_steps
+        self.vdw_number_of_steps = int(vdw_number_of_steps)
 
-        self.q_number_of_steps = q_number_of_steps
+        self.q_number_of_steps = int(q_number_of_steps)
 
         self.creation = creation
 
         self.pbc_atoms = pbc_atoms
 
-        self.number_of_frames_to_use = number_of_frames_to_use
+        self.number_of_frames_to_use = int(number_of_frames_to_use)
 
         self.constrains = constrains
 
