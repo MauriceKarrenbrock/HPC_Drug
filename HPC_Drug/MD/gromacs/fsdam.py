@@ -124,7 +124,7 @@ class FSDAMInputPreprocessing(object):
             ]
 
 
-        output_dictionary = _preprocessing.PreprocessGromacsFSDAM(
+        fsdam_preprocessing_obj = _preprocessing.PreprocessGromacsFSDAM(
             topology_files=[top_file],
             md_program_path=self.gromacs_path,
             alchemical_residue=ligand_resname,
@@ -140,6 +140,7 @@ class FSDAMInputPreprocessing(object):
             q_number_of_steps = self.q_number_of_steps)
             #constrains=self.constrains TODO
             
+        output_dictionary = fsdam_preprocessing_obj.execute()
 
         return output_dictionary
 
