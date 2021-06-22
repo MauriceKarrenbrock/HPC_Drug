@@ -96,7 +96,8 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         if n_steps is None:
 
-            self.n_steps = int(self._get_ns_per_day() * 1.E+3)
+            # 32 ns in total
+            self.n_steps = math.ceil((32000. / self.timestep) / self.BATTERIES)
 
         else:
 
@@ -138,15 +139,15 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
             "",
             "; OUTPUT CONTROL OPTIONS",
             "; Output frequency for coords (x), velocities (v) and forces (f)",
-            "nstxout                  = 100000",
-            "nstvout                  = 100000",
+            "nstxout                  = 5000",
+            "nstvout                  = 5000",
             "nstfout                  = 100000",
             "; Output frequency for energies to log file and energy file",
-            "nstlog                   = 100000",
+            "nstlog                   = 5000",
             "nstcalcenergy            = 100",
-            "nstenergy                = 100000",
+            "nstenergy                = 2500",
             "; Output frequency and precision for .xtc file",
-            "nstxtcout                = 80000",
+            "nstxtcout                = 10000",
             "xtc-precision            = 1000",
             "; This selects the subset of atoms for the .xtc file. You can",
             "; select multiple groups. By default all atoms will be written.",
@@ -462,7 +463,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         filename = "MAKE_TPR_FILES.sh"
 
-        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\nIT IS FOR A PLUMED PATCHED GROMACS INSTALLATION\n\n\n"
+        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\n#IT IS FOR A PLUMED PATCHED GROMACS INSTALLATION\n\n\n"
 
         for i in range(self.BATTERIES):
             for j in range(self.replicas):
@@ -847,7 +848,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         filename = "MAKE_TPR_FILES.sh"
 
-        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\nIT IS FOR A PLUMED PATCHED GROMACS INSTALLATION\n\n\n"
+        string = "#!/bin/bash\n \n##THIS SCRIPT CREATES THE TPR FILES RUN IT BEFORE THE WORKLOADMANAGER ONE\n#IT IS FOR A PLUMED PATCHED GROMACS INSTALLATION\n\n\n"
 
         for i in range(self.BATTERIES):
             for j in range(self.replicas):
