@@ -8,6 +8,7 @@ scipy>=1.4.1
 plumed>=2.6.0 # conda install -c conda-forge plumed
 python>=3.6
 git+https://github.com/MauriceKarrenbrock/FSDAMGromacs.git #FSDAMGromacs
+git+https://github.com/MauriceKarrenbrock/HREMGromacs.git #HREMGromacs
 git+https://github.com/MauriceKarrenbrock/PythonPDBStructures.git #PythonPDBStructures
 
 #not python requirements

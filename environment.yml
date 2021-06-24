@@ -50,6 +50,7 @@ dependencies:
     - pytz
     - tqdm
     - 'git+https://github.com/MauriceKarrenbrock/FSDAMGromacs.git'
+    - 'git+https://github.com/MauriceKarrenbrock/HREMGromacs.git'
     - 'git+https://github.com/MauriceKarrenbrock/PythonAuxiliaryFunctions.git'
     - 'git+https://github.com/MauriceKarrenbrock/PythonFSDAM.git'
     - 'git+https://github.com/MauriceKarrenbrock/PythonPDBStructures.git'
