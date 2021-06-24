@@ -267,7 +267,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         # From resid (0 indexed) to resSeq
         top = mdtraj_trajectory.topology
-        resSeq_to_scale = [top.select(f'resid {resid}')[0].residue.resSeq for resid in resSeq_to_scale]
+        resSeq_to_scale = [top.atom(top.select(f'resid {resid}')[0]).residue.resSeq for resid in resSeq_to_scale]
 
         return _solute_tempering.prepare_topologies_for_hrem(top_file=self.Protein.top_file,
                                 resSeq_to_scale=resSeq_to_scale,
@@ -469,7 +469,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
         """
         mdtraj_trajectory = mdtraj.load(str(Ligand.gro_file))
         top = mdtraj_trajectory.topology
-        resSeq_to_scale = [top.select('all')[0].residue.resSeq]
+        resSeq_to_scale = [top.atom(top.select('all')[0]).residue.resSeq]
 
         return _solute_tempering.prepare_topologies_for_hrem(top_file=Ligand.top_file,
                                 resSeq_to_scale=resSeq_to_scale,
