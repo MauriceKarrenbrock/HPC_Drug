@@ -11,9 +11,6 @@
 This file contains the various pipelines
 """
 
-import subprocess
-import os
-
 from HPC_Drug.PDB import download_pdb
 from HPC_Drug.PDB import mmcif2pdb
 from HPC_Drug.PDB import structural_information_and_repair
@@ -23,8 +20,6 @@ from HPC_Drug.PDB import select_model_chain
 from HPC_Drug.PDB import remove_disordered_atoms
 from HPC_Drug.PDB.organic_ligand import get_ligand_topology
 import HPC_Drug.auxiliary_functions.path as auxiliary_functions_path
-from HPC_Drug.auxiliary_functions import get_iterable
-from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein
 from HPC_Drug.structures import get_ligands
 from HPC_Drug.structures import update_ligands

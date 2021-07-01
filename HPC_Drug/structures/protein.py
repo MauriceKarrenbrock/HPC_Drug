@@ -11,7 +11,7 @@
 This file contains the Protein class
 """
 
-from HPC_Drug.structures import structure
+from HPC_Drug.structures import structure, ligand
 
 class Protein(structure.Structure):
     """The Protein class"""
@@ -96,3 +96,29 @@ class Protein(structure.Structure):
         it is a pointer to it, not a copy, so pay attention"""
 
         return self._ligands
+
+
+def create_protein(protein_kwargs, ligand_kwargs=None):
+    """utility function to build a Protein object max ONEs Ligand
+
+    Parameters
+    ---------------
+    protein_kwargs : dict
+        keyword arguments for the `Protein` constructor
+    ligand_kwargs : disct, optional
+        keyword arguments for the `Ligand` constructor
+        if not given no ligand will be added to the output protein
+
+    Return
+    ---------
+    Protein instance
+    """
+
+    output_protein = Protein(**protein_kwargs)
+
+    if ligand_kwargs is not None:
+        Ligand = ligand.Ligand(**ligand_kwargs)
+        output_protein.add_ligand(Ligand)
+
+    return output_protein
+

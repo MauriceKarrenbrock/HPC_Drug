@@ -44,7 +44,7 @@ class Ligand(structure.Structure):
         self.structure = structure
 
         self.resnum = resnum
-        if type(self.resnum) == str:
+        if isinstance(self.resnum, str):
             self.resnum = int(self.resnum.strip())
 
         self.itp_file = itp_file

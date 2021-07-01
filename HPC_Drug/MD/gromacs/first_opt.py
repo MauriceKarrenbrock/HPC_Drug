@@ -97,7 +97,7 @@ class GromacsFirstOptimizationOnlyLigand(gromacs_input.GromacsInput):
 
             
             command_string = [
-                [f"{self.MD_program_path}", "editconf", "-f", f"{Ligand[i].gro_file}", "-d", "50", "-bt", "triclinic", "-angles", "90", "90", "90", "-o", f"{Ligand[i].gro_file}"],
+                [f"{self.MD_program_path}", "editconf", "-f", f"{Ligand[i].gro_file}", "-d", "1", "-bt", "triclinic", "-angles", "90", "90", "90", "-o", f"{Ligand[i].gro_file}"],
                 [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{Ligand[i].gro_file}", "-p", f"{Ligand[i].top_file}", "-o", f"{os.getcwd()}/{Ligand[i].resname}_only_ligand.tpr", "-maxwarn", "100"],
                 [f"{self.MD_program_path}", "mdrun", "-s", f"{os.getcwd()}/{Ligand[i].resname}_only_ligand.tpr", "-c", f"{os.getcwd()}/{Ligand[i].resname}_only_ligand.gro", '-ntmpi', '1']
             ]
