@@ -20,7 +20,7 @@ import PythonPDBStructures.trajectories.extract_frames as _extract_frames
 import PythonPDBStructures.geometry as _geometry
 
 import FSDAMGromacs.pipelines.preprocessing as _preprocessing
-import FSDAMGromacs.safety_checks as _safety_checks
+import PythonFSDAM.safety_checks as _safety_checks
 
 from HPC_Drug.files_IO import read_file, write_on_files
 
