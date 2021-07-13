@@ -110,7 +110,7 @@ class FSDAMInputPreprocessing(object):
         out_of_pocket_dir.mkdir(parents=True, exist_ok=True)
 
         if self.reference_frame is None:
-            reference_frame = mdtraj.load('BATTERY0/scaled0/HREM.trr', top='BATTERY0/scaled0/HREM.tpr').slice(0)
+            reference_frame = mdtraj.load('BATTERY0/scaled0/HREM.trr', top=str(files[0])).slice(0)
         else:
             reference_frame = mdtraj.load(self.reference_frame)
         nearest_neighbors, _ = _geometry.get_nearest_neighbors_residues_with_mdtraj(
