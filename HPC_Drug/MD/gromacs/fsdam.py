@@ -137,7 +137,7 @@ class FSDAMInputPreprocessing(object):
 
         for i in range(len(files) -1, 0, -1):
             if not lig_in_pocket[i]:
-                shutil.move(files[i], str(out_of_pocket_dir))
+                shutil.move(str(files[i]), str(out_of_pocket_dir))
                 files.pop(i)
         
         return files
