@@ -32,6 +32,7 @@ from HPC_Drug.files_IO import write_on_files
 from HPC_Drug import orient
 from HPC_Drug import important_lists
 import HPC_Drug.MD.gromacs.add_dummy_atom as _dummy_atom
+import HPC_Drug.structures.update_ligands as _update_ligands
 
 
 class GromacsHREMInput(gromacs_input.GromacsInput):
@@ -258,6 +259,10 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         list(pathlib.Path)
             the scaled topologies
         """
+        # It is needed to update the resSeq values
+        # TODO remove the need for this kind of updates
+        self.Protein = _update_ligands.update_ligands(self.Protein)
+
         mdtraj_trajectory = mdtraj.load(str(self.Protein.gro_file))
 
         resSeq_to_scale = _pdb_geo.get_nearest_neighbors_residues_with_mdtraj(
