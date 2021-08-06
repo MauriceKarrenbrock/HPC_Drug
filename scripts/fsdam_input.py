@@ -71,6 +71,22 @@ parser.add_argument('--constrains',
     choices = ['none', 'h-bonds', 'all-bonds'],
     help = "how to constraints vibrations, same syntax as gromacs mdp file default=all-bonds")
 
+parser.add_argument('--reference-frame',
+    action="store",
+    default=None,
+    type=str,
+    help = "A PDB or GRO file to use as reference to get the nearest neighboring residues. "
+    "and if needed the number of atoms in the binding pocket "
+    "if not givent the first frame in the BATTERY0 trajectory will be used")
+
+parser.add_argument('--atoms-in-pocket',
+    action="store",
+    default=None,
+    type=int,
+    help = "The number of atoms that must be in the binding pocket uìin order to consider the ligand "
+    "in the pocket. If not given the number of atoms in the --reference-frame will be used ")
+
+
 parsed_input = parser.parse_args()
 
 parsed_input.program_path = path.absolute_programpath(parsed_input.program_path)
@@ -84,9 +100,10 @@ elif parsed_input.hrem_type == "only-ligand":
     creation=True
 
 # From comma separated list to list of int
-parsed_input.pbc_atoms = parsed_input.pbc_atoms.split(',')
-for i, atom in enumerate(parsed_input.pbc_atoms):
-    parsed_input.pbc_atoms[i] = int(atom)
+if parsed_input.pbc_atoms is not None:
+    parsed_input.pbc_atoms = parsed_input.pbc_atoms.split(',')
+    for i, atom in enumerate(parsed_input.pbc_atoms):
+        parsed_input.pbc_atoms[i] = int(atom)
 
 fsdam_obj = fsdam.FSDAMInputPreprocessing(gromacs_path = parsed_input.program_path,
                 vdw_timestep_ps=parsed_input.vdw_timestep_ps,
@@ -96,6 +113,8 @@ fsdam_obj = fsdam.FSDAMInputPreprocessing(gromacs_path = parsed_input.program_pa
                 creation=creation,
                 pbc_atoms=parsed_input.pbc_atoms,
                 number_of_frames_to_use=parsed_input.number_of_frames_to_use,
-                constrains=parsed_input.constrains)
+                constrains=parsed_input.constrains,
+                reference_frame=parsed_input.reference_frame,
+                atoms_in_pocket=parsed_input.atoms_in_pocket)
 
 fsdam_obj.execute()

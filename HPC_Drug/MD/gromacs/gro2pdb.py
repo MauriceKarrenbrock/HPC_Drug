@@ -12,56 +12,51 @@
 gro2pdb and pdb2gro
 """
 
+from pathlib import Path
+import mdtraj
 from HPC_Drug.PDB import add_chain_id
-from HPC_Drug.auxiliary_functions import run
 
 
-def gro2pdb(gro_file, pdb_file = None, chain = 'A', gromacs_path = 'gmx'):
-    """converts a gro file in a pdb using gmx editconf and adds
-    the chain identifier to the pdb (it is missing and it confuses many pdb parsers)
+def gro2pdb(gro_file, pdb_file = None, chain = 'A'):
+    """converts a gro file in a pdb using mdtraj and adds
+    the given chain identifier to the pdb
 
-    gro_file :: string, the gro file to convert
-    pdb_file :: string, optional, the name of the output file
+    gro_file :: string or path, the gro file to convert
+    pdb_file :: string or path, optional, the name of the output file
     chain :: string, optional, default = A, it is the chain value that will be inserted in the pdb
-    gromacs_path :: string, the gromacs executable default gmx
-
-    all file names MUST be ABSOLUTE PATHS!!!
 
     returns a string of the pdb file name
     """
 
-    if pdb_file == None:
-        pdb_file = gro_file.rsplit('.', 1)[0].strip() + ".pdb"
+    gro_file = Path(gro_file).resolve()
 
-    run.subprocess_run(commands = [f"{gromacs_path}", "editconf", "-f", f"{gro_file}", "-o", f"{pdb_file}"],
-                    shell = False,
-                    error_string = "Could not convert the gro file in pdb")
+    if pdb_file == None:
+        pdb_file = gro_file.with_suffix('.pdb')
+
+    mdtraj.load(str(gro_file)).save(str(pdb_file), force_overwrite=True)
 
     add_chain_id.add_chain_id(pdb_file = pdb_file, chain = chain)
 
-    return pdb_file
+    return str(pdb_file)
 
 
 
-def pdb2gro(pdb_file, gro_file = None, gromacs_path = 'gmx'):
-    """converts a pdb file in a gro using gmx editconf
+def pdb2gro(pdb_file, gro_file = None):
+    """converts a pdb file in a gro using mdtraj
 
     pdb_file :: string, the pdb file to convert
     gro_file :: string, optional, the name of the output file
-    gromacs_path :: string, the gromacs executable default gmx
-
-    all file names MUST be ABSOLUTE PATHS!!!
 
     returns a string of the gro file name
     """
 
+    pdb_file = Path(pdb_file).resolve()
+
     if gro_file == None:
-        gro_file = pdb_file.rsplit('.', 1)[0].strip() + ".gro"
+        gro_file = pdb_file.with_suffix('.gro')
 
-    run.subprocess_run(commands = [f"{gromacs_path}", "editconf", "-f", f"{pdb_file}", "-o", f"{gro_file}"],
-                    shell = False,
-                    error_string = "Could not convert the pdb file in gro")
+    mdtraj.load(str(pdb_file)).save(str(gro_file), force_overwrite=True)
 
-    return gro_file
+    return str(gro_file)
 
 

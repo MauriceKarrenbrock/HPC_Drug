@@ -53,7 +53,7 @@ class GromacsInput(object):
         if pdb_file is None:
             pdb_file = self.output_pdb_file
 
-        pdb_file = gro2pdb.gro2pdb(gro_file = gro_file, pdb_file = pdb_file, chain = self.Protein.chain, gromacs_path = self.MD_program_path)
+        pdb_file = gro2pdb.gro2pdb(gro_file = gro_file, pdb_file = pdb_file, chain = self.Protein.chain)
 
         return pdb_file
 
@@ -68,7 +68,7 @@ class GromacsInput(object):
         if pdb_file is None:
             pdb_file = self.output_pdb_file
 
-        gro_file = gro2pdb.pdb2gro(pdb_file = pdb_file, gro_file = gro_file, gromacs_path = self.MD_program_path)
+        gro_file = gro2pdb.pdb2gro(pdb_file = pdb_file, gro_file = gro_file)
 
         return gro_file
 

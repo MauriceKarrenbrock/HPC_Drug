@@ -17,8 +17,10 @@ import warnings
 import mdtraj
 
 import PythonPDBStructures.trajectories.extract_frames as _extract_frames
+import PythonPDBStructures.geometry as _geometry
 
 import FSDAMGromacs.pipelines.preprocessing as _preprocessing
+import PythonFSDAM.safety_checks as _safety_checks
 
 from HPC_Drug.files_IO import read_file, write_on_files
 
@@ -33,7 +35,9 @@ class FSDAMInputPreprocessing(object):
                 creation=True,
                 pbc_atoms=None,
                 number_of_frames_to_use=200,
-                constrains=None):
+                constrains=None,
+                reference_frame=None,
+                atoms_in_pocket=None):
 
         #the root directory of the HREM
         self.HREM_dir = os.getcwd()
@@ -67,6 +71,9 @@ class FSDAMInputPreprocessing(object):
             'instead, you can change the mdp file manually')
         self.constrains = constrains
 
+        self.reference_frame = reference_frame
+        self.atoms_in_pocket = atoms_in_pocket
+
 
     def _create_restart_configs(self, fsdam_dir):
         """
@@ -93,6 +100,46 @@ class FSDAMInputPreprocessing(object):
             i = i + 1
 
         return output_files
+
+    def _remove_frames_with_ligand_out_of_pocket(self, files, ligand_resname, fsdam_dir):
+
+        out_of_pocket_dir = (Path(fsdam_dir)) / 'ligand_out_of_pocket'
+        out_of_pocket_dir.mkdir(parents=True, exist_ok=True)
+
+        if self.reference_frame is None:
+            reference_frame = mdtraj.load('BATTERY0/scaled0/HREM.trr', top=str(files[0])).slice(0)
+        else:
+            reference_frame = mdtraj.load(self.reference_frame)
+        nearest_neighbors, _ = _geometry.get_nearest_neighbors_residues_with_mdtraj(
+            reference_frame,
+            ligand_atoms=f'resname {ligand_resname}'
+        )
+
+        nearest_neighbors = [str(i) for i in nearest_neighbors]
+        nearest_neighbors = 'resid ' + (' '.join(nearest_neighbors))
+
+        if self.atoms_in_pocket is None:
+            atoms_in_pocket = _safety_checks.get_atoms_in_pocket(ligand=f'resname {ligand_resname}',
+                pocket=nearest_neighbors,
+                pdb_file=reference_frame)
+        else:
+            atoms_in_pocket = self.atoms_in_pocket
+
+        lig_in_pocket = _safety_checks.check_ligand_in_pocket(ligand=f'resname {ligand_resname}',
+                           pocket=nearest_neighbors,
+                           pdb_file=files,
+                           n_atoms_inside=atoms_in_pocket,
+                           top=None,
+                           make_molecules_whole=False)
+
+        for i in range(len(files) -1, 0, -1):
+            if not lig_in_pocket[i]:
+                shutil.move(str(files[i]), str(out_of_pocket_dir))
+                files.pop(i)
+        
+        return files
+
+
 
     def _make_input_files(self, ligand_resname, top_file, starting_structures):
 
@@ -260,6 +307,12 @@ class FSDAMInputPreprocessing(object):
                 useful_info[line[0].strip()] = line[1].strip()
 
         starting_configurations = self._create_restart_configs(fsdam_dir = fsdam_dir)
+
+        if not self.creation:
+            starting_configurations = self._remove_frames_with_ligand_out_of_pocket(
+                files=starting_configurations,
+                ligand_resname=useful_info['ligand_resname'],
+                fsdam_dir=fsdam_dir)
 
         starting_configurations = self._select_frames_to_use(starting_configurations, not_used_dir=f'{fsdam_dir}/not_used_frames')
 
