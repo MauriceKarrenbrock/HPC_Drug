@@ -79,14 +79,11 @@ class FSDAMInputPreprocessing(object):
         i = 0
         while os.path.exists(f"BATTERY{i}"):
 
-            number_of_files = _extract_frames.extract_frames(
-                delta_steps=1,
+            number_of_files = _extract_frames.extract_all_frames(
                 trajectory=f'BATTERY{i}/scaled0/HREM.trr',
                 topology=f'BATTERY{i}/scaled0/HREM.tpr',
                 output_name=f'{fsdam_dir}/BATTERY{i}_',
-                output_format='gro',
-                starting=100,
-                end=None
+                output_format='gro'
             )
 
             for k in range(number_of_files):
