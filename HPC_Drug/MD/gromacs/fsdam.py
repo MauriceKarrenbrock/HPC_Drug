@@ -109,7 +109,7 @@ class FSDAMInputPreprocessing(object):
 
         BATTERY_dirs = [str(i) for i in Path('.').glob('BATTERY*')]
         parallel_input_list = [str(not_used_dir)] * len(BATTERY_dirs)
-        parallel_input_list = [BATTERY_dirs, parallel_input_list]
+        parallel_input_list = list(zip(BATTERY_dirs, parallel_input_list))
 
         number_of_cpu = int(os.environ.get('OMP_NUM_THREADS', 1))
         number_of_cpu = min(number_of_cpu, len(BATTERY_dirs))
