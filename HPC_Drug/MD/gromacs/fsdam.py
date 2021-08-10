@@ -13,6 +13,7 @@ import shutil
 import random
 from pathlib import Path
 import warnings
+from multiprocessing import Pool
 
 import mdtraj
 
@@ -23,6 +24,27 @@ import FSDAMGromacs.pipelines.preprocessing as _preprocessing
 import PythonFSDAM.safety_checks as _safety_checks
 
 from HPC_Drug.files_IO import read_file, write_on_files
+
+def _frame_extract_helper(battery, not_used_dir):
+    """helper function for parallelization
+
+    I extracted it from the class to have a little
+    problems due to pickling as possible
+    """
+
+    number_of_files = _extract_frames.extract_all_frames(
+            trajectory=f'{battery}/scaled0/HREM.trr',
+            topology=f'{battery}/scaled0/HREM.tpr',
+            output_name=f'{not_used_dir}/{battery}_',
+            output_format='gro'
+        )
+
+    files = []
+    for k in range(number_of_files):
+
+        files.append(Path(f'{not_used_dir}/{battery}_{k}.gro').resolve())
+
+    return files
 
 class FSDAMInputPreprocessing(object):
 
@@ -84,20 +106,22 @@ class FSDAMInputPreprocessing(object):
 
         starting_files = []
         i = 0
-        while os.path.exists(f"BATTERY{i}"):
 
-            number_of_files = _extract_frames.extract_all_frames(
-                trajectory=f'BATTERY{i}/scaled0/HREM.trr',
-                topology=f'BATTERY{i}/scaled0/HREM.tpr',
-                output_name=f'{not_used_dir}/BATTERY{i}_',
-                output_format='gro'
-            )
+        BATTERY_dirs = [str(i) for i in Path('.').glob('BATTERY*')]
+        parallel_input_list = [str(not_used_dir)] * len(BATTERY_dirs)
+        parallel_input_list = [BATTERY_dirs, parallel_input_list]
 
-            for k in range(number_of_files):
+        number_of_cpu = int(os.environ.get('OMP_NUM_THREADS', 1))
+        number_of_cpu = min(number_of_cpu, len(BATTERY_dirs))
+        with Pool(number_of_cpu) as pool:
 
-                starting_files.append(Path(f'{not_used_dir}/BATTERY{i}_{k}.gro').resolve())
-            
-            i = i + 1
+            tmp_files = pool.starmap(
+                _frame_extract_helper, parallel_input_list, chunksize=1)
+
+        starting_files = []
+
+        for i in tmp_files:
+            starting_files += i
 
         #randomly shuffle the structure files
         random.shuffle(starting_files)
