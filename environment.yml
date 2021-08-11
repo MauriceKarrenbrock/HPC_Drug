@@ -4,6 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - openbabel=2.4
   - gawk
   - gsl
   - numpy

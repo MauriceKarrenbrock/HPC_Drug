@@ -10,6 +10,7 @@ python>=3.6
 git+https://github.com/MauriceKarrenbrock/FSDAMGromacs.git #FSDAMGromacs
 git+https://github.com/MauriceKarrenbrock/HREMGromacs.git #HREMGromacs
 git+https://github.com/MauriceKarrenbrock/PythonPDBStructures.git #PythonPDBStructures
+openbabel=2.4
 
 #not python requirements
 #primadorac http://www.chim.unifi.it/orac
