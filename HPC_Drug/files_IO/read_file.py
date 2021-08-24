@@ -15,12 +15,9 @@ def read_file(file_name):
     """Reads the given text file and returns a list
     containing the lines
     
-    file :: string
+    file :: str or path
     
     Can have problems with very big files"""
-
-    if type(file_name) != str:
-        raise TypeError(f"Need a string not a {type(file_name)}")
 
     with open(file_name, 'r') as f:
 
