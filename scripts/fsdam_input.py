@@ -86,6 +86,13 @@ parser.add_argument('--atoms-in-pocket',
     help = "The number of atoms that must be in the binding pocket uìin order to consider the ligand "
     "in the pocket. If not given the number of atoms in the --reference-frame will be used ")
 
+parser.add_argument('--extra-frames',
+    action="store_true",
+    default=False,
+    help = "If you put this flag it means that you want to do some extra runs and the script "
+    "will expect an already existing RESTART directory created before "
+    "as long as you have enough frames in RESTART/not_used_dir you can reuse this command and "
+    "a new extra direcoty will be created (enumerated from 0 to i-1)")
 
 parsed_input = parser.parse_args()
 
@@ -115,6 +122,7 @@ fsdam_obj = fsdam.FSDAMInputPreprocessing(gromacs_path = parsed_input.program_pa
                 number_of_frames_to_use=parsed_input.number_of_frames_to_use,
                 constrains=parsed_input.constrains,
                 reference_frame=parsed_input.reference_frame,
-                atoms_in_pocket=parsed_input.atoms_in_pocket)
+                atoms_in_pocket=parsed_input.atoms_in_pocket,
+                extra_frames=parsed_input.extra_frames)
 
 fsdam_obj.execute()

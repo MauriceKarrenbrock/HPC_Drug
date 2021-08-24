@@ -59,7 +59,8 @@ class FSDAMInputPreprocessing(object):
                 number_of_frames_to_use=200,
                 constrains=None,
                 reference_frame=None,
-                atoms_in_pocket=None):
+                atoms_in_pocket=None,
+                extra_frames=False):
 
         #the root directory of the HREM
         self.HREM_dir = os.getcwd()
@@ -96,6 +97,8 @@ class FSDAMInputPreprocessing(object):
         self.reference_frame = reference_frame
         self.atoms_in_pocket = atoms_in_pocket
 
+        self.extra_frames = extra_frames
+
 
     def _create_restart_configs(self, fsdam_dir, not_used_dir, ligand_resname):
         """
@@ -104,24 +107,29 @@ class FSDAMInputPreprocessing(object):
         Makes the starting files for fs-dam and writes them in the RESTART dir
         """
 
-        starting_files = []
-        i = 0
+        # Extract files from trajectory only the first time
+        if not self.extra_frames:
+            starting_files = []
+            i = 0
 
-        BATTERY_dirs = [str(i) for i in Path('.').glob('BATTERY*')]
-        parallel_input_list = [str(not_used_dir)] * len(BATTERY_dirs)
-        parallel_input_list = list(zip(BATTERY_dirs, parallel_input_list))
+            BATTERY_dirs = [str(i) for i in Path('.').glob('BATTERY*')]
+            parallel_input_list = [str(not_used_dir)] * len(BATTERY_dirs)
+            parallel_input_list = list(zip(BATTERY_dirs, parallel_input_list))
 
-        number_of_cpu = int(os.environ.get('OMP_NUM_THREADS', 1))
-        number_of_cpu = min(number_of_cpu, len(BATTERY_dirs))
-        with Pool(number_of_cpu) as pool:
+            number_of_cpu = int(os.environ.get('OMP_NUM_THREADS', 1))
+            number_of_cpu = min(number_of_cpu, len(BATTERY_dirs))
+            with Pool(number_of_cpu) as pool:
 
-            tmp_files = pool.starmap(
-                _frame_extract_helper, parallel_input_list, chunksize=1)
+                tmp_files = pool.starmap(
+                    _frame_extract_helper, parallel_input_list, chunksize=1)
 
-        starting_files = []
+            starting_files = []
 
-        for i in tmp_files:
-            starting_files += i
+            for i in tmp_files:
+                starting_files += i
+
+        else:
+            starting_files = [str(i) for i in Path('.').glob(f'{not_used_dir}/*.gro')]
 
         #randomly shuffle the structure files
         random.shuffle(starting_files)
@@ -328,10 +336,19 @@ class FSDAMInputPreprocessing(object):
 
             os.chdir(self.HREM_dir)
 
-        fsdam_dir = "RESTART"
+        if self.extra_frames:
+            i = 0
+            while Path(f'Extra_RESTART{i}').exists():
+                i += 1
+            Path(f'Extra_RESTART{i}').mkdir()
+            fsdam_dir = f'Extra_RESTART{i}'
 
-        os.makedirs(fsdam_dir, exist_ok=True)
-        os.makedirs(f'{fsdam_dir}/not_used_frames', exist_ok=True)
+        else:
+            fsdam_dir = "RESTART"
+            Path(fsdam_dir).mkdir(exist_ok=True)
+            Path(f'{fsdam_dir}/not_used_frames').mkdir(exist_ok=True)
+        
+        not_used_dir = 'RESTART/not_used_frames'
 
         #making some defaults
         useful_info = {
@@ -355,7 +372,7 @@ class FSDAMInputPreprocessing(object):
         # Extract frames and check if they are out of pocket
         # if self.creation==False (protein ligand system)
         starting_configurations = self._create_restart_configs(fsdam_dir = fsdam_dir,
-            not_used_dir=f'{fsdam_dir}/not_used_frames',
+            not_used_dir=not_used_dir,
             ligand_resname=useful_info['ligand_resname'])
 
         if self.creation:
@@ -366,8 +383,10 @@ class FSDAMInputPreprocessing(object):
 
             useful_info["top_file"] = 'ligand_solvent_topology.top'
 
-            self._edit_top(ligand_top=useful_info["top_file"],
-                only_solvent_top=useful_info["only_solvent_top"])
+            # Only modify it the first time
+            if not self.extra_frames:
+                self._edit_top(ligand_top=useful_info["top_file"],
+                    only_solvent_top=useful_info["only_solvent_top"])
 
         output_dictionary = self._make_input_files(
             ligand_resname=useful_info["ligand_resname"],
