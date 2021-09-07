@@ -245,8 +245,8 @@ class FSDAMInputPreprocessing(object):
             vdw_timestep_ps = self.vdw_timestep_ps,
             q_timestep_ps = self.q_timestep_ps,
             vdw_number_of_steps = self.vdw_number_of_steps,
-            q_number_of_steps = self.q_number_of_steps)
-            #constrains=self.constrains TODO
+            q_number_of_steps = self.q_number_of_steps,
+            constrains=self.constrains)
             
         output_dictionary = fsdam_preprocessing_obj.execute()
 
