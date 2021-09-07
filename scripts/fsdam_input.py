@@ -99,8 +99,6 @@ parser.add_argument('--extra-frames',
 
 parsed_input = parser.parse_args()
 
-parsed_input.program_path = path.absolute_programpath(parsed_input.program_path)
-
 if parsed_input.hrem_type == "protein-ligand":
 
     creation=False
