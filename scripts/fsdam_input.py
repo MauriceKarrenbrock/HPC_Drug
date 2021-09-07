@@ -16,7 +16,10 @@ from HPC_Drug.MD.gromacs import fsdam
 
 parser = argparse.ArgumentParser(
     description="This script creates the input for FS-DAM both for the boded and unbonded system. "
-    "For Gromacs\n You must run this script in the HREM root directory",
+    "For Gromacs\n You must run this script in the HREM root directory\n"
+    "The frames extraction from the HREM trajectory can be parallelized by setting the "
+    "environment variable OMP_NUM_THREADS, but in any cas the program will "
+    "never use more core than the number of existing BATTERY* directories, the default is 1",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--program-path',
