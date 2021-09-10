@@ -69,10 +69,10 @@ if parsed_input.md_program == 'gromacs':
     bound_files = [[], []]
 
     bound_files[0] = bound_dir.glob('RESTART/q*.xvg')
-    bound_files[0] = [i.resolve() for i in bound_files if 'pull' not in str(i)]
+    bound_files[0] = [i.resolve() for i in bound_files[0] if 'pull' not in str(i)]
 
     bound_files[1] = bound_dir.glob('RESTART/vdw*.xvg')
-    bound_files[1] = [i.resolve() for i in bound_files if 'pull' not in str(i)]
+    bound_files[1] = [i.resolve() for i in bound_files[1] if 'pull' not in str(i)]
 
     i = 0
     while (bound_dir / f'Extra_RESTART{i}').exists():
@@ -88,10 +88,10 @@ if parsed_input.md_program == 'gromacs':
     unbound_files = [[], []]
 
     unbound_files[0] = unbound_dir.glob('RESTART/vdw*.xvg')
-    unbound_files[0] = [i.resolve() for i in unbound_files if 'pull' not in str(i)]
+    unbound_files[0] = [i.resolve() for i in unbound_files[0] if 'pull' not in str(i)]
 
     unbound_files[1] = unbound_dir.glob('RESTART/q*.xvg')
-    unbound_files[1] = [i.resolve() for i in unbound_files if 'pull' not in str(i)]
+    unbound_files[1] = [i.resolve() for i in unbound_files[1] if 'pull' not in str(i)]
 
     i = 0
     while (unbound_dir / f'Extra_RESTART{i}').exists():
