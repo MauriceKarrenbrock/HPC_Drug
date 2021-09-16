@@ -7,15 +7,17 @@
 # A copy of the license must be included with any copy of the program or part of it  #
 ######################################################################################
 
+from pathlib import Path
 import openbabel
 
-def convert_and_protonate_pdb_to_sdf(pdb_file, sdf_file, ph=7.0, ligand_resname='LIG'):
-    """Uses openbabel to convert a pdb to ad sdf and adds hydrogens at the given pH
+def convert_and_protonate_file_to_sdf(input_file, sdf_file, ph=7.0, ligand_resname='LIG'):
+    """Uses openbabel to convert a input file to ad sdf and adds hydrogens at the given pH
 
     Parameters
     ------------
-    pdb_file : str or path
-        the input pdb file
+    input_file : str or path
+        the input file, it's format will be taken from the suffix
+        must be supported by openbabel
     sdf_file : str or path
         the output sdf file
     ph : float, default=7.0
@@ -31,11 +33,11 @@ def convert_and_protonate_pdb_to_sdf(pdb_file, sdf_file, ph=7.0, ligand_resname=
     """
 
     obConversion = openbabel.OBConversion()
-    obConversion.SetInAndOutFormats("pdb", "sdf")
+    obConversion.SetInAndOutFormats(Path(input_file).suffix[1:], "sdf")
 
     mol = openbabel.OBMol()
 
-    obConversion.ReadFile(mol, str(pdb_file))
+    obConversion.ReadFile(mol, str(input_file))
 
     if ph is not None:
         mol.DeleteHydrogens()
