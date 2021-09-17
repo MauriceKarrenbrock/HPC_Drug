@@ -337,83 +337,65 @@ class NoLigandPipeline(Pipeline):
 
             Protein = residue_renamer.execute()
 
-        if self.MD_program == 'gromacs':
+        from HPC_Drug.MD.gromacs import make_top, first_opt, solv_box, hrem
 
-            from HPC_Drug.MD.gromacs import make_top, first_opt, solv_box, hrem
+        #Make the protein's gro and top file
+        gro_top_maker = make_top.GromacsMakeProteinGroTop(Protein = Protein,
+                                                solvent_model = self.solvent_pdb,
+                                                MD_program_path = self.MD_program_path)
+        
+        Protein = gro_top_maker.execute()
 
-            
-            #a patch to add possible missing TER lines in pdb files
-            #adressing issues #2733 and #2736 on biopython github
-            #Will be removed when the issues will be solved
-            with open(Protein.pdb_file, 'r') as f:
-                lines = f.readlines()
-
-            with open(Protein.pdb_file, 'w') as f:
-                for i in range(len(lines)-1):
-                    if lines[i][0:4] == 'ATOM' and lines[i + 1][0:6] == 'HETATM':
-                        #writes a TER line on the last ATOM of each chain (not robust for not natural AA)
-                        lines[i] = lines[i].strip() + '\n' + "{0:<6}{1}{2}{3}".format("TER", lines[i][6:11], ' '*6, lines[i][17:26])
-                    
-                    f.write(f"{lines[i].strip()}\n")
-
-                f.write(f"{lines[len(lines)-1].strip()}\n")
-            #END OF PATCH
-
-
-            
-
-            #Make the protein's gro and top file
-            gro_top_maker = make_top.GromacsMakeProteinGroTop(Protein = Protein,
-                                                    solvent_model = self.solvent_pdb,
-                                                    MD_program_path = self.MD_program_path)
-            
-            Protein = gro_top_maker.execute()
-
-            #merges the protein and the ligand in a single gro and top file
-            gro_top_merger = make_top.GromacsMakeJoinedProteinLigandTopGro(Protein = Protein,
-                                                                        MD_program_path = self.MD_program_path)
-
-            Protein = gro_top_merger.execute()
-
-            #makes a gro and top for the ligands
-            Protein = update_ligands.update_ligands(Protein = Protein, chain_model_selection = False)
-
-            only_ligand_top_gro_maker = make_top.GromacsMakeOnlyLigandTopGro(Protein = Protein,
-                                                        MD_program_path = self.MD_program_path,
-                                                        solvent_model = self.solvent_pdb)
-
-            Protein = only_ligand_top_gro_maker.execute()
-
-
-
-            #makes a fast geometry optimization of the protein ligand system
-            first_opt_obj = first_opt.GromacsFirstOptimization(Protein = Protein,
-                                                        MD_program_path = self.MD_program_path)
-
-            Protein = first_opt_obj.execute()
-
-            #make fast optimization for the only ligands files
-            first_opt_only_ligand = first_opt.GromacsFirstOptimizationOnlyLigand(Protein = Protein,
+        #merges the protein and the ligand in a single gro and top file
+        gro_top_merger = make_top.GromacsMakeJoinedProteinLigandTopGro(Protein = Protein,
                                                                     MD_program_path = self.MD_program_path)
 
-            Protein = first_opt_only_ligand.execute()
+        Protein = gro_top_merger.execute()
+
+        #makes a gro and top for the ligands
+        Protein = update_ligands.update_ligands(Protein = Protein, chain_model_selection = False)
+
+        only_ligand_top_gro_maker = make_top.GromacsMakeOnlyLigandTopGro(Protein = Protein,
+                                                    MD_program_path = self.MD_program_path,
+                                                    solvent_model = self.solvent_pdb)
+
+        Protein = only_ligand_top_gro_maker.execute()
 
 
-            if Protein.get_ligand_list() == []:
-                raise RuntimeError('I could not find organic ligands in the structure\n\
-                Maybe the ones you where looking for are in the important_lists.trash list\n\
-                In any case I did some optimizations on your protein, hoping it will come in handy')
 
-            elif len(Protein.get_ligand_list()) > 1:
-                raise RuntimeError(f"Found more than one Ligand {Protein.get_ligand_list()}")
+        #makes a fast geometry optimization of the protein ligand system
+        first_opt_obj = first_opt.GromacsFirstOptimization(Protein = Protein,
+                                                    MD_program_path = self.MD_program_path)
 
-            #makes and optimizes a solvent box
-            solv_box_obj = solv_box.GromacsSolvBoxInput(Protein = Protein,
-                                                MD_program_path = self.MD_program_path,
-                                                box_borders = self.box_borders,
-                                                box_shape = self.box_shape)
+        Protein = first_opt_obj.execute()
 
-            Protein = solv_box_obj.execute()
+        #make fast optimization for the only ligands files
+        first_opt_only_ligand = first_opt.GromacsFirstOptimizationOnlyLigand(Protein = Protein,
+                                                                MD_program_path = self.MD_program_path)
+
+        Protein = first_opt_only_ligand.execute()
+
+
+        if Protein.get_ligand_list() == []:
+            raise RuntimeError('I could not find organic ligands in the structure\n\
+            Maybe the ones you where looking for are in the important_lists.trash list\n\
+            In any case I did some optimizations on your protein, hoping it will come in handy')
+
+        elif len(Protein.get_ligand_list()) > 1:
+            raise RuntimeError(f"Found more than one Ligand {Protein.get_ligand_list()}")
+
+        #makes and optimizes a solvent box
+        solv_box_obj = solv_box.GromacsSolvBoxInput(Protein = Protein,
+                                            MD_program_path = self.MD_program_path,
+                                            box_borders = self.box_borders,
+                                            box_shape = self.box_shape)
+
+        Protein = solv_box_obj.execute()
+
+        # The first steps are always done with gromacs and only later
+        # the HREM part is done separately for each implemented
+        # MD program
+        if self.MD_program == 'gromacs':
 
             #create the REM input for Plumed patched gromacs
             hrem_input = hrem.GromacsHREMInput(Protein = Protein,
@@ -454,82 +436,6 @@ class NoLigandPipeline(Pipeline):
                                                 constraints=self.constraints_unbound_hrem)
 
             Protein = ligand_hrem_input.execute()
-
-        elif self.MD_program == 'orac':
-
-            from HPC_Drug.MD.orac import first_opt, solv_box, hrem, orac_seqres
-
-            from HPC_Drug.PDB import merge_pdb
-
-            
-            #update the seqres with the names needed for Orac
-            Protein = orac_seqres.custom_orac_seqres_from_PDB(Protein)
-
-            #Creating a joined pdb of protein + ligand
-            Protein = merge_pdb.merge_pdb(Protein = Protein)
-
-            #makes a gro and top for the ligands
-            Protein = update_ligands.update_ligands(Protein = Protein, chain_model_selection = False)
-
-            #first structure optimization, with standard tpg and prm (inside lib module)
-            first_opt_obj = first_opt.OracFirstOptimization(Protein = Protein,
-                                                        MD_program_path = self.MD_program_path)
-
-
-            Protein = first_opt_obj.execute()
-
-            #make fast optimization for the only ligands files
-            first_opt_only_ligand = first_opt.OracFirstOptimizationOnlyLigand(Protein = Protein,
-                                                                    MD_program_path = self.MD_program_path)
-
-            Protein = first_opt_only_ligand.execute()
-
-            if Protein.get_ligand_list() == []:
-                raise RuntimeError('I could not find organic ligands in the structure\n\
-                Maybe the ones you where looking for are in the important_lists.trash list\n\
-                In any case I did some optimizations on your protein, hoping it will come in handy')
-
-            elif len(Protein.get_ligand_list()) > 1:
-                raise RuntimeError(f"Found more than one Ligand {Protein.get_ligand_list()}")
-        
-            solv_box_obj = solv_box.OracSolvBoxInput(Protein = Protein,
-                                                MD_program_path = self.MD_program_path,
-                                                solvent_pdb = self.solvent_pdb)
-            
-            Protein = solv_box_obj.execute()
-
-
-            #Create the REM input
-            hrem_input_obj = hrem.HREMOracInput(Protein = Protein,
-                                                MD_program_path = self.MD_program_path,
-                                                solvent_pdb = self.solvent_pdb,
-                                                kind_of_processor = self.kind_of_processor,
-                                                number_of_cores_per_node = self.number_of_cores_per_node,
-                                                number_of_replicas = self.number_of_hrem_replicas_per_battery_bound)
-
-            Protein = hrem_input_obj.execute()
-
-            #optimize a box of only water
-            solv_box_only_water = solv_box.OptimizeOnlyWaterBox(solvent_box = None,
-                                                                tpg_file = Protein.tpg_file,
-                                                                prm_file = Protein.prm_file,
-                                                                MD_program_path = self.MD_program_path,
-                                                                chain = Protein.chain)
-
-            only_water_pdb = solv_box_only_water.execute()
-
-            #make the hrem input for the ligand
-            hrem_only_ligand = hrem.HREMOracInputOnlyLigand(Protein = Protein,
-                                                            solvent_box = only_water_pdb,
-                                                            MD_program_path = self.MD_program_path,
-                                                            number_of_cores_per_node = self.number_of_cores_per_node,
-                                                            number_of_replicas = self.number_of_hrem_replicas_per_battery_unbound)
-
-            Protein = hrem_only_ligand.execute()
-
-            
-        else:
-            raise NotImplementedError(self.MD_program)
 
         return Protein
         
