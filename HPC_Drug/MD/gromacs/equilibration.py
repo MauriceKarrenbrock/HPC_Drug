@@ -18,11 +18,9 @@ except ImportError: # python<=3.6
     import importlib_resources
 
 from HPC_Drug.MD.gromacs import gromacs_input
-from HPC_Drug.files_IO import write_on_files
-from HPC_Drug.files_IO import read_file
 
 
-class GromacsSolvBoxInput(gromacs_input.GromacsInput): 
+class GromacsEquilibrationInput(gromacs_input.GromacsInput): 
     """Creates and optimizes a water box around the protein
     
     Parameters
@@ -38,42 +36,22 @@ class GromacsSolvBoxInput(gromacs_input.GromacsInput):
 
     def __init__(self,
                 Protein = None,
-                MD_program_path = 'gmx',
-                box_borders = 1.2,
-                box_shape = 'cubic'):
+                MD_program_path = 'gmx'):
 
         super().__init__(Protein = Protein,
                         MD_program_path = MD_program_path)
 
-        self.output_gro_file = os.getcwd() + "/" + f"{self.Protein.protein_id}_solvbox.gro"
+        self.output_gro_file = os.getcwd() + "/" + f"{self.Protein.protein_id}_equilibration.gro"
         
-        self.output_pdb_file = os.getcwd() + "/" +  f"{self.Protein.protein_id}_solvbox.pdb"
+        self.output_pdb_file = os.getcwd() + "/" +  f"{self.Protein.protein_id}_equilibration.pdb"
 
-        self.mdp_file = os.getcwd() + "/" + f"{self.Protein.protein_id}_solvbox.mdp"
+        self.mdp_file = os.getcwd() + "/" + f"{self.Protein.protein_id}_equilibration.mdp"
 
-        self.output_tpr_file = os.getcwd() +  "/" + f"{self.Protein.protein_id}_solvbox.tpr"
-        
-        if box_borders is None:
-
-            box_borders = 1.2
-        
-        self.box_borders = box_borders
-
-        if box_shape is None:
-
-            box_shape = 'cubic'
-
-        elif box_shape not in ('cubic', 'triclinic'):
-
-            raise ValueError(f'box_shape can only be cubic or triclinic, not {box_shape}')
-
-        self.box_shape = box_shape
+        self.output_tpr_file = os.getcwd() +  "/" + f"{self.Protein.protein_id}_equilibration.tpr"
 
         #creates the .tpr of the structure + the box of water and then optimizes the system
         self.command_string = [
-            [f"{self.MD_program_path}", "editconf", "-f", f"{self.Protein.gro_file}", "-d", f"{self.box_borders}", "-bt", f"{box_shape}", "-angles", "90", "90", "90", "-o", f"{self.output_gro_file}"],
-            [f"{self.MD_program_path}", "solvate", "-cp", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-o", f"{self.output_gro_file}"],
-            [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.Protein.top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
+            [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.Protein.gro_file}", "-p", f"{self.Protein.top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
             [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}", '-ntmpi', '1']
         ]
 
@@ -225,75 +203,32 @@ class GromacsSolvBoxInput(gromacs_input.GromacsInput):
                         "morse                    = no"
                         ]
 
-    # def _edit_top_file(self):
-    #     """
-    #     private
-        
-    #     Adds the needed #include for water
-    #     to the protein top file
-    #     """
 
-    #     top = read_file.read_file(file_name = self.Protein.top_file)
-
-    #     itp_insertion_string = f'#include "{self.solvent_model}"'
-
-    #     for i in range(len(top)):
-    #         if top[i].strip() == "" and top[i].strip()[0] == ";":
-    #             pass
-    #         elif top[i].strip().replace(" ", "").split(";")[0] == '[moleculetype]':
-    #             top[i] = itp_insertion_string + '\n' + top[i]
-    #             break
-
-
-    #     write_on_files.write_file(lines = top, file_name = self.Protein.top_file)
-
-    # def _pre_run_hook(self):
-    #     """
-    #     private
-        
-    #     overwriting the pre run hook method
-    #     """
-
-    #     self._edit_top_file()
-
-
-
-
-class OptimizeOnlyWaterBox(gromacs_input.GromacsInput):
+class EquilibrateOnlyWaterBox(gromacs_input.GromacsInput):
     """
     Optimizes a box of solvent
     as deafault uses a copy of the one found in HPC_Drug.lib
     """
 
     def __init__(self,
-                solvent_box = None,
-                force_fileld = "amber99sb-ildn",
-                solvent_model = "spce",
+                solvent_pdb,
+                solvent_top,
                 MD_program_path = "gmx"):
 
-        self.solvent_box = solvent_box
-        if self.solvent_box is None:
-            with importlib_resources.path('HPC_Drug.lib', 'only_water.gro') as path:
-                shutil.copy(str(path.resolve()), os.getcwd())
+        self.solvent_pdb = solvent_pdb
 
-            self.solvent_box = os.getcwd() + "/" + "only_water.gro"
-
-        self.force_fileld = force_fileld
-
-        self.solvent_model = solvent_model
+        self.solvent_top = solvent_top
 
         self.MD_program_path = MD_program_path
 
-        self.output_top_file = os.getcwd() + "/" + f"only_water_{self.solvent_model}.top"
+        self.output_gro_file = os.getcwd() + "/" + f"only_water_{self.solvent_model}_equilibration.gro"
 
-        self.output_gro_file = os.getcwd() + "/" + f"only_water_{self.solvent_model}.gro"
+        self.mdp_file = os.getcwd() + "/" + f"only_water_{self.solvent_model}_equilibration.mdp"
 
-        self.mdp_file = os.getcwd() + "/" + f"only_water_{self.solvent_model}_opt.mdp"
-
-        self.output_tpr_file = os.getcwd() + "/" + f"only_water_{self.solvent_model}_opt.tpr"
+        self.output_tpr_file = os.getcwd() + "/" + f"only_water_{self.solvent_model}_equilibration.tpr"
 
         self.command_string = [
-            [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.output_gro_file}", "-p", f"{self.output_top_file}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
+            [f"{self.MD_program_path}", "grompp", "-f", f"{self.mdp_file}", "-c", f"{self.solvent_pdb}", "-p", f"{self.solvent_top}", "-maxwarn", "100", "-o", f"{self.output_tpr_file}"],
             [f"{self.MD_program_path}", "mdrun", "-s", f"{self.output_tpr_file}", "-c", f"{self.output_gro_file}", '-ntmpi', '1']
         ]
         
@@ -446,19 +381,6 @@ class OptimizeOnlyWaterBox(gromacs_input.GromacsInput):
                         "morse                    = no"
                         ]
 
-
-    def _create_solvent_top(self):
-
-        command_string = [f"{self.MD_program_path}", "pdb2gmx",
-            "-ff", f"{self.force_fileld}",
-            "-water", f"{self.solvent_model}",
-            "-f", f"{self.solvent_box}",
-            "-o", f"{self.output_gro_file}",
-            "-p", f"{self.output_top_file}"]
-
-        self._interact_with_gromacs(string = command_string)
-
-
     def execute(self):
         """
         Returns the updated gro and top files
@@ -467,8 +389,6 @@ class OptimizeOnlyWaterBox(gromacs_input.GromacsInput):
         """
 
         self._write_template_on_file()
-
-        self._create_solvent_top()
 
         self._interact_with_gromacs()
 
