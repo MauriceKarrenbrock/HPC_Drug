@@ -10,9 +10,10 @@
 """Functions to parametrize a system with openmm/openmmforcefields
 """
 
+import warnings
+
 import numpy as np
 
-import pdbfixer
 from simtk import unit
 from simtk.openmm.app import PDBFile, ForceField, PME, Modeller
 from openff.toolkit.topology import Molecule
@@ -23,7 +24,8 @@ import parmed
 import mdtraj
 
 import HPC_Drug.PDB.complex_selections as _selections
-import HPC_Drugs.PDB.openbabel_utils as _obabel
+import HPC_Drugs.MD.openbabel_utils as _obabel
+from HPC_Drug.MD import residue_renaming
 
 def _scale_positions_and_update_box_vectors(positions, topology):
 
@@ -84,13 +86,48 @@ def parametrize_and_protonate(Protein,
     water_model,
     ph=7.0,
     padding=1.0*unit.nanometers,
-    neutralize=False):
+    neutralize=False,
+    residue_renaming_type='standard'):
     """Parametrize and protonate a Protein and it's ligands with openmm/openmmforcefields
+
+    Parameters
+    --------------
+    Protein : HPC_Drug.structures.protein.Protein
+    protein_forcefields : list(str)
+        the strings must be the forcefields names that simtk.openmm.Forcefield can find
+        therefore something in openmm, openmmforcefields or in the working directory
+    water_forcefields : list(str)
+        the strings must be the forcefields names that simtk.openmm.Forcefield can find
+        therefore something in openmm, openmmforcefields or in the working directory
+    ligand_forcefield : str
+        one of the FF supported by openmmforcefields.generators, at the moment GAFFx.x and the
+        openff initiative ones (es SMIRNOFF)
+    water_model : str
+        a water model like tip3p, it must be supported by openmm.Modeller (usuallu only the
+        classic 3 point ones)
+    ph : float, default=7.0
+        at which ph to protonate the ligand
+    padding : simtik.unit.Quantity, default=1.0*unit.nanometers
+        how much water padding to do
+    neutralize : bool, default=False
     
     Returns
     ----------
-    Protein
+    Protein, only_water_pdb, only_water_top
+        each ligand of the Protein has an updated top_file and solvated_top_file
     """
+
+    # I first do standard because the protonation part
+    # does not recognize custom stuff
+    if 'amber' in (''.join(protein_forcefields)).lower():
+        Protein = residue_renaming.ResidueRenamer(
+                    Protein=Protein,
+                    forcefield='amber',
+                    substitution="standard",
+                    ph=ph).execute()
+    else:
+        warnings.warn('only amber FF residue renamings are supported at the moment, therefore '
+        'carefully check the output!')
 
     only_protein_pdb = f'{Protein.protein_id}_only_protein.pdb'
 
@@ -124,21 +161,71 @@ def parametrize_and_protonate(Protein,
 
     forcefield.registerTemplateGenerator(ligand_ff_generator.generator)
 
-    #TODO
-    #standard substitution, with attention to CYM
-
     # Make the protein ligand .top and .pdb file
-    protein_ligand_pdb = PDBFile(Protein.pdb_file)
+    protein_ligand_pdb = PDBFile(only_protein_pdb)
     protein_ligand_modeller = Modeller(protein_ligand_pdb.topology,
         protein_ligand_pdb.positions)
 
-    # Add hydrogens
-    protein_ligand_modeller.addHydrogens(forcefield=forcefield, pH=ph, variants=None)
-
-    #TODO custom residue names for Zinc complexing residues
-    
     for mol in ligand_mols:
         protein_ligand_modeller.add(mol.to_topology().to_openmm(), mol.conformers[0])
+
+
+    # Create variants
+    variants = []
+    tmp_top = mdtraj.load(Protein.pdb_file).topology
+    for residue in tmp_top.residues:
+        if residue.name.upper() == 'CYM':
+            variants.append('CYX')
+        else:
+            variants.append(None)
+
+
+    # Add hydrogens
+    protein_ligand_modeller.addHydrogens(forcefield=forcefield, pH=ph, variants=variants)
+
+    # Custom residue names for example for Zinc complexing residues
+    # but to do it I will have to redo a lot of stuff
+    # TODO refactor it
+    if residue_renaming_type != 'standard':
+
+        # Temporarely write the pdb file to be modified
+        with open(Protein.pdb_file, 'w') as f:
+            PDBFile.writeFile(protein_ligand_modeller.topology, protein_ligand_modeller.positions, file=f)
+
+        if 'amber' in (''.join(protein_forcefields)).lower():
+            Protein = residue_renaming.ResidueRenamer(
+                    Protein=Protein,
+                    forcefield='amber',
+                    substitution=residue_renaming_type,
+                    ph=ph).execute()
+
+            _selections.select_protein_and_ions(Protein.pdb_file, output_file=only_protein_pdb)
+
+            Protein = _update_ligand_pdb_files(Protein)
+
+            ligand_mols = []
+
+            # convert to sdf and protonate at the given ph
+            for ligand in Protein.get_ligand_list():
+                sdf_file = ligand.pdb_file
+                sdf_file = sdf_file.rsplit('.', 1)[0]
+                sdf_file += '.sdf'
+
+                _obabel.convert_and_protonate_pdb_to_sdf(ligand.pdb_file,
+                    sdf_file=sdf_file,
+                    ph=ph,
+                    ligand_resname=ligand.resname)
+
+                ligand_mols.append(Molecule.from_file(sdf_file))
+
+            # Make the protein ligand .top and .pdb file
+            protein_ligand_pdb = PDBFile(only_protein_pdb)
+            protein_ligand_modeller = Modeller(protein_ligand_pdb.topology,
+                protein_ligand_pdb.positions)
+
+            for mol in ligand_mols:
+                protein_ligand_modeller.add(mol.to_topology().to_openmm(), mol.conformers[0])
+
 
     # Traslate in order to have the minimum of
     # X Y Z to 0 0 0
@@ -173,7 +260,8 @@ def parametrize_and_protonate(Protein,
     water_box = testsystems.WaterBox(box_edge=3.0*unit.nanometers, model=water_model,
                                  constrained=False, nonbondedMethod=PME, ionic_strength=0*unit.molar)
 
-    with open('only_water.pdb', 'w') as f:
+    only_water_pdb = f'only_water_{water_model}.pdb'
+    with open(only_water_pdb, 'w') as f:
         PDBFile.writeFile(water_box.topology, water_box.positions, file=f)
 
     pmd_structure = parmed.openmm.load_topology(water_box.topology,
@@ -211,7 +299,7 @@ def parametrize_and_protonate(Protein,
         pmd_structure = parmed.openmm.load_topology(ligand_modeller.topology,
             system=ligand_system, xyz=ligand_modeller.positions)
 
-        pmd_structure.save('water_' + lig.top_file, overwrite=True)
+        lig.solvated_top_file = 'water_' + lig.top_file
+        pmd_structure.save(lig.solvated_top_file, overwrite=True)
 
-    #TODO test
-    # TODO decide wht to return, a named tuple maybe?
+    return Protein, only_water_pdb, only_water_top

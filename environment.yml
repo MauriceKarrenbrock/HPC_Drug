@@ -9,6 +9,8 @@ dependencies:
   - gsl
   - numpy
   - openmm
+  - openmmtools
+  - openmmforcefields
   - openssl
   - pip
   - plumed
