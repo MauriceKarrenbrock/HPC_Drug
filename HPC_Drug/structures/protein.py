@@ -28,9 +28,7 @@ class Protein(structure.Structure):
                 chain = 'A',
                 cys_dict = None,
                 gro_file = None,
-                top_file = None,
-                tpg_file = None,
-                prm_file = None):
+                top_file = None):
                 
         if protein_id == None:
             raise ValueError('need a protein id')
@@ -61,9 +59,6 @@ class Protein(structure.Structure):
 
         self.gro_file = gro_file
         self.top_file = top_file
-
-        self.tpg_file = tpg_file
-        self.prm_file = prm_file
 
         self._ligands = []
 

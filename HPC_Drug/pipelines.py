@@ -18,12 +18,12 @@ from HPC_Drug.PDB import prody
 from HPC_Drug.PDB import remove_trash_metal_ions
 from HPC_Drug.PDB import select_model_chain
 from HPC_Drug.PDB import remove_disordered_atoms
-from HPC_Drug.PDB.organic_ligand import get_ligand_topology
 import HPC_Drug.auxiliary_functions.path as auxiliary_functions_path
 from HPC_Drug.structures import protein
 from HPC_Drug.structures import get_ligands
-from HPC_Drug.structures import update_ligands
 from HPC_Drug import orient
+from HPC_Drug.MD import parametrize_with_openmm as _parametrize
+from HPC_Drug.MD.gromacs import minimization, equilibration, hrem
 
 
 def choose_pipeline(**kwargs):
@@ -59,17 +59,12 @@ class Pipeline(object):
                 local = 'no',
                 filepath = None,
                 ligand = None,
-                ligand_elaboration_program = 'primadorac',
-                ligand_elaboration_program_path = 'primadorac.bash',
                 Protein_model = 0,
                 Protein_chain = 'A',
                 ph = 7.0,
                 repairing_method = 'pdbfixer',
                 MD_program = None,
-                MD_program_path = None,
-                protein_prm_file = None,
-                protein_tpg_file = None,
-                solvent_pdb = None,
+                gromacs_program_path = None,
                 residue_substitution = 'standard',
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
@@ -85,14 +80,17 @@ class Pipeline(object):
                 timestep_unbound_hrem=None,
                 constraints_bound_hrem=None,
                 constraints_unbound_hrem=None,
-                box_shape=None,
-                box_borders=None):
+                box_borders=None,
+                protein_forcefields=None,
+                water_forcefields=None,
+                ligand_forcefield='gaff-2.11',
+                water_model='tip3p'):
         
         self.protein_id = protein
         self.protein_filetype = protein_filetype
 
         if self.protein_filetype == None:
-            self.protein_filetype = 'cif'
+            self.protein_filetype = 'pdb'
 
         self.local = local.strip().lower()
         self.protein_filename = filepath
@@ -117,15 +115,9 @@ class Pipeline(object):
         
         #ligand can be a pdb file or a mmcif file
         self.ligand_filename = ligand
-        self.ligand_elaboration_program = ligand_elaboration_program
-        self.ligand_elaboration_program_path = ligand_elaboration_program_path
-
+        
         self.MD_program = MD_program
-        self.MD_program_path = MD_program_path
-
-        self.protein_prm_file = protein_prm_file
-        self.protein_tpg_file = protein_tpg_file
-        self.solvent_pdb = solvent_pdb
+        self.gromacs_program_path = gromacs_program_path
 
         self.residue_substitution = residue_substitution.strip()
 
@@ -155,8 +147,27 @@ class Pipeline(object):
 
         self.constraints_bound_hrem = constraints_bound_hrem
         self.constraints_unbound_hrem = constraints_unbound_hrem
-        self.box_shape = box_shape
         self.box_borders = box_borders
+
+        if protein_forcefields is None:
+            protein_forcefields = ['amber/ff14SB.xml']
+        elif isinstance(protein_forcefields, str):
+            protein_forcefields = protein_forcefields.strip().split(',')
+        self.protein_forcefields = protein_forcefields
+
+        if water_forcefields is None:
+            water_forcefields = ['amber/tip3p_standard.xml']
+        elif isinstance(water_forcefields, str):
+            water_forcefields = water_forcefields.strip().split(',')
+        self.water_forcefields = water_forcefields
+
+        if ligand_forcefield is None:
+            ligand_forcefield = 'gaff-2.11'
+        self.ligand_forcefield = ligand_forcefield
+
+        if water_model is None:
+            water_model = 'tip3p'
+        self.water_model = water_model
 
     def get_protein_file(self):
 
@@ -222,9 +233,7 @@ class GetProteinLigandFilesPipeline(Pipeline):
                                     pdb_file = self.protein_filename,
                                     model = self.model,
                                     chain = self.chain,
-                                    file_type = self.protein_filetype,
-                                    tpg_file = self.protein_tpg_file,
-                                    prm_file = self.protein_prm_file)
+                                    file_type = self.protein_filetype)
         
 
         #Get Protein.substitutions_dict Protein.sulf_bonds
@@ -283,9 +292,6 @@ class GetProteinLigandFilesPipeline(Pipeline):
         return Protein
         
 
-
-
-
 class NoLigandPipeline(Pipeline):
     """Protein is given as a mmcif or pdb
     The ligand is already inside the protein file"""
@@ -307,74 +313,60 @@ class NoLigandPipeline(Pipeline):
             Protein_chain = self.chain,
             ph = self.ph,
             repairing_method = self.repairing_method,
-            ligand = self.ligand_filename,
-            protein_prm_file = self.protein_prm_file,
-            protein_tpg_file = self.protein_tpg_file
+            ligand = self.ligand_filename
         )
 
         Protein = get_protein_pipeline.execute()
         
-        #get .itp .tpg .prm ... files for any organic ligand
-        Protein = get_ligand_topology.get_topology(
-            Protein = Protein,
-            program_path = self.ligand_elaboration_program_path,
-            tool = self.ligand_elaboration_program,
-            ph = self.ph
-        )
-
         
-        if self.MD_program == None or self.MD_program_path == None:
-            raise Exception('Need a MD program and a path')
+        if self.MD_program == None or self.gromacs_program_path == None:
+            raise Exception('Need a MD program and a gromacs path')
 
-        from HPC_Drug.MD import residue_renaming
+        if self.repairing_method == False:
+            self.residue_substitution = False
+            protonate_protein = False
+        else:
+            protonate_protein = True
 
-        if self.repairing_method != False:
-            #makes the necessary resname substitutions for the ForceField
-            residue_renamer = residue_renaming.ResidueRenamer(Protein = Protein,
-                                                            MD_program = self.MD_program,
-                                                            substitution = self.residue_substitution,
-                                                            ph = self.ph)
-
-            Protein = residue_renamer.execute()
-
-        from HPC_Drug.MD.gromacs import make_top, first_opt, solv_box, hrem
-
-        #Make the protein's gro and top file
-        gro_top_maker = make_top.GromacsMakeProteinGroTop(Protein = Protein,
-                                                solvent_model = self.solvent_pdb,
-                                                MD_program_path = self.MD_program_path)
-        
-        Protein = gro_top_maker.execute()
-
-        #merges the protein and the ligand in a single gro and top file
-        gro_top_merger = make_top.GromacsMakeJoinedProteinLigandTopGro(Protein = Protein,
-                                                                    MD_program_path = self.MD_program_path)
-
-        Protein = gro_top_merger.execute()
-
-        #makes a gro and top for the ligands
-        Protein = update_ligands.update_ligands(Protein = Protein, chain_model_selection = False)
-
-        only_ligand_top_gro_maker = make_top.GromacsMakeOnlyLigandTopGro(Protein = Protein,
-                                                    MD_program_path = self.MD_program_path,
-                                                    solvent_model = self.solvent_pdb)
-
-        Protein = only_ligand_top_gro_maker.execute()
+        Protein, only_water_pdb, only_water_top = _parametrize.parametrize_and_protonate(
+            Protein=Protein,
+            protein_forcefields=self.protein_forcefields,
+            water_forcefields=self.water_forcefields,
+            ligand_forcefield=self.ligand_forcefield,
+            water_model=self.water_model,
+            ph=self.ph,
+            padding=self.box_borders,
+            neutralize=False,
+            residue_renaming_type=self.residue_substitution,
+            protonate_protein=protonate_protein)
 
 
+        # Makes a fast geometry optimization of the protein ligand system
+        minimize_obj = minimization.GromacsMinimization(Protein=Protein,
+                                                    MD_program_path=self.gromacs_program_path)
 
-        #makes a fast geometry optimization of the protein ligand system
-        first_opt_obj = first_opt.GromacsFirstOptimization(Protein = Protein,
-                                                    MD_program_path = self.MD_program_path)
+        Protein = minimize_obj.execute()
 
-        Protein = first_opt_obj.execute()
+        del minimize_obj
 
-        #make fast optimization for the only ligands files
-        first_opt_only_ligand = first_opt.GromacsFirstOptimizationOnlyLigand(Protein = Protein,
-                                                                MD_program_path = self.MD_program_path)
+        # Make fast optimization for the only ligands files
+        minimize_obj_only_ligand = minimization.GromacsMinimizationOnlyLigand(Protein=Protein,
+                                                                MD_program_path=self.gromacs_program_path)
 
-        Protein = first_opt_only_ligand.execute()
+        Protein = minimize_obj_only_ligand.execute()
 
+        del minimize_obj_only_ligand
+
+        # Do it for the water box too
+        minimize_obj_water = minimization.MinimizeOnlyWaterBox(
+            solvent_pdb=only_water_pdb,
+            solvent_top=only_water_top,
+            MD_program_path=self.gromacs_program_path)
+
+        # Gromacs outoputs a gro file not a pdb
+        only_water_gro, only_water_top = minimize_obj_water.execute()
+
+        del minimize_obj_water
 
         if Protein.get_ligand_list() == []:
             raise RuntimeError('I could not find organic ligands in the structure\n\
@@ -384,13 +376,23 @@ class NoLigandPipeline(Pipeline):
         elif len(Protein.get_ligand_list()) > 1:
             raise RuntimeError(f"Found more than one Ligand {Protein.get_ligand_list()}")
 
-        #makes and optimizes a solvent box
-        solv_box_obj = solv_box.GromacsSolvBoxInput(Protein = Protein,
-                                            MD_program_path = self.MD_program_path,
-                                            box_borders = self.box_borders,
-                                            box_shape = self.box_shape)
+        # Equilibrate protein ligand system
+        equilibrate_obj = equilibration.GromacsEquilibrationInput(Protein = Protein,
+                                            MD_program_path = self.gromacs_program_path)
 
-        Protein = solv_box_obj.execute()
+        Protein = equilibrate_obj.execute()
+
+        del equilibrate_obj
+
+        # Do it for the water box too
+        equilibrate_obj_water = minimization.MinimizeOnlyWaterBox(
+            solvent_pdb=only_water_gro,
+            solvent_top=only_water_top,
+            MD_program_path=self.gromacs_program_path)
+
+        only_water_gro, only_water_top = equilibrate_obj_water.execute()
+
+        del equilibrate_obj_water
 
         # The first steps are always done with gromacs and only later
         # the HREM part is done separately for each implemented
@@ -399,7 +401,7 @@ class NoLigandPipeline(Pipeline):
 
             #create the REM input for Plumed patched gromacs
             hrem_input = hrem.GromacsHREMInput(Protein = Protein,
-                                            MD_program_path = self.MD_program_path,
+                                            MD_program_path = self.gromacs_program_path,
                                             kind_of_processor = self.kind_of_processor,
                                             number_of_cores_per_node = self.number_of_cores_per_node,
                                             use_gpu = self.use_gpu,
@@ -412,19 +414,10 @@ class NoLigandPipeline(Pipeline):
 
             Protein = hrem_input.execute()
 
-
-            #optimize a box of water
-            opt_water = solv_box.OptimizeOnlyWaterBox(force_fileld = Protein.tpg_file,
-                                                    solvent_model = self.solvent_pdb,
-                                                    MD_program_path = self.MD_program_path)
-
-            only_solvent_box_gro, only_solvent_box_top = opt_water.execute()
-
             #create a HREM dir for the ligand
             ligand_hrem_input = hrem.GromacsHREMOnlyLigand(Protein,
-                                                only_solvent_box_gro = only_solvent_box_gro,
-                                                only_solvent_box_top = only_solvent_box_top,
-                                                MD_program_path = self.MD_program_path,
+                                                only_solvent_box_gro = only_water_gro,
+                                                MD_program_path = self.gromacs_program_path,
                                                 kind_of_processor = self.kind_of_processor,
                                                 number_of_cores_per_node = self.number_of_cores_per_node,
                                                 use_gpu = self.use_gpu,

@@ -8,14 +8,6 @@
 ######################################################################################
 
 import os
-import shutil
-try: # python>=3.7
-
-    import importlib.resources as importlib_resources
-
-except ImportError: # python<=3.6
-
-    import importlib_resources
 
 from HPC_Drug.MD.gromacs import gromacs_input
 

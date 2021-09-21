@@ -456,7 +456,7 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         for i in range(self.BATTERIES):
             for j in range(self.replicas):
-                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{self.output_tpr_file} -f {self.mdp_file} -p {scaled_topologies[j]} -c {Ligand.gro_file.rsplit('/', 1)[-1]} \n"
+                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{self.output_tpr_file} -f {Path(self.mdp_file).name} -p {Path(scaled_topologies[j]).name} -c {Path(Ligand.gro_file).name} \n"
 
 
         write_on_files.write_file(lines = [string], file_name = self.HREM_dir + "/" + filename)
@@ -682,6 +682,3 @@ class MakeWorkloadManagerInput(object):
         pbs_header = ["\n".join(pbs_header)]
 
         write_on_files.write_file(lines = pbs_header, file_name = self.HREM_dir + "/" + f"HREM_input.pbs")
-
-
-    

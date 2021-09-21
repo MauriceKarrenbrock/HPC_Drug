@@ -87,7 +87,8 @@ def parametrize_and_protonate(Protein,
     ph=7.0,
     padding=1.0*unit.nanometers,
     neutralize=False,
-    residue_renaming_type='standard'):
+    residue_renaming_type='standard',
+    protonate_protein=True):
     """Parametrize and protonate a Protein and it's ligands with openmm/openmmforcefields
 
     Parameters
@@ -106,13 +107,16 @@ def parametrize_and_protonate(Protein,
         a water model like tip3p, it must be supported by openmm.Modeller (usuallu only the
         classic 3 point ones)
     ph : float, default=7.0
-        at which ph to protonate the ligand
+        at which ph to protonate the ligand 
     padding : simtik.unit.Quantity or float, default=1.0*unit.nanometers
         how much water padding to do, if a float is given it will be considered in nm
     neutralize : bool, default=False
     residue_renaming_type str or bool, default=standard
         the kind of residue renaming for the given FF
         if False no residue will be renamed
+    protonate_protein : bool, default=True
+        if False the protein won't be protonated (the ligands yes)
+        it is useful if the protein has already been protonated
     
     Returns
     ----------
@@ -177,18 +181,19 @@ def parametrize_and_protonate(Protein,
         protein_ligand_modeller.add(mol.to_topology().to_openmm(), mol.conformers[0])
 
 
-    # Create variants
-    variants = []
-    tmp_top = mdtraj.load(Protein.pdb_file).topology
-    for residue in tmp_top.residues:
-        if residue.name.upper() == 'CYM':
-            variants.append('CYX')
-        else:
-            variants.append(None)
+    if protonate_protein:
+        # Create variants
+        variants = []
+        tmp_top = mdtraj.load(Protein.pdb_file).topology
+        for residue in tmp_top.residues:
+            if residue.name.upper() == 'CYM':
+                variants.append('CYX')
+            else:
+                variants.append(None)
 
 
-    # Add hydrogens
-    protein_ligand_modeller.addHydrogens(forcefield=forcefield, pH=ph, variants=variants)
+        # Add hydrogens
+        protein_ligand_modeller.addHydrogens(forcefield=forcefield, pH=ph, variants=variants)
 
     # Custom residue names for example for Zinc complexing residues
     # but to do it I will have to redo a lot of stuff
