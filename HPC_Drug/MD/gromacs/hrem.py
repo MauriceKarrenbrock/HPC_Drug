@@ -362,7 +362,6 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
     def __init__(self,
                 Protein,
                 only_solvent_box_gro,
-                only_solvent_box_top,
                 MD_program_path = 'gmx',
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
@@ -382,7 +381,6 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                         gpus_per_node = gpus_per_node)
 
         self.only_solvent_box_gro = only_solvent_box_gro
-        self.only_solvent_box_top = only_solvent_box_top
 
         if batteries is None:
         
@@ -522,9 +520,9 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
             #copy the needed files in the new directories
             for j in [Ligand[i].gro_file,
                 Ligand[i].top_file,
+                Ligand[i].solvated_top_file,
                 Ligand[i].itp_file,
-                self.only_solvent_box_gro,
-                self.only_solvent_box_top] + scaled_topologies:
+                self.only_solvent_box_gro] + scaled_topologies:
 
                 shutil.copy(str(j), self.HREM_dir)
             
@@ -539,10 +537,10 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
             # key = value
             important_info = [
                 f"ligand_resname = {Ligand[i].resname}\n",
-                f"ligand_itp = {Ligand[i].itp_file.split('/')[-1]}\n",
-                f"top_file = {Ligand[i].top_file.split('/')[-1]}\n",
-                f"only_solvent_gro = {self.only_solvent_box_gro.split('/')[-1]}\n",
-                f"only_solvent_top = {self.only_solvent_box_top.split('/')[-1]}\n"
+                f"ligand_itp = {Path(Ligand[i].itp_file).name}\n",
+                f"top_file = {Path(Ligand[i].top_file).name}\n",
+                f"only_solvent_gro = {Path(self.only_solvent_box_gro).name}\n",
+                f"solvated_top_file = {Path(Ligand[i].solvated_top_file).name}\n"
             ]
 
             write_on_files.write_file(lines=important_info, file_name=self.HREM_dir + "/" + "important_info.dat")

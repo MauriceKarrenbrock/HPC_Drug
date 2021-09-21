@@ -294,34 +294,6 @@ class FSDAMInputPreprocessing(object):
 
             joined.save(str(i), force_overwrite=True)
 
-    @staticmethod
-    def _edit_top(ligand_top, only_solvent_top):
-
-        only_solvent_lines = read_file.read_file(file_name = only_solvent_top)
-
-        for i in range(len(only_solvent_lines) - 1, -1, -1):
-
-            if only_solvent_lines[i].strip():
-
-                solvent_line = only_solvent_lines[i].rstrip()
-
-                break
-
-        del only_solvent_lines
-
-        ligand_lines = read_file.read_file(file_name = ligand_top)
-
-        for i in range(len(ligand_lines) - 1, -1, -1):
-
-            if ligand_lines[i].strip():
-
-                ligand_lines[i] = solvent_line + '\n' + ligand_lines[i]
-
-                break
-
-        write_on_files.write_file(lines = ligand_lines, file_name = ligand_top)
-
-
     def execute(self):
 
         if self.HREM_dir != os.getcwd():
@@ -339,7 +311,7 @@ class FSDAMInputPreprocessing(object):
             "top_file" : "topol.top",
             "ligand_itp" : "LIG.itp",
             f"only_solvent_gro" : None,
-            f"only_solvent_top" : None
+            f"solvated_top_file" : None
         }
 
         lines = read_file.read_file(file_name = "important_info.dat")
@@ -360,14 +332,11 @@ class FSDAMInputPreprocessing(object):
 
         if self.creation:
             
+            # The ligand is added at the end of the water box, therefore the topology file
+            # should respect this order
             self._add_water_box(useful_info['only_solvent_gro'], starting_configurations)
 
-            shutil.copy(useful_info["top_file"], 'ligand_solvent_topology.top')
-
-            useful_info["top_file"] = 'ligand_solvent_topology.top'
-
-            self._edit_top(ligand_top=useful_info["top_file"],
-                only_solvent_top=useful_info["only_solvent_top"])
+            useful_info["top_file"] = useful_info["solvated_top_file"]
 
         output_dictionary = self._make_input_files(
             ligand_resname=useful_info["ligand_resname"],
