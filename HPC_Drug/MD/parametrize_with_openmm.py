@@ -107,9 +107,12 @@ def parametrize_and_protonate(Protein,
         classic 3 point ones)
     ph : float, default=7.0
         at which ph to protonate the ligand
-    padding : simtik.unit.Quantity, default=1.0*unit.nanometers
-        how much water padding to do
+    padding : simtik.unit.Quantity or float, default=1.0*unit.nanometers
+        how much water padding to do, if a float is given it will be considered in nm
     neutralize : bool, default=False
+    residue_renaming_type str or bool, default=standard
+        the kind of residue renaming for the given FF
+        if False no residue will be renamed
     
     Returns
     ----------
@@ -117,17 +120,21 @@ def parametrize_and_protonate(Protein,
         each ligand of the Protein has an updated top_file and solvated_top_file
     """
 
+    if not unit.is_quantity(padding):
+        padding = padding * unit.nanometers
+
     # I first do standard because the protonation part
     # does not recognize custom stuff
-    if 'amber' in (''.join(protein_forcefields)).lower():
-        Protein = residue_renaming.ResidueRenamer(
-                    Protein=Protein,
-                    forcefield='amber',
-                    substitution="standard",
-                    ph=ph).execute()
-    else:
-        warnings.warn('only amber FF residue renamings are supported at the moment, therefore '
-        'carefully check the output!')
+    if residue_renaming_type:
+        if 'amber' in (''.join(protein_forcefields)).lower():
+            Protein = residue_renaming.ResidueRenamer(
+                        Protein=Protein,
+                        forcefield='amber',
+                        substitution="standard",
+                        ph=ph).execute()
+        else:
+            warnings.warn('only amber FF residue renamings are supported at the moment, therefore '
+            'carefully check the output!')
 
     only_protein_pdb = f'{Protein.protein_id}_only_protein.pdb'
 
@@ -186,7 +193,7 @@ def parametrize_and_protonate(Protein,
     # Custom residue names for example for Zinc complexing residues
     # but to do it I will have to redo a lot of stuff
     # TODO refactor it
-    if residue_renaming_type != 'standard':
+    if residue_renaming_type != 'standard' and residue_renaming_type:
 
         # Temporarely write the pdb file to be modified
         with open(Protein.pdb_file, 'w') as f:
