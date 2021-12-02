@@ -8,9 +8,10 @@
 ######################################################################################
 
 """Functions to parametrize a system with openmm/openmmforcefields
-"""
 
-import warnings
+`parametrize_protein_and_ligand` is a high level function that will take care
+about the protein and the ligand
+"""
 
 import numpy as np
 
@@ -21,237 +22,113 @@ from openmmforcefields.generators import GAFFTemplateGenerator, SMIRNOFFTemplate
 from openmmtools import testsystems
 
 import parmed
-import mdtraj
 
-import HPC_Drug.PDB.complex_selections as _selections
-import HPC_Drugs.MD.openbabel_utils as _obabel
-from HPC_Drug.MD import residue_renaming
+import HPC_Drug.MD.openbabel_utils as _obabel
 
-def _scale_positions_and_update_box_vectors(positions, topology):
-
-    coordinates = np.array(positions / unit.nanometers)
-
-    max_coord = []
-    for i in range(3):
-
-        coordinates[:, i] = coordinates[:, i] - np.amin(coordinates[:, i])
-
-        max_coord.append(np.amax(coordinates[:, i] + 0.00001))
-
-    coordinates = coordinates *  unit.nanometers
-
-    positions = coordinates
-
-    topology.setUnitCellDimensions(max_coord * unit.nanometers)
-
-    return positions, topology
-
-
-def _update_ligand_pdb_files(Protein):
-    """Updates the ligands pdb files
-
+def get_ligand_ff_generator(ligand_forcefield, ligand):
+    """Returns the right ligand forcefield generator
+    
     Parameters
-    ---------------
-    Protein
+    -------------
+    ligand_forcefield : str
+        the forcefield to use, if None the latest gaff will be used
+    ligand : openff.toolkit.topology.Molecule
 
     Returns
-    ----------
-    Protein
+    -----------
+    openmmforcefields.generators.GAFFTemplateGenerator or openmmforcefields.generators.SMIRNOFFTemplateGenerator
     """
+    if ligand_forcefield is  None:
+        ligand_ff_generator = GAFFTemplateGenerator(molecules=ligand)
 
-    protein_ligand = mdtraj.load(Protein.pdb_file)
+    elif ligand_forcefield in GAFFTemplateGenerator.INSTALLED_FORCEFIELDS:
+        ligand_ff_generator = GAFFTemplateGenerator(molecules=ligand, forcefield=ligand_forcefield)
 
-    for ligand in Protein.get_ligand_list():
+    elif ligand_forcefield in SMIRNOFFTemplateGenerator.INSTALLED_FORCEFIELDS:
+        ligand_ff_generator = SMIRNOFFTemplateGenerator(molecules=ligand, forcefield=ligand_forcefield)
 
-        try:
-            ligand_atoms = protein_ligand.top.select(f'resSeq {ligand.resnum}')
-        except Exception:
-            ligand_atoms = protein_ligand.top.select(f'resname {ligand.resname}')
+    else:
+        raise ValueError(f'{ligand_forcefield} is not a supported ligand forcefield\n'
+        'the supported ones are:\n'
+        f"{' '.join(GAFFTemplateGenerator.INSTALLED_FORCEFIELDS)}\n"
+        f"{' '.join(SMIRNOFFTemplateGenerator.INSTALLED_FORCEFIELDS)}")
 
-        ligand_trj = protein_ligand.atom_slice(ligand_atoms)
+    return ligand_ff_generator
 
-        if not ligand.pdb_file:
-            
-            ligand.pdb_file = f'{ligand.resname}_lgand.pdb'
-
-        ligand_trj.save(ligand.pdb_file, force_overwrite=True)
-
-    return Protein
-
-
-def parametrize_and_protonate(Protein,
-    protein_forcefields,
-    water_forcefields,
-    ligand_forcefield,
-    water_model,
-    ph=7.0,
-    padding=1.0*unit.nanometers,
-    neutralize=False,
-    residue_renaming_type='standard',
-    protonate_protein=True):
-    """Parametrize and protonate a Protein and it's ligands with openmm/openmmforcefields
+def create_water_box(box_edge=3.0*unit.nanometers,
+    water_model='tip3p'):
+    """Creates a water box with openmmtools.testsystems.WaterBox
 
     Parameters
-    --------------
-    Protein : HPC_Drug.structures.protein.Protein
-    protein_forcefields : list(str)
-        the strings must be the forcefields names that simtk.openmm.Forcefield can find
-        therefore something in openmm, openmmforcefields or in the working directory
-    water_forcefields : list(str)
-        the strings must be the forcefields names that simtk.openmm.Forcefield can find
-        therefore something in openmm, openmmforcefields or in the working directory
-    ligand_forcefield : str
-        one of the FF supported by openmmforcefields.generators, at the moment GAFFx.x and the
-        openff initiative ones (es SMIRNOFF)
-    water_model : str
-        a water model like tip3p, it must be supported by openmm.Modeller (usuallu only the
-        classic 3 point ones)
-    ph : float, default=7.0
-        at which ph to protonate the ligand 
-    padding : simtik.unit.Quantity or float, default=1.0*unit.nanometers
-        how much water padding to do, if a float is given it will be considered in nm
-    neutralize : bool, default=False
-    residue_renaming_type str or bool, default=standard
-        the kind of residue renaming for the given FF
-        if False no residue will be renamed
-    protonate_protein : bool, default=True
-        if False the protein won't be protonated (the ligands yes)
-        it is useful if the protein has already been protonated
+    -------------
+    box_edge : openmm.Quantity or float, default=3.0*unit.nanometers
+        if a float is given it will be considered in nm
+    water_model : str, default=tip3p
+        a water model supported by openmmtools.testsystems.WaterBox
     
     Returns
-    ----------
-    Protein, only_water_pdb, only_water_top
-        each ligand of the Protein has an updated top_file and solvated_top_file
+    -----------
+    a box of only water with attributes `positions` and `topology` in openmm format
+    """
+    if not unit.is_quantity(box_edge):
+        box_edge = box_edge * unit.nanometers
+
+    water_box = testsystems.WaterBox(box_edge=box_edge, model=water_model,
+                                 constrained=False, nonbondedMethod=PME, ionic_strength=0*unit.molar)
+
+    return water_box
+
+def parametrize_complex(protein_water,
+    ligand,
+    forcefields=None,
+    ligand_forcefield=None,
+    output_prefix='complex'):
+    """"Parametrizes the protein ligand water ions complex
+    and creates .top .pdb .gro .prmtop .inpcrd files
+    
+    Paramenters
+    -------------
+    protein_water : str
+        the pdb file of the protein, water and ions (not the ligand)
+    ligand : str or openff.toolkit.topology.Molecule
+        the SDF file of the ligand or a Molecule instance
+        if the coordinates of the ligand are not the right ones
+        the parametrization will still be succesful but of course the
+        obtained structure files will be useless
+    forcefields : iterable(str), default=['amber/ff14SB.xml', 'amber/tip3p_standard.xml']
+        The forcefield files for the protein, solvent and ions in xml format
+        compatible with simtk.openmm.Forcefield they can be the available ones
+        in openmm and openmmforcefields or a custom one in the working directory.
+        There is no limit to the number of files.
+        Do not give the ligand forcefield here
+    ligand_forcefield : str, default=the newest gaff FF available
+        The forcefield for the ligand, can be any of
+        the supported ones by openmmforcefields.generators, at the moment Gaff and the
+        openff initiative ones (es SMIRNOFF) are the only ones supported
+    output_prefix : str, default='complex'
+        the prefix for all the created files, WILL OVERWRITE PRE EXISTSING ONES!
     """
 
-    if not unit.is_quantity(padding):
-        padding = padding * unit.nanometers
+    if not isinstance(ligand, Molecule):
+        ligand = Molecule.from_file(ligand)
 
-    # I first do standard because the protonation part
-    # does not recognize custom stuff
-    if residue_renaming_type:
-        if 'amber' in (''.join(protein_forcefields)).lower():
-            Protein = residue_renaming.ResidueRenamer(
-                        Protein=Protein,
-                        forcefield='amber',
-                        substitution="standard",
-                        ph=ph).execute()
-        else:
-            warnings.warn('only amber FF residue renamings are supported at the moment, therefore '
-            'carefully check the output!')
+    if forcefields is None:
+        forcefields = ['amber/ff14SB.xml', 'amber/tip3p_standard.xml']
 
-    only_protein_pdb = f'{Protein.protein_id}_only_protein.pdb'
-
-    _selections.select_protein_and_ions(Protein.pdb_file, output_file=only_protein_pdb)
-
-    Protein = _update_ligand_pdb_files(Protein)
-
-    ligand_mols = []
-
-    # convert to sdf and protonate at the given ph
-    for ligand in Protein.get_ligand_list():
-        sdf_file = ligand.pdb_file
-        sdf_file = sdf_file.rsplit('.', 1)[0]
-        sdf_file += '.sdf'
-
-        _obabel.convert_and_protonate_pdb_to_sdf(ligand.pdb_file,
-            sdf_file=sdf_file,
-            ph=ph,
-            ligand_resname=ligand.resname)
-
-        ligand_mols.append(Molecule.from_file(sdf_file))
-
-    if 'gaff' in ligand_forcefield:
-        ligand_ff_generator = GAFFTemplateGenerator(molecules=ligand_mols, forcefield=ligand_forcefield)
-    else:
-        ligand_ff_generator = SMIRNOFFTemplateGenerator(molecules=ligand_mols, forcefield=ligand_forcefield)
+    ligand_ff_generator = get_ligand_ff_generator(ligand_forcefield=ligand_forcefield,
+        ligand=ligand)
 
     system_kwargs = {'constraints': None, 'rigidWater': False, 'nonbondedMethod': PME}
 
-    forcefield = ForceField(*protein_forcefields, *water_forcefields)
+    forcefield = ForceField(*forcefields)
 
     forcefield.registerTemplateGenerator(ligand_ff_generator.generator)
 
-    # Make the protein ligand .top and .pdb file
-    protein_ligand_pdb = PDBFile(only_protein_pdb)
-    protein_ligand_modeller = Modeller(protein_ligand_pdb.topology,
-        protein_ligand_pdb.positions)
+    protein_water_pdb = PDBFile(protein_water)
+    protein_ligand_modeller = Modeller(protein_water_pdb.topology,
+        protein_water_pdb.positions)
 
-    for mol in ligand_mols:
-        protein_ligand_modeller.add(mol.to_topology().to_openmm(), mol.conformers[0])
-
-
-    if protonate_protein:
-        # Create variants
-        variants = []
-        tmp_top = mdtraj.load(Protein.pdb_file).topology
-        for residue in tmp_top.residues:
-            if residue.name.upper() == 'CYM':
-                variants.append('CYX')
-            else:
-                variants.append(None)
-
-
-        # Add hydrogens
-        protein_ligand_modeller.addHydrogens(forcefield=forcefield, pH=ph, variants=variants)
-
-    # Custom residue names for example for Zinc complexing residues
-    # but to do it I will have to redo a lot of stuff
-    # TODO refactor it
-    if residue_renaming_type != 'standard' and residue_renaming_type:
-
-        # Temporarely write the pdb file to be modified
-        with open(Protein.pdb_file, 'w') as f:
-            PDBFile.writeFile(protein_ligand_modeller.topology, protein_ligand_modeller.positions, file=f)
-
-        if 'amber' in (''.join(protein_forcefields)).lower():
-            Protein = residue_renaming.ResidueRenamer(
-                    Protein=Protein,
-                    forcefield='amber',
-                    substitution=residue_renaming_type,
-                    ph=ph).execute()
-
-            _selections.select_protein_and_ions(Protein.pdb_file, output_file=only_protein_pdb)
-
-            Protein = _update_ligand_pdb_files(Protein)
-
-            ligand_mols = []
-
-            # convert to sdf and protonate at the given ph
-            for ligand in Protein.get_ligand_list():
-                sdf_file = ligand.pdb_file
-                sdf_file = sdf_file.rsplit('.', 1)[0]
-                sdf_file += '.sdf'
-
-                _obabel.convert_and_protonate_pdb_to_sdf(ligand.pdb_file,
-                    sdf_file=sdf_file,
-                    ph=ph,
-                    ligand_resname=ligand.resname)
-
-                ligand_mols.append(Molecule.from_file(sdf_file))
-
-            # Make the protein ligand .top and .pdb file
-            protein_ligand_pdb = PDBFile(only_protein_pdb)
-            protein_ligand_modeller = Modeller(protein_ligand_pdb.topology,
-                protein_ligand_pdb.positions)
-
-            for mol in ligand_mols:
-                protein_ligand_modeller.add(mol.to_topology().to_openmm(), mol.conformers[0])
-
-
-    # Traslate in order to have the minimum of
-    # X Y Z to 0 0 0
-    protein_ligand_modeller.positions, protein_ligand_modeller.topology =  _scale_positions_and_update_box_vectors(
-            protein_ligand_modeller.positions, protein_ligand_modeller.topology)
-
-    protein_ligand_modeller.addSolvent(forcefield,
-        model=water_model,
-        padding=padding,
-        neutralize=neutralize)
-
-    # Write the new protonated PDB
-    with open(Protein.pdb_file, 'w') as f:
-        PDBFile.writeFile(protein_ligand_modeller.topology, protein_ligand_modeller.positions, file=f)
+    protein_ligand_modeller.add(ligand.to_topology().to_openmm(), ligand.conformers[0])
 
     # Make the protein ligand .top file
     protein_ligand_system = forcefield.createSystem(
@@ -260,58 +137,160 @@ def parametrize_and_protonate(Protein,
     pmd_structure = parmed.openmm.load_topology(protein_ligand_modeller.topology,
     system=protein_ligand_system, xyz=protein_ligand_modeller.positions)
 
-    Protein.top_file = 'protein_ligand.top'
-    pmd_structure.save(Protein.top_file, overwrite=True)
+    # Gromacs files
+    pmd_structure.save(output_prefix + '.top', overwrite=True)
+    pmd_structure.save(output_prefix + '.pdb', overwrite=True)
+    pmd_structure.save(output_prefix + '.gro', overwrite=True)
 
-    del protein_ligand_modeller
-    del protein_ligand_system
+    # Amber files
+    pmd_structure.save(output_prefix + '.prmtop', overwrite=True)
+    pmd_structure.save(output_prefix + '.inpcrd', overwrite=True)
 
-    # Now make .top files for
-    # every ligand in vacuum and in water
-    # and make a water box on the fly
-    water_box = testsystems.WaterBox(box_edge=3.0*unit.nanometers, model=water_model,
-                                 constrained=False, nonbondedMethod=PME, ionic_strength=0*unit.molar)
+    # The parmed top files have system1 instead of Protein and when
+    # defining a restraint gromacs will complain
+    with open(output_prefix + '.top', 'r') as f:
+        protein_top_str = f.read()
 
-    only_water_pdb = f'only_water_{water_model}.pdb'
-    with open(only_water_pdb, 'w') as f:
-        PDBFile.writeFile(water_box.topology, water_box.positions, file=f)
+    with open(output_prefix + '.top', 'w') as f:
+        f.write(protein_top_str.replace('system1', 'Protein'))
+
+
+def parametrize_ligand(ligand,
+    water_box,
+    water_forcefields=None,
+    ligand_forcefield=None,
+    ligand_prefix='LIG',
+    water_prefix='only_water'):
+    """Parametrizes the ligand and a box of water
+
+    Creates gromacs and amber files for the ligand, the water, and water + ligand
+    (in this order)
+    .top .pdb .gro .prmtop .inpcrd
+
+    Paramenters
+    -------------
+    ligand : str or openff.toolkit.topology.Molecule
+        the SDF file of the ligand or a Molecule instance
+    water_box : object with .positions and .topology in openmm format
+    water_forcefields : iterable(str), default=['amber/tip3p_standard.xml']
+        The forcefield files for the protein, solvent and ions in xml format
+        compatible with simtk.openmm.Forcefield they can be the available ones
+        in openmm and openmmforcefields or a custom one in the working directory.
+        There is no limit to the number of files.
+        Do not give the ligand forcefield here
+    ligand_forcefield : str, default=the newest gaff FF available
+        The forcefield for the ligand, can be any of
+        the supported ones by openmmforcefields.generators, at the moment Gaff and the
+        openff initiative ones (es SMIRNOFF) are the only ones supported
+    ligand_prefix : str, default='LIG'
+        the prefix for all the created ligand files, WILL OVERWRITE PRE EXISTSING ONES!
+    water_prefix : str, default='LIG'
+        the prefix for all the created water files, WILL OVERWRITE PRE EXISTSING ONES!
+    """
+    if not isinstance(ligand, Molecule):
+        ligand = Molecule.from_file(ligand)
+
+    if water_forcefields is None:
+        water_forcefields = ['amber/tip3p_standard.xml']
+    
+    ligand_ff_generator = get_ligand_ff_generator(ligand_forcefield=ligand_forcefield,
+        ligand=ligand)
+
+    system_kwargs = {'constraints': None, 'rigidWater': False, 'nonbondedMethod': PME}
+
+    forcefield = ForceField(*water_forcefields)
+
+    forcefield.registerTemplateGenerator(ligand_ff_generator.generator)
+
+    # Only water
+    water_box.system = forcefield.createSystem(
+        water_box.topology, **system_kwargs)
 
     pmd_structure = parmed.openmm.load_topology(water_box.topology,
     system=water_box.system, xyz=water_box.positions)
 
-    only_water_top = f'only_water_{water_model}.top'
-    pmd_structure.save(only_water_top, overwrite=True)
+    pmd_structure.save(water_prefix + '.top', overwrite=True)
+    pmd_structure.save(water_prefix + '.pdb', overwrite=True)
+    pmd_structure.save(water_prefix + '.gro', overwrite=True)
 
-    for lig, mol in zip(Protein.get_ligand_list(), ligand_mols):
-        mol_positions, mol_topology =  _scale_positions_and_update_box_vectors(mol.conformers[0],
-            mol.to_topology().to_openmm())
+    pmd_structure.save(water_prefix + '.prmtop', overwrite=True)
+    pmd_structure.save(water_prefix + '.inpcrd', overwrite=True)
 
-        mol_topology.setUnitCellDimensions([5.0, 5.0, 5.0] * unit.nanometers)
+    # Only ligand
+    ligand_positions, ligand_topology =  ligand.conformers[0], ligand.to_topology().to_openmm()
 
-        ligand_system = forcefield.createSystem(mol_topology, **system_kwargs)
+    ##########
+    # Bring the minimum coordinates to 0 0 0
+    tmp_coordinates = np.array(ligand_positions / unit.nanometers)
 
-        pmd_structure = parmed.openmm.load_topology(mol_topology,
-        system=ligand_system, xyz=mol_positions)
+    for i in range(3):
 
-        lig.top_file = lig.pdb_file.rsplit('.', 1)[0] + '.top'
-        pmd_structure.save(lig.top_file, overwrite=True)
+        tmp_coordinates[:, i] = tmp_coordinates[:, i] - np.amin(tmp_coordinates[:, i])
 
-        with open(lig.pdb_file, 'w') as f:
-            PDBFile.writeFile(mol_topology, mol_positions, file=f)
+    ligand_positions = tmp_coordinates *  unit.nanometers
 
-        # Make the top for water ligand
-        # Water first ligand later
+    del tmp_coordinates
+    ############
 
-        ligand_modeller = Modeller(water_box.topology, water_box.positions)
-        ligand_modeller.add(mol_topology, mol_positions)
+    ligand_topology.setUnitCellDimensions([15.0, 15.0, 15.0] * unit.nanometers)
 
-        ligand_system = forcefield.createSystem(
-            ligand_modeller.topology, **system_kwargs)
+    ligand_system = forcefield.createSystem(ligand_topology, **system_kwargs)
 
-        pmd_structure = parmed.openmm.load_topology(ligand_modeller.topology,
-            system=ligand_system, xyz=ligand_modeller.positions)
+    pmd_structure = parmed.openmm.load_topology(ligand_topology,
+    system=ligand_system, xyz=ligand_positions)
 
-        lig.solvated_top_file = 'water_' + lig.top_file
-        pmd_structure.save(lig.solvated_top_file, overwrite=True)
+    pmd_structure.save(ligand_prefix + '.top', overwrite=True)
+    pmd_structure.save(ligand_prefix + '.pdb', overwrite=True)
+    pmd_structure.save(ligand_prefix + '.gro', overwrite=True)
 
-    return Protein, only_water_pdb, only_water_top
+    pmd_structure.save(ligand_prefix + '.prmtop', overwrite=True)
+    pmd_structure.save(ligand_prefix + '.inpcrd', overwrite=True)
+
+    # Water ligand topology (water forst ligand second)
+    ligand_modeller = Modeller(water_box.topology, water_box.positions)
+    ligand_modeller.add(ligand_topology, ligand_positions)
+
+    ligand_system = forcefield.createSystem(
+        ligand_modeller.topology, **system_kwargs)
+
+    pmd_structure = parmed.openmm.load_topology(ligand_modeller.topology,
+        system=ligand_system, xyz=ligand_modeller.positions)
+
+    pmd_structure.save(water_prefix + '_and_' + ligand_prefix + '.top', overwrite=True)
+    pmd_structure.save(water_prefix + '_and_' + ligand_prefix + '.prmtop', overwrite=True)
+
+
+
+def parametrize_protein_and_ligand(protein_water,
+        ligand,
+        forcefields=None,
+        ligand_forcefield=None,
+        complex_prefix='complex',
+        ligand_prefix='LIG',
+        ligand_resname='LIG',
+        water_prefix='only_water',
+        box_edge=3.0*unit.nanometers,
+        water_model='tip3p',
+        ligand_ph=None):
+
+    _obabel.convert_and_protonate_file_to_sdf(ligand,
+        ligand_prefix + '.sdf', ph=ligand_ph, ligand_resname=ligand_resname)
+
+    ligand = Molecule.from_file(ligand_prefix + '.sdf')
+    
+    water_box = create_water_box(box_edge=box_edge,
+        water_model=water_model)
+
+    parametrize_ligand(ligand=ligand,
+        water_box=water_box,
+        water_forcefields=forcefields,
+        ligand_forcefield=ligand_forcefield,
+        ligand_prefix=ligand_prefix,
+        water_prefix=water_prefix)
+
+
+    parametrize_complex(protein_water=protein_water,
+        ligand=ligand,
+        forcefields=forcefields,
+        ligand_forcefield=ligand_forcefield,
+        output_prefix=complex_prefix)
