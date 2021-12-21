@@ -26,20 +26,20 @@ import HREMGromacs.multidir_setup as _multidir_setup
 import PythonPDBStructures.geometry as _pdb_geo
 
 from HPC_Drug.MD import workload_managers
-from HPC_Drug.MD.gromacs import gromacs_input
 from HPC_Drug.files_IO import read_file
 from HPC_Drug.files_IO import write_on_files
-from HPC_Drug import orient
 from HPC_Drug import important_lists
 import HPC_Drug.MD.gromacs.add_dummy_atom as _dummy_atom
 import HPC_Drug.structures.update_ligands as _update_ligands
 
 
-class GromacsHREMInput(gromacs_input.GromacsInput):
+class ComplexHREMInput(object):
     
     def __init__(self,
-                Protein,
-                MD_program_path = 'gmx',
+                pdb_file,
+                top_file,
+                ligand_resname,
+                ligand_resnumber,
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
                 use_gpu = 'auto',
@@ -48,26 +48,27 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
                 batteries = None,
                 n_steps=None,
                 timestep=None,
-                constraints='h-bonds'):
+                constraints='h-bonds',
+                temperature=298.15,
+                top_scaling_basis=0.2):
 
-        super().__init__(Protein = Protein,
-                        MD_program_path = MD_program_path)
+        self.pdb_file = pdb_file
 
+        self.top_file = top_file
+
+        self.ligand_resname = ligand_resname
+
+        self.ligand_resnumber = ligand_resnumber
 
         #the input directory that will be created
-        self.HREM_dir = f"{self.Protein.protein_id}_HREM"
+        self.HREM_dir = "complex_HREM"
 
-        self.elaborated_top_file = f"{self.Protein.protein_id}_elaborated_topology.top"
+        self.mdp_file = "complex_HREM.mdp"
 
-        self.mdp_file = f"{self.Protein.protein_id}_HREM.mdp"
-
-        self.output_tpr_file = f"HREM.tpr"
+        self.output_tpr_file = "HREM.tpr"
 
         self.kind_of_processor = kind_of_processor
         self.number_of_cores_per_node = number_of_cores_per_node
-
-        #an instance of orient.Orient class
-        self.orient = orient.Orient(self.Protein, self.Protein.get_ligand_list())
 
         #gromacs has various options to use gpu
         #auto (default) that will use all the available ones automatically
@@ -90,8 +91,6 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         #the replicas for BATTERY
         self.replicas = number_of_replicas
 
-        self.temperature = 298.15
-
         if timestep is None:
 
             self.timestep = 0.002
@@ -109,11 +108,17 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
             self.n_steps = int(n_steps)
 
-        if constraints is None:
-
-            constraints = 'h-bonds'
-
         self.constraints = constraints
+        if self.constraints is None:
+
+            self.constraints = 'h-bonds'
+
+        self.temperature = temperature
+        if self.temperature is None:
+
+            self.temperature = 298.15
+
+        self.top_scaling_basis = top_scaling_basis
 
 
     def _write_template_on_file(self):
@@ -122,7 +127,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         overwrites superclass method
         """
 
-        protein_pbc_atom = _pbc_atom.get_protein_pbc_atom(self.Protein.gro_file)
+        protein_pbc_atom = _pbc_atom.get_protein_pbc_atom(self.pdb_file)
 
         mdp_obj = _hrem_mdp.ProteinLigandHREM(mdp_file=self.mdp_file,
             timestep_ps=self.timestep,
@@ -130,12 +135,12 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
             temperature=self.temperature,
             COM_pull_goups=[
                 'Protein',
-                f'{self.Protein.get_ligand_list()[0].resname}',
+                f'{self.ligand_resname}',
                 'DUM'
             ],
             harmonic_kappa=[
                 [
-                    'Protein', f'{self.Protein.get_ligand_list()[0].resname}', 120
+                    'Protein', f'{self.ligand_resname}', 120
                 ],
 
                 [
@@ -143,7 +148,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
                 ],
 
                 [
-                    f'{self.Protein.get_ligand_list()[0].resname}', 'DUM', 0
+                    f'{self.ligand_resname}', 'DUM', 0
                 ]
             ],
             pbc_atoms=(
@@ -164,8 +169,7 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         processor can process on the sistem
         """
 
-        number_of_atoms = self.orient.get_first_last_atom_structure(Protein = self.Protein, Ligand = self.Protein.get_ligand_list())
-        number_of_atoms = number_of_atoms[0]
+        number_of_atoms = mdtraj.load(self.pdb_file).n_atoms
 
         if self.use_gpu == 'cpu':
             ns_per_day = ( 15000. / number_of_atoms ) * important_lists.processor_kind_ns_per_day_15000_atoms_for_cpu_only_runs[self.kind_of_processor]
@@ -215,43 +219,12 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         for i in range(self.BATTERIES):
             for j in range(self.replicas):
-                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{self.output_tpr_file} -f {self.mdp_file} -p {scaled_topologies[j]} -c {self.Protein.gro_file.rsplit('/', 1)[-1]} \n"
+                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{Path(self.output_tpr_file).name} -f {Path(self.mdp_file).name} -p {Path(scaled_topologies[j]).name} -c {Path(self.pdb_file).name} \n"
 
 
         write_on_files.write_file(lines = [string], file_name = self.HREM_dir + "/" + filename)
 
-
-    def _change_absolute_ligand_itp_include_in_relative(self, top_file):
-        """
-        private
-
-        changes the #include of the ligand itp file in the protein top from the absolute one in the relative one
-        in the given topology file in order to get a meaningful #include in the self.HREM_dir directory
-        that will be copied on a different Computer (the HPC cluster)
-        """
-
-        lines = read_file.read_file(file_name = top_file)
-
-        ligand_itp_files = []
-
-        for lgand in self.Protein.get_ligand_list():
-            ligand_itp_files.append(lgand.itp_file)
-
-        for i in range(len(lines)):
-
-            if lines[i].strip()[:8] == "#include":
-
-                if lines[i].split()[1].replace('"', '').strip() in ligand_itp_files or 'DUM' in lines[i]:
-
-                    itp_file = lines[i].split()[1].replace('"', '').strip()
-                    itp_file = itp_file.split("/")[-1]
-
-                    lines[i] = f'#include "{itp_file}"\n'
-
-        write_on_files.write_file(lines = lines, file_name = top_file)
-
-
-    def _create_scaled_topologies(self, basis=0.2):
+    def _create_scaled_topologies(self):
         """PRIVATE
 
         Returns
@@ -259,37 +232,43 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         list(pathlib.Path)
             the scaled topologies
         """
-        # It is needed to update the resSeq values
-        # TODO remove the need for this kind of updates
-        self.Protein = _update_ligands.update_ligands(self.Protein)
 
-        mdtraj_trajectory = mdtraj.load(str(self.Protein.gro_file))
+        mdtraj_trajectory = mdtraj.load(str(self.pdb_file))
 
         resSeq_to_scale = _pdb_geo.get_nearest_neighbors_residues_with_mdtraj(
             mdtraj_trajectory,
-            ligand_atoms=f'resSeq {self.Protein.get_ligand_list()[0].resnum}')
+            ligand_atoms=f'resSeq {self.ligand_resnumber}')
         resSeq_to_scale = resSeq_to_scale[0] + resSeq_to_scale[1]
 
         # From resid (0 indexed) to resSeq
         top = mdtraj_trajectory.topology
         resSeq_to_scale = [top.atom(top.select(f'resid {resid}')[0]).residue.resSeq for resid in resSeq_to_scale]
 
-        return _solute_tempering.prepare_topologies_for_hrem(top_file=self.Protein.top_file,
+        return _solute_tempering.prepare_topologies_for_hrem(top_file=self.top_file,
                                 resSeq_to_scale=resSeq_to_scale,
                                 mdp_file=self.mdp_file,
-                                gro_file=self.Protein.gro_file,
+                                gro_file=self.pdb_file,
                                 number_of_replicas=self.replicas,
-                                basis=basis,
-                                gmx_path=self.MD_program_path,
-                                plumed_path='plumed')
+                                basis=self.top_scaling_basis,
+                                plumed_path='plumed',
+                                preprocess_top=False)
 
 
     def execute(self):
-        """This method does not run gromacs but
-        creates the input to make a REM simulation on a
-        HPC cluster"""
+        """This method creates the input to make a REM simulation on a HPC cluster
+        
+        Returns
+        ------------
+        self.pdb_file, self.top_file, self.HREM_dir : str, str, str
+        """
 
-        self.Protein = _dummy_atom.add_heavy_dummy_atom(self.Protein)
+        mdtraj.load(self.pdb_file).save(self.pdb_file + '.gro')
+
+        self.pdb_file, self.top_file = _dummy_atom.add_heavy_dummy_atom(
+            gro_file=self.pdb_file + '.gro',
+            top_file=self.top_file,
+            output_gro='complex_with_dummy.gro',
+            output_top='complex_with_dummy.top')
 
         Path(self.HREM_dir).mkdir(parents=True, exist_ok=True)
 
@@ -305,15 +284,19 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
 
         scaled_topologies = self._create_scaled_topologies()
 
+        # Parmed continuously renames Protein as system1
+        # and when
+        # defining a restraint gromacs will complain
+        with open(self.top_file, 'r') as f:
+            protein_top_str = f.read()
+
+        with open(self.top_file, 'w') as f:
+            f.write(protein_top_str.replace('system1', 'Protein'))
+
         #copy the needed protein files in the new directories
-        for j in [self.Protein.gro_file, self.Protein.top_file] + scaled_topologies:
+        for j in [self.pdb_file, self.top_file] + scaled_topologies:
 
             shutil.copy(str(j), self.HREM_dir)
-
-        #copy the ligand itp files
-        for lgand in self.Protein.get_ligand_list():
-
-            shutil.copy(lgand.itp_file, self.HREM_dir)
 
         #write workload manager input for different workload managers (slurm pbs ...)
         #already in the self.HREM_dir
@@ -327,31 +310,17 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         #create a file with important info for post processing of the HREM output
         # key = value
         important_info = [
-            f"ligand_resname = {self.Protein.get_ligand_list()[0].resname}\n", #only takes the first ligand, because actually there should be ony one
-            f"ligand_resnum = {self.Protein.get_ligand_list()[0].resnum}\n",
-            f"ligand_itp = {self.Protein.get_ligand_list()[0].itp_file.split('/')[-1]}\n",
-            f"top_file = {self.Protein.top_file.split('/')[-1]}\n"
+            f"ligand_resname = {self.ligand_resname}\n", #only takes the first ligand, because actually there should be ony one
+            f"ligand_resnum = {self.ligand_resnumber}\n",
+            f"top_file = {Path(self.top_file).name}\n"
         ]
 
         write_on_files.write_file(lines = important_info, file_name = self.HREM_dir + "/" + "important_info.dat")
 
-
-        #as gmx2pdb makes some random but needed itp files some times
-        #I lazily copy them all
-        for file_name in Path('.').glob('*.itp'):
-
-            shutil.copy(str(file_name), self.HREM_dir)
-
-        #change the absolute #include in relative ones as they would make no sense when the directory will be copied
-        #on a different computer (the HPC cluster)
-        for file_name in Path(self.HREM_dir).glob('*.top'):
-
-            self._change_absolute_ligand_itp_include_in_relative(top_file = self.HREM_dir + "/" + file_name.name)
-
-        return self.Protein
+        return self.pdb_file, self.top_file, self.HREM_dir
 
 
-class GromacsHREMOnlyLigand(GromacsHREMInput):
+class LigandHREMInput(object):
     """
     Makes the HREM to a system where there is only the ligand
     for any ligand in Protein._ligands
@@ -360,9 +329,11 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
     """
 
     def __init__(self,
-                Protein,
-                only_solvent_box_gro,
-                MD_program_path = 'gmx',
+                ligand_gro_file,
+                ligand_top_file,
+                water_gro_file,
+                water_ligand_top_file,
+                ligand_resname,
                 kind_of_processor = 'skylake',
                 number_of_cores_per_node = 64,
                 use_gpu = 'auto',
@@ -371,20 +342,43 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
                 batteries = None,
                 n_steps=None,
                 timestep=None,
-                constraints='h-bonds'):
+                constraints='h-bonds',
+                temperature=298.15,
+                top_scaling_basis=0.1):
 
-        super().__init__(Protein = Protein,
-                        MD_program_path = MD_program_path,
-                        kind_of_processor = kind_of_processor,
-                        number_of_cores_per_node = number_of_cores_per_node,
-                        use_gpu = use_gpu,
-                        gpus_per_node = gpus_per_node)
+        self.ligand_gro_file = ligand_gro_file
 
-        self.only_solvent_box_gro = only_solvent_box_gro
+        self.ligand_top_file = ligand_top_file
+
+        self.water_gro_file = water_gro_file
+
+        self.water_ligand_top_file = water_ligand_top_file
+
+        self.ligand_resname = ligand_resname
+
+        #the input directory that will be created
+        self.HREM_dir = "ligand_HREM"
+
+        self.mdp_file = "ligand_HREM.mdp"
+
+        self.output_tpr_file = "HREM.tpr"
+
+        self.kind_of_processor = kind_of_processor
+        self.number_of_cores_per_node = number_of_cores_per_node
+
+        #gromacs has various options to use gpu
+        #auto (default) that will use all the available ones automatically
+        #cpu uses no GPU even if available
+        #gpu forces the use of GPU (but in case you want to use a gpu auto would be safer and more robust)
+        self.use_gpu = use_gpu.lower().strip()
+        if self.use_gpu not in ('auto', 'cpu', 'gpu'):
+            raise ValueError(f"{self.use_gpu} is not a valid gpu option, valid options are auto cpu gpu")
+
+        self.gpus_per_node = gpus_per_node
 
         if batteries is None:
         
-            self.BATTERIES = self._get_BATTERIES()
+            self.BATTERIES = 1
 
         else:
 
@@ -392,8 +386,6 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         #the replicas for BATTERY
         self.replicas = number_of_replicas
-
-        self.temperature = 298.15
 
         if timestep is None:
 
@@ -418,6 +410,13 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         self.constraints = constraints
 
+        self.temperature = temperature
+        if self.temperature is None:
+
+            self.temperature = 298.15
+
+        self.top_scaling_basis = top_scaling_basis
+
     
     def _write_template_on_file(self):
         """Creates the mdp
@@ -436,14 +435,8 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         mdp_obj.execute()
 
- 
-    def _get_BATTERIES(self):
 
-        #for the ligand one battery is more than enough
-        return 1
-
-
-    def _make_TPR_files_script(self, scaled_topologies, Ligand):
+    def _make_TPR_files_script(self, scaled_topologies):
         """
         private
         
@@ -456,13 +449,13 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
 
         for i in range(self.BATTERIES):
             for j in range(self.replicas):
-                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{self.output_tpr_file} -f {Path(self.mdp_file).name} -p {Path(scaled_topologies[j]).name} -c {Path(Ligand.gro_file).name} \n"
+                string = string + f"gmx grompp -maxwarn 100 -o BATTERY{i}/scaled{j}/{Path(self.output_tpr_file).name} -f {Path(self.mdp_file).name} -p {Path(scaled_topologies[j]).name} -c {Path(self.ligand_gro_file).name} \n"
 
 
         write_on_files.write_file(lines = [string], file_name = self.HREM_dir + "/" + filename)
 
 
-    def _create_scaled_topologies(self, Ligand, basis=0.1):
+    def _create_scaled_topologies(self):
         """PRIVATE
 
         Returns
@@ -470,94 +463,85 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
         list(pathlib.Path)
             the scaled topologies
         """
-        mdtraj_trajectory = mdtraj.load(str(Ligand.gro_file))
+        mdtraj_trajectory = mdtraj.load(str(self.ligand_gro_file))
         top = mdtraj_trajectory.topology
         resSeq_to_scale = [top.atom(top.select('all')[0]).residue.resSeq]
 
-        return _solute_tempering.prepare_topologies_for_hrem(top_file=Ligand.top_file,
+        return _solute_tempering.prepare_topologies_for_hrem(top_file=self.ligand_top_file,
                                 resSeq_to_scale=resSeq_to_scale,
-                                mdp_file=self.mdp_file,
-                                gro_file=Ligand.gro_file,
+                                gro_file=self.ligand_gro_file,
                                 number_of_replicas=self.replicas,
-                                basis=basis,
-                                gmx_path=self.MD_program_path,
-                                plumed_path='plumed')
+                                basis=self.top_scaling_basis,
+                                plumed_path='plumed',
+                                preprocess_top=False)
+
+
+    def _write_workloadmanager_inputs(self):
+        """private method called by self.execute()"""
+
+        
+        wl_manager = MakeWorkloadManagerInput(tpr_file = self.output_tpr_file,
+                                            HREM_dir = self.HREM_dir,
+                                            BATTERIES = self.BATTERIES,
+                                            replicas = self.replicas,
+                                            gpu = self.use_gpu,
+                                            gpu_per_node = self.gpus_per_node,
+                                            cpus_per_node = self.number_of_cores_per_node)
+
+        wl_manager.execute()
 
 
     def execute(self):
-        """This method does not run gromacs but
-        creates the input to make a REM simulation on a
-        HPC cluster"""
+        """This method creates the input to make a REM simulation on a
+        HPC cluster
+        
+        Returns
+        ---------
+        self.HREM_dir : str
+        """
 
-        if self.Protein.get_ligand_list() == []:
-            return self.Protein
+        #the input directory that will be created
+        Path(self.HREM_dir).mkdir(parents=True, exist_ok=True)
 
-        Ligand = self.Protein.get_ligand_list()
+        _multidir_setup.make_multiple_hrem_batteries(number_of_batteries=self.BATTERIES,
+            replicas_per_battery=self.replicas,
+            plumed_file='empty_plumed.dat',
+            directory=self.HREM_dir)
 
-        for i in range(len(Ligand)):
+        #write the mdp file
+        self._write_template_on_file()
+        #and copy it in the HREM dir
+        shutil.copy(self.mdp_file, self.HREM_dir)
 
-            #the input directory that will be created
-            self.HREM_dir = f"{Ligand[i].resname}_only_ligand_HREM"
+        scaled_topologies = self._create_scaled_topologies()
 
-            self.mdp_file = f"{Ligand[i].resname}_only_ligand_HREM.mdp"
+        #copy the needed files in the new directories
+        for j in [self.ligand_gro_file,
+            self.ligand_top_file,
+            self.water_ligand_top_file,
+            self.water_gro_file] + scaled_topologies:
 
-            self.output_tpr_file = f"HREM.tpr"
+            shutil.copy(str(j), self.HREM_dir)
+        
+        #write workload manager input for different workload managers (slurm pbs ...)
+        #already in the self.HREM_dir
+        self._write_workloadmanager_inputs()
+        
+        #make and copy the script that will make the tpr files in loco
+        self._make_TPR_files_script(scaled_topologies=scaled_topologies)
 
-            Path(self.HREM_dir).mkdir(parents=True, exist_ok=True)
+        #create a file with important info for post processing of the HREM output
+        # key = value
+        important_info = [
+            f"ligand_resname = {self.ligand_resname}\n",
+            f"top_file = {Path(self.ligand_top_file).name}\n",
+            f"only_solvent_gro = {Path(self.water_gro_file).name}\n",
+            f"solvated_top_file = {Path(self.water_ligand_top_file).name}\n"
+        ]
 
-            _multidir_setup.make_multiple_hrem_batteries(number_of_batteries=self.BATTERIES,
-                replicas_per_battery=self.replicas,
-                plumed_file='empty_plumed.dat',
-                directory=self.HREM_dir)
+        write_on_files.write_file(lines=important_info, file_name=self.HREM_dir + "/" + "important_info.dat")
 
-            #write the mdp file
-            self._write_template_on_file()
-            #and copy it in the HREM dir
-            shutil.copy(self.mdp_file, self.HREM_dir)
-
-            scaled_topologies = self._create_scaled_topologies(Ligand=Ligand[i])
-
-            #copy the needed files in the new directories
-            for j in [Ligand[i].gro_file,
-                Ligand[i].top_file,
-                Ligand[i].solvated_top_file,
-                Ligand[i].itp_file,
-                self.only_solvent_box_gro] + scaled_topologies:
-
-                shutil.copy(str(j), self.HREM_dir)
-            
-            #write workload manager input for different workload managers (slurm pbs ...)
-            #already in the self.HREM_dir
-            self._write_workloadmanager_inputs()
-            
-            #make and copy the script that will make the tpr files in loco
-            self._make_TPR_files_script(scaled_topologies=scaled_topologies, Ligand=Ligand[i])
-
-            #create a file with important info for post processing of the HREM output
-            # key = value
-            important_info = [
-                f"ligand_resname = {Ligand[i].resname}\n",
-                f"ligand_itp = {Path(Ligand[i].itp_file).name}\n",
-                f"top_file = {Path(Ligand[i].top_file).name}\n",
-                f"only_solvent_gro = {Path(self.only_solvent_box_gro).name}\n",
-                f"solvated_top_file = {Path(Ligand[i].solvated_top_file).name}\n"
-            ]
-
-            write_on_files.write_file(lines=important_info, file_name=self.HREM_dir + "/" + "important_info.dat")
-
-            #as gmx2pdb makes some random but needed itp files some times
-            #I lazily copy them all
-            for file_name in Path('.').glob('*.itp'):
-
-                shutil.copy(str(file_name), self.HREM_dir)
-
-            #change the absolute #include in relative ones as they would make no sense when the directory will be copied
-            #on a different computer (the HPC cluster)
-            for file_name in Path(self.HREM_dir).glob('*.top'):
-
-                self._change_absolute_ligand_itp_include_in_relative(top_file = self.HREM_dir + "/" + file_name.name)
-
-        return self.Protein
+        return self.HREM_dir
 
 
 
