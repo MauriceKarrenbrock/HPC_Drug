@@ -13,10 +13,10 @@ use --help for usage info
 """
 
 import argparse
-import shutil
 from pathlib import Path
 
 from PythonFSDAM.pipelines import superclasses
+from PythonFSDAM import integrate_works
 
 from HPC_Drug.MD.gromacs.volume_correction import volume_correction as gromacs_volume_correction
 
@@ -69,18 +69,18 @@ if parsed_input.md_program == 'gromacs':
     bound_files = [[], []]
 
     bound_files[0] = bound_dir.glob('RESTART/q*.xvg')
-    bound_files[0] = [i.resolve() for i in bound_files[0] if 'pull' not in str(i)]
+    bound_files[0] = sorted([i.resolve() for i in bound_files[0] if 'pull' not in str(i)])
 
     bound_files[1] = bound_dir.glob('RESTART/vdw*.xvg')
-    bound_files[1] = [i.resolve() for i in bound_files[1] if 'pull' not in str(i)]
+    bound_files[1] = sorted([i.resolve() for i in bound_files[1] if 'pull' not in str(i)])
 
     i = 0
     while (bound_dir / f'Extra_RESTART{i}').exists():
         tmp_files = bound_dir.glob(f'Extra_RESTART{i}/q*.xvg')
-        bound_files[0] += [i.resolve() for i in tmp_files if 'pull' not in str(i)]
+        bound_files[0] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
 
         tmp_files = bound_dir.glob('RESTART/vdw*.xvg')
-        bound_files[1] += [i.resolve() for i in tmp_files if 'pull' not in str(i)]
+        bound_files[1] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
 
         i += 1
 
@@ -88,18 +88,18 @@ if parsed_input.md_program == 'gromacs':
     unbound_files = [[], []]
 
     unbound_files[0] = unbound_dir.glob('RESTART/vdw*.xvg')
-    unbound_files[0] = [i.resolve() for i in unbound_files[0] if 'pull' not in str(i)]
+    unbound_files[0] = sorted([i.resolve() for i in unbound_files[0] if 'pull' not in str(i)])
 
     unbound_files[1] = unbound_dir.glob('RESTART/q*.xvg')
-    unbound_files[1] = [i.resolve() for i in unbound_files[1] if 'pull' not in str(i)]
+    unbound_files[1] = sorted([i.resolve() for i in unbound_files[1] if 'pull' not in str(i)])
 
     i = 0
     while (unbound_dir / f'Extra_RESTART{i}').exists():
         tmp_files = unbound_dir.glob(f'Extra_RESTART{i}/vdw*.xvg')
-        unbound_files[0] += [i.resolve() for i in tmp_files if 'pull' not in str(i)]
+        unbound_files[0] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
 
         tmp_files = unbound_dir.glob('RESTART/q*.xvg')
-        unbound_files[1] += [i.resolve() for i in tmp_files if 'pull' not in str(i)]
+        unbound_files[1] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
 
         i += 1
 
@@ -117,10 +117,6 @@ if parsed_input.md_program == 'gromacs':
     print('created volume_correction.dat with the volume correction')
     ##################################
 
-
-if len(bound_files) == 1:
-
-    bound_files = bound_files[0]
 
 print('Calculating Jarzinski free energy, will take some time')
 obj = superclasses.JarzynskiVDSSBPostProcessingPipeline(
@@ -144,3 +140,17 @@ free_energy, std = obj.execute()
 
 print(f'Gaussian mixtures (EM) free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
 
+print('Creating csv files with work vs lambda (useful for plotting)')
+# Bound
+bound_csv = integrate_works.make_work_vs_lambda_csv(work_files=bound_files,
+                            md_program=parsed_input.md_program,
+                            creation=False,
+                            num_runs=len(bound_files))
+
+# Unbound
+unbound_csv = integrate_works.make_work_vs_lambda_csv(work_files=unbound_files,
+                            md_program=parsed_input.md_program,
+                            creation=True,
+                            num_runs=len(bound_files))
+
+print(f'Created {bound_csv} and {unbound_csv}')
