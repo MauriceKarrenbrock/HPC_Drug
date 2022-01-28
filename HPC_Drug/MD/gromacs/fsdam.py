@@ -62,7 +62,8 @@ class FSDAMInputPreprocessing(object):
                 atoms_in_pocket=None,
                 atoms_in_pocket_tollerance=0,
                 extra_frames=False,
-                add_water=False):
+                add_water=False,
+                kind_of_system='protein-ligand'): # possible options are "protein-ligand", "only-ligand", "solvated-ligand"
 
         #the root directory of the HREM
         self.HREM_dir = os.getcwd()
@@ -105,6 +106,8 @@ class FSDAMInputPreprocessing(object):
 
         self.add_water = add_water
 
+        self.kind_of_system = kind_of_system
+
 
     def _create_restart_configs(self, fsdam_dir, not_used_dir, ligand_resname):
         """
@@ -143,7 +146,7 @@ class FSDAMInputPreprocessing(object):
 
         # If it is a protein ligand system need to check
         # if the ligand is in the pocket
-        if not self.creation:
+        if self.kind_of_system == 'protein-ligand':
             out_of_pocket_dir = (Path(fsdam_dir)) / 'ligand_out_of_pocket'
             out_of_pocket_dir.mkdir(parents=True, exist_ok=True)
 
@@ -214,13 +217,7 @@ class FSDAMInputPreprocessing(object):
 
     def _make_input_files(self, ligand_resname, top_file, starting_structures):
 
-        if self.creation:
-
-            COM_pull_groups=None
-
-            harmonic_kappa = None
-
-        else:
+        if self.kind_of_system == 'protein-ligand':
 
             COM_pull_groups=['Protein', ligand_resname, 'DUM']
 
@@ -237,6 +234,12 @@ class FSDAMInputPreprocessing(object):
                     ligand_resname, 'DUM', 0
                 ]
             ]
+        
+        else:
+
+            COM_pull_groups=None
+
+            harmonic_kappa = None
 
 
         fsdam_preprocessing_obj = _preprocessing.PreprocessGromacsFSDAM(
@@ -377,7 +380,7 @@ class FSDAMInputPreprocessing(object):
                 useful_info[line[0].strip()] = line[1].strip()
 
         # Extract frames and check if they are out of pocket
-        # if self.creation==False (protein ligand system)
+        # if self.kind_of_system == protein-ligand
         starting_configurations = self._create_restart_configs(fsdam_dir = fsdam_dir,
             not_used_dir=not_used_dir,
             ligand_resname=useful_info['ligand_resname'])

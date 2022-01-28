@@ -108,18 +108,13 @@ parser.add_argument('--extra-frames',
 
 parsed_input = parser.parse_args()
 
-add_water = False
-if parsed_input.hrem_type == "protein-ligand":
-
+if parsed_input.hrem_type in ("protein-ligand", "solvated-ligand"):
     creation=False
+    add_water = False
 
-elif parsed_input.hrem_type in ("only-ligand", "solvated-ligand"):
-
+elif parsed_input.hrem_type == "only-ligand":
     creation=True
-
-    # If it's the ligand in vacuum I will have to add water
-    if parsed_input.hrem_type == "only-ligand":
-        add_water = True
+    add_water = True
 
 # From comma separated list to list of int
 if parsed_input.pbc_atoms is not None:
@@ -140,6 +135,7 @@ fsdam_obj = fsdam.FSDAMInputPreprocessing(gromacs_path = parsed_input.program_pa
                 atoms_in_pocket=parsed_input.atoms_in_pocket,
                 atoms_in_pocket_tollerance=parsed_input.atoms_in_pocket_tollerance,
                 extra_frames=parsed_input.extra_frames,
-                add_water=add_water)
+                add_water=add_water,
+                kind_of_system=parsed_input.hrem_type)
 
 fsdam_obj.execute()
