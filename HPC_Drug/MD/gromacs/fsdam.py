@@ -60,7 +60,9 @@ class FSDAMInputPreprocessing(object):
                 constrains=None,
                 reference_frame=None,
                 atoms_in_pocket=None,
-                extra_frames=False):
+                atoms_in_pocket_tollerance=0,
+                extra_frames=False,
+                add_water=False):
 
         #the root directory of the HREM
         self.HREM_dir = os.getcwd()
@@ -97,7 +99,11 @@ class FSDAMInputPreprocessing(object):
         self.reference_frame = reference_frame
         self.atoms_in_pocket = atoms_in_pocket
 
+        self.atoms_in_pocket_tollerance = int(atoms_in_pocket_tollerance)
+
         self.extra_frames = extra_frames
+
+        self.add_water = add_water
 
 
     def _create_restart_configs(self, fsdam_dir, not_used_dir, ligand_resname):
@@ -183,7 +189,8 @@ class FSDAMInputPreprocessing(object):
                     pdb_file=file_name,
                     n_atoms_inside=atoms_in_pocket,
                     top=None,
-                    make_molecules_whole=False)
+                    make_molecules_whole=False,
+                    tollerance=self.atoms_in_pocket_tollerance)
             
             else:
                 lig_in_pocket = True
@@ -375,7 +382,7 @@ class FSDAMInputPreprocessing(object):
             not_used_dir=not_used_dir,
             ligand_resname=useful_info['ligand_resname'])
 
-        if self.creation:
+        if self.add_water:
             
             self._add_water_box(useful_info['only_solvent_gro'], starting_configurations)
 
