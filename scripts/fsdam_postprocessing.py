@@ -14,6 +14,7 @@ use --help for usage info
 
 import argparse
 from pathlib import Path
+import shutil
 
 from PythonFSDAM.pipelines import superclasses
 from PythonFSDAM import integrate_works
@@ -57,7 +58,23 @@ parser.add_argument('--temperature',
                     default=298.15,
                     help='temperature in Kelvin (K)')
 
+parser.add_argument('--kind-of-process',
+                    action='store',
+                    type=str,
+                    default='vdssb',
+                    choices=['fsdam-unbound-creation', 'fsdam-unbound-annihilation', 'vdssb'],
+                    help='if you are doing a standard FSDAM or a vDSSB, for the bound system (protein + ligand) '
+                    'it will always be taken for granted that the ligand was annihilated, if you are doing vDSSB the ligand MUST '
+                    'be created in a box of water, if you are doing standard FSDAM you have to specify what you are doing '
+                    'with the unbound system')
+
 parsed_input = parser.parse_args()
+
+
+if parsed_input.kind_of_process == 'fsdam-unbound-annihilation':
+    ligand_creation = False
+else:
+    ligand_creation = True
 
 
 bound_dir = Path(parsed_input.bound_dir)
@@ -118,27 +135,128 @@ if parsed_input.md_program == 'gromacs':
     ##################################
 
 
-print('Calculating Jarzinski free energy, will take some time')
-obj = superclasses.JarzynskiVDSSBPostProcessingPipeline(
-    bound_files,
-    unbound_files,
-    temperature=parsed_input.temperature,
-    md_program=parsed_input.md_program)
+################################################
+# Do vDSSB
+if parsed_input.kind_of_process == 'vdssb':
 
-free_energy, std = obj.execute()
+    print('Calculating Jarzinski free energy, will take some time')
+    obj = superclasses.JarzynskiVDSSBPostProcessingPipeline(
+        bound_files,
+        unbound_files,
+        temperature=parsed_input.temperature,
+        md_program=parsed_input.md_program)
 
-print(f'Jarzynski free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
+    free_energy, std = obj.execute()
 
-print('Calculating Gaussian Mixtures (EM) free energy, will take some time')
-obj = superclasses.GaussianMixturesVDSSBPostProcessingPipeline(
-    bound_files,
-    unbound_files,
-    temperature=parsed_input.temperature,
-    md_program=parsed_input.md_program)
+    print(f'Jarzynski free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
 
-free_energy, std = obj.execute()
+    print('Calculating Gaussian Mixtures (EM) free energy, will take some time')
+    obj = superclasses.GaussianMixturesVDSSBPostProcessingPipeline(
+        bound_files,
+        unbound_files,
+        temperature=parsed_input.temperature,
+        md_program=parsed_input.md_program)
 
-print(f'Gaussian mixtures (EM) free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
+    free_energy, std = obj.execute()
+
+    print(f'Gaussian mixtures (EM) free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
+
+##########################################################
+# Do normal FSDAM
+else:
+
+    # Jarzynski
+    print('Calculating Jarzinski free energy, will take some time')
+    unbound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
+        unbound_files,
+        temperature=parsed_input.temperature,
+        md_program=parsed_input.md_program,
+        creation=ligand_creation)
+
+    unbound_free_energy, unbound_std = unbound_obj.execute()
+
+    shutil.move(f'{str(unbound_obj)}_free_energy.dat',
+                'unbound_' + f'{str(unbound_obj)}_free_energy.dat')
+
+    print(f'Jarzynski unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
+
+    bound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
+        bound_files,
+        temperature=parsed_input.temperature,
+        md_program=parsed_input.md_program,
+        creation=False)
+
+    bound_free_energy, bound_std = bound_obj.execute()
+
+    shutil.move(f'{str(bound_obj)}_free_energy.dat',
+                'bound_' + f'{str(bound_obj)}_free_energy.dat')
+
+    print(f'Jarzynski bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
+
+    if ligand_creation:
+        total_free_energy = bound_free_energy + unbound_free_energy
+    else:
+        total_free_energy = bound_free_energy - unbound_free_energy
+
+    total_std = bound_std + unbound_std
+
+    with open(f'{str(bound_obj)}_total_free_energy.dat', 'w') as f:
+
+        f.write(
+            '#total unbinding free energy (no volume correction done) in Kcal mol\n'
+            '#Dg   CI95%  STD\n'
+            f'{total_free_energy:.18e} {1.96*(total_std):.18e} {total_std:.18e}\n'
+        )
+
+    print(f'Jarzynski total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
+
+
+    # EM gaussian mixtures
+    print('Calculating Gaussian mixtures (EM) free energy, will take some time')
+    unbound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
+        unbound_files,
+        temperature=parsed_input.temperature,
+        md_program=parsed_input.md_program,
+        creation=ligand_creation)
+
+    unbound_free_energy, unbound_std = unbound_obj.execute()
+
+    shutil.move(f'{str(unbound_obj)}_free_energy.dat',
+                'unbound_' + f'{str(unbound_obj)}_free_energy.dat')
+
+    print(f'Gaussian mixtures (EM) unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
+
+    bound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
+        bound_files,
+        temperature=parsed_input.temperature,
+        md_program=parsed_input.md_program,
+        creation=False)
+
+    bound_free_energy, bound_std = bound_obj.execute()
+
+    shutil.move(f'{str(bound_obj)}_free_energy.dat',
+                'bound_' + f'{str(bound_obj)}_free_energy.dat')
+
+    print(f'Gaussian mixtures (EM) bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
+
+    if ligand_creation:
+        total_free_energy = bound_free_energy + unbound_free_energy
+    else:
+        total_free_energy = bound_free_energy - unbound_free_energy
+
+    total_std = bound_std + unbound_std
+
+    with open(f'{str(bound_obj)}_total_free_energy.dat', 'w') as f:
+
+        f.write(
+            '#total unbinding free energy (no volume correction done) in Kcal mol\n'
+            '#Dg   CI95%  STD\n'
+            f'{total_free_energy:.18e} {1.96*(total_std):.18e} {total_std:.18e}\n'
+        )
+
+    print(f'Gaussian mixtures (EM) total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
+
+##########################################################
 
 print('Creating csv files with work vs lambda (useful for plotting)')
 # Bound
@@ -150,7 +268,7 @@ bound_csv = integrate_works.make_work_vs_lambda_csv(work_files=bound_files,
 # Unbound
 unbound_csv = integrate_works.make_work_vs_lambda_csv(work_files=unbound_files,
                             md_program=parsed_input.md_program,
-                            creation=True,
+                            creation=ligand_creation,
                             num_runs=len(bound_files))
 
 print(f'Created {bound_csv} and {unbound_csv}')
