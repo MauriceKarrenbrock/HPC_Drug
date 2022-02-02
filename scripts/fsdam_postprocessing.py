@@ -178,6 +178,9 @@ else:
     shutil.move(f'{str(unbound_obj)}_free_energy.dat',
                 'unbound_' + f'{str(unbound_obj)}_free_energy.dat')
 
+    shutil.move('work_values.dat',
+                'unbound_work_values.dat')
+
     print(f'Jarzynski unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
 
     bound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
@@ -190,6 +193,9 @@ else:
 
     shutil.move(f'{str(bound_obj)}_free_energy.dat',
                 'bound_' + f'{str(bound_obj)}_free_energy.dat')
+
+    shutil.move('work_values.dat',
+                'bound_work_values.dat')
 
     print(f'Jarzynski bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
 
@@ -224,6 +230,9 @@ else:
     shutil.move(f'{str(unbound_obj)}_free_energy.dat',
                 'unbound_' + f'{str(unbound_obj)}_free_energy.dat')
 
+    shutil.move('work_values.dat',
+                'unbound_work_values.dat')
+
     print(f'Gaussian mixtures (EM) unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
 
     bound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
@@ -236,6 +245,9 @@ else:
 
     shutil.move(f'{str(bound_obj)}_free_energy.dat',
                 'bound_' + f'{str(bound_obj)}_free_energy.dat')
+
+    shutil.move('work_values.dat',
+                'bound_work_values.dat')
 
     print(f'Gaussian mixtures (EM) bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
 
@@ -265,10 +277,16 @@ bound_csv = integrate_works.make_work_vs_lambda_csv(work_files=bound_files,
                             creation=False,
                             num_runs=len(bound_files))
 
+shutil.move(bound_csv,
+            f'bound_{bound_csv}')
+
 # Unbound
 unbound_csv = integrate_works.make_work_vs_lambda_csv(work_files=unbound_files,
                             md_program=parsed_input.md_program,
                             creation=ligand_creation,
                             num_runs=len(bound_files))
+
+shutil.move(unbound_csv,
+            f'unbound_{bound_csv}')
 
 print(f'Created {bound_csv} and {unbound_csv}')
