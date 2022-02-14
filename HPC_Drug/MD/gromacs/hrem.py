@@ -275,7 +275,8 @@ class GromacsHREMInput(gromacs_input.GromacsInput):
         resSeq_to_scale = [top.atom(top.select(f'resid {resid}')[0]).residue.resSeq for resid in resSeq_to_scale]
 
         return _solute_tempering.prepare_topologies_for_hrem(top_file=self.Protein.top_file,
-                                resSeq_to_scale=resSeq_to_scale,
+                                protein_resSeq_to_scale=resSeq_to_scale,
+                                ligand_resname=self.Protein.get_ligand_list()[0].resname,
                                 mdp_file=self.mdp_file,
                                 gro_file=self.Protein.gro_file,
                                 number_of_replicas=self.replicas,
@@ -477,7 +478,8 @@ class GromacsHREMOnlyLigand(GromacsHREMInput):
         resSeq_to_scale = [top.atom(top.select('all')[0]).residue.resSeq]
 
         return _solute_tempering.prepare_topologies_for_hrem(top_file=Ligand.top_file,
-                                resSeq_to_scale=resSeq_to_scale,
+                                protein_resSeq_to_scale=resSeq_to_scale,
+                                ligand_resname=Ligand.resname,
                                 mdp_file=self.mdp_file,
                                 gro_file=Ligand.gro_file,
                                 number_of_replicas=self.replicas,
