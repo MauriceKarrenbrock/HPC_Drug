@@ -24,20 +24,31 @@ class ResidueRenamer(object):
     """
 
     def __init__(self,
-                Protein,
+                structure, #biopython structure
+                substitutions_dict,
                 forcefield='amber',
                 substitution = "standard",
                 ph = 7.0):
+
+        class ProteinObj(): #Only for retro compatibility
+            def __init__(self,
+                structure,
+                substitutions_dict,):
+                self.structure = structure
+                self.substitutions_dict = substitutions_dict
+
+        self.Protein = ProteinObj(structure,
+                        substitutions_dict)
 
         if forcefield == 'amber':
             
             if substitution == "standard":
 
-                self.residue_substitutor = AmberResidueRenamerStandardSubstitution(Protein = Protein, ph = ph)
+                self.residue_substitutor = AmberResidueRenamerStandardSubstitution(Protein=self.Protein, ph = ph)
 
             elif substitution == "custom_zinc":
 
-                self.residue_substitutor = AmberResidueRenamerCustomZincSubstitution(Protein = Protein, ph = ph)
+                self.residue_substitutor = AmberResidueRenamerCustomZincSubstitution(Protein=self.Protein, ph = ph)
 
             else:
                 raise NotImplementedError(f"{substitution} is not an implemented substitution method (remember that it is case sensitive)")
@@ -47,13 +58,11 @@ class ResidueRenamer(object):
             raise NotImplementedError(f"The forcefield {forcefield} is not an implemented option, remember that the input is case sensitive")
 
 
-        self.Protein = Protein
-
     def execute(self):
 
         self.Protein = self.residue_substitutor.execute()
 
-        return self.Protein
+        return self.Protein.structure
 
 
         
@@ -225,11 +234,7 @@ class AmberResidueRenamerStandardSubstitution(SpecificResidueRenamerSuperclass):
 
     def execute(self):
 
-        self.Protein.update_structure(struct_type = "biopython")
-
         self._iterate_residues(structure = self.Protein.structure)
-
-        self.Protein.write(struct_type = 'biopython')
 
         return self.Protein
 
@@ -318,11 +323,7 @@ class AmberResidueRenamerCustomZincSubstitution(SpecificResidueRenamerSuperclass
 
         self.Protein = self.standard_substitutor.execute()
 
-        self.Protein.update_structure(struct_type = "biopython")
-
         self._iterate_residues(structure = self.Protein.structure)
-
-        self.Protein.write(struct_type = 'biopython')
 
         return self.Protein
 

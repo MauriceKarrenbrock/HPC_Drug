@@ -13,9 +13,8 @@
 
 import copy
 
-
+from HPC_Drug.PDB import biopython as _bio
 from HPC_Drug import important_lists
-from HPC_Drug.auxiliary_functions import get_iterable
 from HPC_Drug import orient
 
 
@@ -91,7 +90,7 @@ def get_metal_binding_residues_with_no_header(structure,
 
     _chain = copy.deepcopy(chain)
 
-    for residue in _chain:
+    for residue in _chain.get_residues():
         
         if residue.resname.strip().upper() in metals:
             for atom in residue:
@@ -198,7 +197,7 @@ def get_disulf_bonds_with_no_header(structure,
 
     _chain = copy.deepcopy(chain)
 
-    for residue in _chain:
+    for residue in _chain.get_residues():
         
         if residue.resname.strip().upper() in important_lists.cyst_resnames:
 
@@ -232,81 +231,42 @@ def get_disulf_bonds_with_no_header(structure,
 
     return substitutions_dict, sulf_bonds
 
-def get_organic_ligands_with_no_header(structure,
-                                    protein_chain = 'A',
-                                    protein_model = 0,
+def get_organic_ligands_with_no_header(pdb_file,
                                     trash = important_lists.trash,
                                     metals = important_lists.metals):
-    """
-    This function gets called by get_metalbinding_disulf_ligands
-
-    This function iterates through the structure to get the organic ligand
+    """This function iterates through the structure to get the organic ligand
     returning a list of lists containing
     [[resname, resnumber], [resname, resnumber], ...]
-    If there are none returns None
+    if there are none returns an empty list
 
-    it uses a biopython structure
+    Parameters
+    -------------
+    pdb_file : str
+    trash : iterable(str), default=HPC_Drug.important_lists.trash
+        a list (or tuple etc) that contains all the resnames (in capital letters) of trash ligands to avoid listing
+    metals : iterable(str), default=HPC_Drug.important_lists.metals
+        a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for
 
-    structure :: biopython structure of the protein
+    Returns
+    ----------
+    list
+        returning a list of lists containing
+        [[resname, resnumber], [resname, resnumber], ...]
+        if there are none returns an empty list
 
-    protein_chain :: string default 'A', if == None no chain selection will be done
+    """
 
-    protein_model :: integer default 0, if == None no model and no chain selection will be done
-
-    trash :: a list (or tuple etc) that contains all the resnames (in capital letters) of trash ligands to avoid listing,
-    default HPC_Drug.important_lists.trash (Actually the easiest way to personalize trash is to append your custom values to this list)
-
-    metals :: a list (or tuple etc) that contains all the resnames (in capital letters) of metals necessary to look for,
-    default HPC_Drug.important_lists.metals (Actually the easiest way to personalize metals is to append your custom values to this list)
-
-    this function is slow and error prone
-    and should only be used if there is no mmCIF with a good header"""
+    structure = _bio.get_structure(pdb_file)
 
     ligand_list = []
 
-    #selects model and chain if required
-    if protein_model != None:
-
-        try:
-
-            model = structure[protein_model]
-
-        except KeyError:
-
-            model = structure
-
-        # select only the right chain
-        if protein_chain != None:
-
-            try:
-
-                chain = model[protein_chain.strip().upper()]
-
-            except KeyError:
-
-                chain = model
-
-        else:
-            chain = model
-
-    else:
-        chain = structure
-
-
-    for residue in chain:
-
+    for residue in structure.get_residues():
         #it's an hetero atom
         if residue.id[0].strip() != '':
 
             if residue.resname.strip().upper() not in metals and residue.resname.strip().upper() not in trash:
 
                 ligand_list.append([residue.resname.strip().upper(), residue.id[1]])
-
-    #if there are no ligand returns None
-    if len(ligand_list) == 0:
-
-        print("The list of ligands is empty, going on returning a None item")
-        ligand_list = None
 
     return ligand_list
 

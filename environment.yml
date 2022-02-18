@@ -5,37 +5,23 @@ channels:
   - bioconda
   - defaults
 dependencies:
+  - openff-toolkit
   - openbabel=2.4
-  - gawk
-  - gsl
   - numpy
   - openmm
   - openmmtools
   - openmmforcefields
-  - openssl
   - pip
   - plumed
   - python
-  - readline
-  - setuptools
-  - six
-  - sqlite
-  - tk
-  - wheel
-  - xdrfile
-  - xz
-  - zlib
   - pdbfixer
-  - Cython
   - mdtraj
   - scipy
   - MDAnalysis>=1.1.1
   - biopython
   - pytest
   - pytest-mock
-  - matplotlib
-  - numkit
-  - gromacswrapper
+  - parmed
   - pip:
     - astunparse
     - bootstrapped
@@ -44,7 +30,6 @@ dependencies:
     - decorator
     - griddataformats
     - gsd
-    - importlib-resources
     - joblib
     - kiwisolver
     - mmtf-python

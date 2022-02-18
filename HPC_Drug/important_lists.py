@@ -48,8 +48,7 @@ trash = ('PR', 'SO4',
         'LEU', 'FMT'
         'BU3', 'TYR',
         'CYS', 'ASN',
-        'CSO', 'CSD',
-        'HOH')
+        'CSO', 'CSD')
 
 # Contains the trash metal ions that need to be removed
 trash_ions = ('IOD', 'K',
