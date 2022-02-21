@@ -76,8 +76,8 @@ def add_heavy_dummy_atom(gro_file,
         file_name = "DUM.itp"
     )
 
-    atom_types_path = _path.absolute_filepath("DUM_atomtypes.itp")
-    itp_file_path = _path.absolute_filepath("DUM.itp")
+    atom_types_path = "DUM_atomtypes.itp"
+    itp_file_path = "DUM.itp"
 
     _top_files.add_include_after_FF(
         include_line=atom_types_path,
