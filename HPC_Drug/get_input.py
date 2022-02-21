@@ -10,13 +10,6 @@
 """
 This file contains the classes and functions needed to get the input
 """
-try: # python>=3.7
-
-    import importlib.resources as importlib_resources
-
-except ImportError: # python<=3.6
-
-    import importlib_resources
 
 import warnings
 from collections import defaultdict
@@ -59,8 +52,6 @@ class ParseInputFromFile(GetFile):
         self.possible_keys = ('protein',
                             'ligand',
                             'protein_filetype',
-                            'ligand_elaboration_program',
-                            'ligand_elaboration_program_path',
                             'local',
                             'filepath',
                             'Protein_model',
@@ -69,10 +60,7 @@ class ParseInputFromFile(GetFile):
                             'ph',
                             'repairing_method',
                             'MD_program',
-                            'MD_program_path',
-                            'protein_prm_file',
-                            'protein_tpg_file',
-                            'solvent_pdb',
+                            'gromacs_program_path',
                             'kind_of_processor',
                             'number_of_cores_per_node',
                             'residue_substitution',
@@ -87,9 +75,12 @@ class ParseInputFromFile(GetFile):
                             'timestep_bound_hrem',
                             'timestep_unbound_hrem',
                             'constraints_bound_hrem',
-                            'constraints_unbound_hrem',
-                            'box_shape',
-                            'box_borders')
+                            'constraints_unbound_hrem'
+                            'box_borders',
+                            'protein_forcefields',
+                            'water_forcefields',
+                            'ligand_forcefield',
+                            'water_model')
 
         
         self.input_variables = self.read_input()
@@ -164,43 +155,15 @@ class ParseInputFromFile(GetFile):
         #ph must be a float
         if input_variables['ph'] != None:
             input_variables['ph'] = float(input_variables['ph'])
-        
-        #sets primadorac as the default ligand elaboration program and tries to guess where the executable is
-        if input_variables['ligand_elaboration_program'] == None:
-            input_variables['ligand_elaboration_program'] = 'primadorac'
-        
-        if input_variables['ligand_elaboration_program_path'] == None:
-            input_variables['ligand_elaboration_program_path'] = program_path.absolute_programpath(program = '~/ORAC/trunk/tools/primadorac/primadorac.bash')
         else:
-            input_variables['ligand_elaboration_program_path'] = program_path.absolute_programpath(program = input_variables['ligand_elaboration_program_path'])
-
+            input_variables['ph'] = 7.0
+        
         #absolute path of the program path
-        input_variables['MD_program_path'] = program_path.absolute_programpath(program = input_variables['MD_program_path'])
+        input_variables['gromacs_program_path'] = program_path.absolute_programpath(program = input_variables['gromacs_program_path'])
 
 
         if input_variables['MD_program'] == None:
             input_variables['MD_program'] = 'gromacs'
-
-        if input_variables['MD_program'] == 'orac':
-            if input_variables['protein_tpg_file'] == None:
-                with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.tpg') as path:
-                    input_variables['protein_tpg_file'] = str(path.resolve())
-            
-            if input_variables['protein_prm_file'] == None:
-                with importlib_resources.path('HPC_Drug.lib', 'amber99sb-ildn.prm') as path:
-                    input_variables['protein_prm_file'] = str(path.resolve())
-
-            if input_variables['solvent_pdb'] == None:
-                with importlib_resources.path('HPC_Drug.lib', 'water.pdb') as path:
-                    input_variables['solvent_pdb'] = str(path.resolve())
-        
-        elif input_variables['MD_program'] == 'gromacs':
-            if input_variables['protein_tpg_file'] == None:
-                input_variables['protein_tpg_file'] = 'amber99sb-ildn'
-
-            if input_variables['solvent_pdb'] == None:
-                input_variables['solvent_pdb'] = 'spce'
-
 
         #set a default for processor (skylake)
         if input_variables['kind_of_processor'] == None:

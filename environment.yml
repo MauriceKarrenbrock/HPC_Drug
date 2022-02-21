@@ -2,49 +2,39 @@ name: HPC_Drug
 channels:
   - omnia
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
-  - gawk
-  - gsl
+  - openff-toolkit
+  - openbabel=2.4
   - numpy
   - openmm
-  - openssl
+  - openmmtools
+  - openmmforcefields
   - pip
   - plumed
   - python
-  - readline
-  - setuptools
-  - six
-  - sqlite
-  - tk
-  - wheel
-  - xdrfile
-  - xz
-  - zlib
   - pdbfixer
-  - Cython
   - mdtraj
   - scipy
+  - MDAnalysis>=1.1.1
+  - biopython
+  - pytest
+  - pytest-mock
+  - parmed
   - pip:
     - astunparse
-    - biopython
     - bootstrapped
     - certifi
     - cycler
     - decorator
     - griddataformats
-    - gromacswrapper
     - gsd
-    - importlib-resources
     - joblib
     - kiwisolver
-    - matplotlib
-    - MDAnalysis>=1.1.1
     - mmtf-python
-    - mock
     - msgpack
     - networkx
-    - numkit
     - pillow
     - python-dateutil
     - pytz

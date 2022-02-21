@@ -27,7 +27,8 @@ class Ligand(structure.Structure):
                 gro_file = None,
                 top_file = None,
                 tpg_file = None,
-                prm_file = None):
+                prm_file = None,
+                solvated_top_file=None):
 
 
         self.resname = resname
@@ -56,6 +57,8 @@ class Ligand(structure.Structure):
         self.tpg_file = tpg_file
 
         self.prm_file = prm_file
+
+        self.solvated_top_file = solvated_top_file
 
         #a dummy protein_id needed for the biopython parser
         self.protein_id = "liga"

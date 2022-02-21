@@ -7,41 +7,46 @@
 # A copy of the license must be included with any copy of the program or part of it  #
 ######################################################################################
 
-import Bio.PDB
+import HPC_Drug.PDB.biopython as _biopython
 
-def select_model_chain(Protein):
-    """Takes a Protein instance containing the filename of a PDB or a mmcif
-    Returns a Protein instance with an updated pdb or mmcif file
-    using biopython
-    selects only a chosen model and chain
-    
-    Protein.chain must be a string
-    Protein.model must be an integer
-    
-    Protein :: HPC_Drug.structures.protein.Protein instance
+def select_model_chain(input_pdb, output_pdb, model=None, chain=None):
+    """Select model and chain of a pdb or mmcif
 
-    return Protein
-    """    
+    Parameters
+    -------------
+    input_pdb : str
+    output_pdb : str
+    model : int, default=None
+        model to choose, if None none will be selected
+    chain : str, default=None
+        chain to choose, if None none will be selected
 
-    Protein.update_structure(struct_type = "biopython")
+    Returns
+    -----------
+    output_pdb : str
+    """
+
+    input_file_type = str(input_pdb).strip().split('.')[-1]
+
+    if input_file_type == 'pdb':
+        structure = _biopython.parse_pdb(protein_id='aaaa', file_name=input_pdb)
+
+    elif input_file_type == 'cif':
+        structure = _biopython.parse_mmcif(protein_id='aaaa', file_name=input_pdb)
+
+    else:
+        raise ValueError(f'Only pdb and cif files are supported, not {input_file_type}')
 
     #select model
-    try:
-    
-        Protein.structure = Protein.structure[Protein.model]
-
-    except KeyError:
-        pass
+    if model is not None:
+        structure = structure[model]
 
     #select chain
-    try:
+    if chain is not None:
+        structure = structure[chain]
 
-        Protein.structure = Protein.structure[Protein.chain]
+    _biopython.write(structure=structure,
+                    file_type=str(output_pdb).strip().split('.')[-1],
+                    file_name=output_pdb)
 
-    except KeyError:
-        pass
-
-    #overwrites the protein file
-    Protein.write(file_name = Protein.pdb_file, struct_type = "biopython")
-
-    return Protein
+    return output_pdb

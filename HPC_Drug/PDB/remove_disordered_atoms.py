@@ -9,13 +9,20 @@
 
 import Bio.PDB
 
-def remove_disordered_atoms(Protein):
+def remove_disordered_atoms(input_pdb, output_pdb):
     """
     Removes disordered atoms, solves a problem about "copied atoms don't inherit disordered_get_list in Biopython"
 
-    Protein :: HPC_Drug.structures.protein.Protein instance
+    Parameters
+    ------------
+    input_pdb : str
+        a pdb or mmcif file
+    output_pdb : str
+        a pdb or mmcif file
 
-    return Protein
+    return
+    ----------
+    output_pdb : str
     """
 
     # This part eliminates any disordered atom part,
@@ -40,24 +47,27 @@ def remove_disordered_atoms(Protein):
 
     Bio.PDB.Residue.Residue.get_unpacked_list = get_unpacked_list
 
-    if Protein.file_type == 'pdb':
+    if str(input_pdb).split('.')[-1] == 'pdb':
         p = Bio.PDB.PDBParser()
 
-    elif Protein.file_type == 'cif':
+    elif str(input_pdb).split('.')[-1] == 'cif':
         p = Bio.PDB.MMCIFParser()
 
     else:
-        raise TypeError(f"Protein.file_type must be of 'cif' or 'pdb' type not {Protein.file_type}")
+        raise TypeError(f"input_pdb must be of 'cif' or 'pdb' type not {str(input_pdb).split('.')[-1]}")
    
-    Protein.structure = p.get_structure(Protein.protein_id, Protein.pdb_file)
+    structure = p.get_structure('aaaa', str(input_pdb))
 
-    if Protein.file_type == 'pdb':
+    if str(output_pdb).split('.')[-1] == 'pdb':
         s = Bio.PDB.PDBIO()
 
-    elif Protein.file_type == 'cif':
+    elif str(output_pdb).split('.')[-1] == 'cif':
         s = Bio.PDB.MMCIFIO()
+    
+    else:
+        raise TypeError(f"output_pdb must be of 'cif' or 'pdb' type not {str(input_pdb).split('.')[-1]}")
 
-    s.set_structure(Protein.structure)
-    s.save(Protein.pdb_file)
+    s.set_structure(structure)
+    s.save(str(output_pdb))
 
-    return Protein
+    return output_pdb
