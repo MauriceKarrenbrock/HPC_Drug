@@ -229,7 +229,7 @@ with open(output_pdb, 'w') as f:
 # extract ligands
 extracted_ligands = []
 if parsed_input.create_ligand_sdf:
-    lig_names_resSeq = get_organic_ligands_with_no_header(pdb_file=output_pdb, trash=[])
+    lig_names_resSeq = get_organic_ligands_with_no_header(pdb_file=output_pdb, trash=['HOH', 'WAT', 'SOL'])
 
     for lig in lig_names_resSeq:
         lig_name_string = f'{lig[0]}_resSeq{lig[1]}'
@@ -265,6 +265,7 @@ if parsed_input.rotate_system:
 
     traj.save(output_pdb, force_overwrite=True)
 
+    rotated_sdf_files = [] # Needed later on for translation
     for sdf in (extracted_ligands + parsed_input.sdf_files_to_rotate):
 
         # Sometimes openff-toolkit doen't like openbabel's generated sdf files
@@ -277,6 +278,8 @@ if parsed_input.rotate_system:
 
             # Attention, sometimes they result translated for some reason
             lig.to_file('rotated_' + sdf, 'sdf')
+
+            rotated_sdf_files.append('rotated_' + sdf)
 
         except Exception as e:
             warnings.warn(f'Could not rotate SDF file {sdf} because of: ' + str(e))
@@ -339,7 +342,35 @@ if parsed_input.solvate:
                         padding=parsed_input.solvate_padding * unit.nanometers,
                         neutralize=parsed_input.neutralize)
 
+    tt_before = mdtraj.load(output_pdb)
+
     with open(output_pdb, 'w') as f:
         PDBFile.writeFile(modeller.topology, modeller.positions, file=f)
+
+
+    # I noticed that solvation translates the system so I translate the sdf files too
+    tt_after = mdtraj.load(output_pdb)
+
+    com_before = mdtraj.geometry.compute_center_of_mass(
+        tt_before.atom_slice(tt_before.top.select('not water')))[0]
+
+    com_after = mdtraj.geometry.compute_center_of_mass(
+        tt_after.atom_slice(tt_after.top.select('not water')))[0]
+
+    translation_vector = com_after - com_before
+
+    for sdf in rotated_sdf_files:
+
+        # Sometimes openff-toolkit doen't like openbabel's generated sdf files
+        try:
+            lig = Molecule.from_file(sdf, 'sdf', allow_undefined_stereo=True)
+            # rotate sdf (if given)
+            lig.conformers[0] = ((lig.conformers[0] / unit.nanometers) - translation_vector) * unit.nanometers
+
+            lig.to_file('translated_' + sdf, 'sdf')
+        
+        except Exception as e:
+            warnings.warn(f'Could not translate SDF file {sdf} because of: ' + str(e))
+
 
 print('Setup done!')

@@ -26,7 +26,6 @@ import HREMGromacs.multidir_setup as _multidir_setup
 import PythonPDBStructures.geometry as _pdb_geo
 
 from HPC_Drug.MD import workload_managers
-from HPC_Drug.files_IO import read_file
 from HPC_Drug.files_IO import write_on_files
 from HPC_Drug import important_lists
 import HPC_Drug.MD.gromacs.add_dummy_atom as _dummy_atom
