@@ -312,6 +312,7 @@ class ComplexHREMInput(object):
             f"ligand_resname = {self.ligand_resname}\n", #only takes the first ligand, because actually there should be ony one
             f"ligand_resnum = {self.ligand_resnumber}\n",
             f"top_file = {Path(self.top_file).name}\n"
+            f"gro_file = {Path(self.self.pdb_file).name}\n"
         ]
 
         write_on_files.write_file(lines = important_info, file_name = self.HREM_dir + "/" + "important_info.dat")
@@ -538,6 +539,7 @@ class LigandHREMInput(object):
             f"top_file = {Path(self.ligand_top_file).name}\n",
             f"only_solvent_gro = {Path(self.water_gro_file).name}\n",
             f"solvated_top_file = {Path(self.water_ligand_top_file).name}\n"
+            f"gro_file = {Path(self.ligand_gro_file).name}\n"
         ]
 
         write_on_files.write_file(lines=important_info, file_name=self.HREM_dir + "/" + "important_info.dat")
