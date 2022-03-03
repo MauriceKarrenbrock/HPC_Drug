@@ -273,10 +273,17 @@ def parametrize_protein_and_ligand(protein_water,
         water_model='tip3p',
         ligand_ph=None):
 
-    _obabel.convert_and_protonate_file_to_sdf(ligand,
-        ligand_prefix + '.sdf', ph=ligand_ph, ligand_resname=ligand_resname)
+    # Had to do it because sometimes
+    # Molecule from openff does not accept
+    # openbabel produced SDF files
+    if ligand_ph is not None:
+        _obabel.convert_and_protonate_file_to_sdf(ligand,
+            ligand_prefix + '.sdf', ph=ligand_ph, ligand_resname=ligand_resname)
 
-    ligand = Molecule.from_file(ligand_prefix + '.sdf')
+        ligand = Molecule.from_file(ligand_prefix + '.sdf')
+    
+    else:
+        ligand = Molecule.from_file(ligand)
     
     water_box = create_water_box(box_edge=box_edge,
         water_model=water_model)
