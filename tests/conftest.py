@@ -25,6 +25,6 @@ def get_data_dir():
     """Will return the path of a file in integration_tests/data
     """
     with importlib_resources.path('tests.files4tests',
-                                  'ligand_no_H.sdf') as f:
+                                  'dummy.txt') as f:
         p = f.resolve()
     return p.parent

@@ -15,7 +15,7 @@ from FSDAMGromacs.parse import GromacsParsePullDistances
 
 from PythonFSDAM.free_energy_calculations import volume_correction as _volume_correction
 
-def volume_correction(directory=None, temperature= 298.15):
+def volume_correction(directory=None, temperature=298.15):
     """Calculates the volume correction from the various BATTERY* dirs
 
     Will look for ny *_pullx.xvg file in any BATTARY*/scaled0/ directory
