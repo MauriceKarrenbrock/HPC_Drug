@@ -186,6 +186,9 @@ else:
     shutil.move('work_values.dat',
                 'unbound_work_values.dat')
 
+    shutil.move(f'{str(unbound_obj)}_jarzanski_bias.dat', 
+        f'unbound_{str(unbound_obj)}_jarzanski_bias.dat')
+
     print(f'Jarzynski unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
 
     bound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
@@ -201,6 +204,9 @@ else:
 
     shutil.move('work_values.dat',
                 'bound_work_values.dat')
+
+    shutil.move(f'{str(unbound_obj)}_jarzanski_bias.dat', 
+        f'bound_{str(unbound_obj)}_jarzanski_bias.dat')
 
     print(f'Jarzynski bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
 
