@@ -144,8 +144,8 @@ if parsed_input.kind_of_process == 'vdssb':
 
     print('Calculating Jarzinski free energy, will take some time')
     obj = superclasses.JarzynskiVDSSBPostProcessingPipeline(
-        bound_files,
-        unbound_files,
+        bound_state_dhdl=bound_files,
+        unbound_state_dhdl=unbound_files,
         temperature=parsed_input.temperature,
         md_program=parsed_input.md_program)
 
@@ -156,8 +156,8 @@ if parsed_input.kind_of_process == 'vdssb':
     print('Calculating Gaussian Mixtures (EM) free energy, will take some time')
     for i in range(3):
         obj = superclasses.GaussianMixturesVDSSBPostProcessingPipeline(
-            bound_files,
-            unbound_files,
+            bound_state_dhdl=bound_files,
+            unbound_state_dhdl=unbound_files,
             temperature=parsed_input.temperature,
             md_program=parsed_input.md_program,
             n_gaussians=i + 1)
@@ -173,7 +173,7 @@ else:
     # Jarzynski
     print('Calculating Jarzinski free energy, will take some time')
     unbound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
-        unbound_files,
+        dhdl_files=unbound_files,
         temperature=parsed_input.temperature,
         md_program=parsed_input.md_program,
         creation=ligand_creation)
@@ -192,7 +192,7 @@ else:
     print(f'Jarzynski unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
 
     bound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
-        bound_files,
+        dhdl_files=bound_files,
         temperature=parsed_input.temperature,
         md_program=parsed_input.md_program,
         creation=False)
@@ -232,7 +232,7 @@ else:
     print('Calculating Gaussian mixtures (EM) free energy, will take some time')
     for i in range(3):
         unbound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
-            unbound_files,
+            dhdl_files=unbound_files,
             temperature=parsed_input.temperature,
             md_program=parsed_input.md_program,
             creation=ligand_creation,
@@ -249,7 +249,7 @@ else:
         print(f'{i + 1} Gaussian mixtures (EM) unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
 
         bound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
-            bound_files,
+            dhdl_files=bound_files,
             temperature=parsed_input.temperature,
             md_program=parsed_input.md_program,
             creation=False,
