@@ -35,6 +35,11 @@ def volume_correction(directory=None, temperature= 298.15):
         free energy correction in Kcal/mol
         shall be added to the dissociation free energy
         or subtracted from the binding free energy
+
+    Raises
+    -----------
+    RuntimeError
+        if no BATTERY*/scaled0/*_pullx.xvg is found in the bound dir
     """
 
     distances = np.array([])
@@ -43,18 +48,19 @@ def volume_correction(directory=None, temperature= 298.15):
         directory = '.'
     directory = Path(directory)
 
-    for battery in directory.glob('BATTERY*/scaled0'):
+    # Should be only one file per BATTERY but I want to make
+    # this function as generic as possible
+    files = list(directory.glob('BATTERY*/scaled0/*_pullx.xvg'))
 
-        # Should be only one file but I want to make
-        # this function as generic as possible
-        files = battery.glob('*_pullx.xvg')
+    if not files:
+        raise RuntimeError("No BATTERY*/scaled0/*_pullx.xvg found in the bound dir")
 
-        for ff in files:
-            distances_dict = GromacsParsePullDistances.parse(str(ff.resolve()))
+    for ff in files:
+        distances_dict = GromacsParsePullDistances.parse(str(ff.resolve()))
 
-            distances = np.concatenate((distances, distances_dict[1]))
+        distances = np.concatenate((distances, distances_dict[1]))
 
-            # Free memory (it is a big matrix)
-            distances_dict = None
+        # Free memory (it is a big matrix)
+        distances_dict = None
 
     return _volume_correction(distance_values=distances, temperature=temperature)

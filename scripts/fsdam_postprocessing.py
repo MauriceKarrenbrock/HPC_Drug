@@ -126,7 +126,11 @@ if parsed_input.md_program == 'gromacs':
 
     #################################
     # Volume free energy correction
-    volume_correction = gromacs_volume_correction(directory=bound_dir, temperature=parsed_input.temperature)
+    try:
+        volume_correction = gromacs_volume_correction(directory=bound_dir, temperature=parsed_input.temperature)
+    
+    except RuntimeError:
+        volume_correction = "No file found"
 
     with open('volume_correction.dat', 'w') as f:
         f.write('# Volume correction in Kcal/mol, must be added to the dissociation '
