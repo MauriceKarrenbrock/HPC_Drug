@@ -10,14 +10,11 @@
 """
 
 import mdtraj
-import parmed
 
 import FSDAMGromacs.gro_files as _gro_files
 import FSDAMGromacs.itp_files as _itp_files
 import FSDAMGromacs.top_files as _top_files
 
-import HPC_Drug.files_IO.write_on_files as _write_file
-import HPC_Drug.auxiliary_functions.path as _path
 
 def add_heavy_dummy_atom(gro_file,
     top_file,
@@ -66,27 +63,14 @@ def add_heavy_dummy_atom(gro_file,
         atom_number=1
     )
 
-    _write_file.write_file(
-        lines=atom_types,
-        file_name = "DUM_atomtypes.itp"
-    )
-
-    _write_file.write_file(
-        lines=itp_file,
-        file_name = "DUM.itp"
-    )
-
-    atom_types_path = "DUM_atomtypes.itp"
-    itp_file_path = "DUM.itp"
-
-    _top_files.add_include_after_FF(
-        include_line=atom_types_path,
+    _top_files.add_string_after_FF(
+        input_string=''.join(atom_types),
         input_top_file=top_file,
         output_top_file=output_top
     )
 
-    _top_files.add_include_after_atomtypes(
-        include_line=itp_file_path,
+    _top_files.add_string_after_atomtypes(
+        input_string=''.join(itp_file),
         input_top_file=output_top,
         output_top_file=output_top
     )
@@ -97,8 +81,5 @@ def add_heavy_dummy_atom(gro_file,
         input_top_file=output_top,
         output_top_file=output_top
     )
-
-    # Remove the #include statements
-    parmed.load_file(output_top, xyz=output_gro).save(output_top, overwrite=True)
 
     return output_gro, output_top
