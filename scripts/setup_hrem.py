@@ -140,7 +140,6 @@ parser.add_argument('--ligand-nreplicas',
 
 parser.add_argument('--no-preprocess-topologies',
     action = 'store_false',
-    type=bool,
     help = 'If you put this flag your topologies will not be preprocessed by gromacs in order '
     'to remove #import statements (it means that there are none already)')
 
