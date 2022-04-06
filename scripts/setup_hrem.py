@@ -138,6 +138,12 @@ parser.add_argument('--ligand-nreplicas',
     type=int,
     help = 'Number of replicas for the HREM')
 
+parser.add_argument('--no-preprocess-topologies',
+    action = 'store_false',
+    type=bool,
+    help = 'If you put this flag your topologies will not be preprocessed by gromacs in order '
+    'to remove #import statements (it means that there are none already)')
+
 parser.add_argument('--complex-constraints',
     action = 'store',
     default='h-bonds',
@@ -196,19 +202,15 @@ if parsed_input.ligand_nsteps == -1:
 
 if parsed_input.md_program == 'gromacs':
 
-    # Remove import statements and convert coordinates to gro
+    # Convert coordinates to gro
 
     # Complex
     pmd = parmed.load_file(parsed_input.complex_topology, xyz=parsed_input.complex_coordinates)
-    pmd.save('postprocessed_' + parsed_input.complex_topology, overwrite=True)
-    parsed_input.complex_topology = 'postprocessed_' + parsed_input.complex_topology
     pmd.save(parsed_input.complex_coordinates + '.gro', overwrite=True)
     parsed_input.complex_coordinates = parsed_input.complex_coordinates + '.gro'
 
     # Ligand
     pmd = parmed.load_file(parsed_input.ligand_topology, xyz=parsed_input.ligand_coordinates)
-    pmd.save('postprocessed_' + parsed_input.ligand_topology, overwrite=True)
-    parsed_input.ligand_topology = 'postprocessed_' + parsed_input.ligand_topology
     pmd.save(parsed_input.ligand_coordinates + '.gro', overwrite=True)
     parsed_input.ligand_coordinates = parsed_input.ligand_coordinates + '.gro'
 
@@ -225,7 +227,8 @@ if parsed_input.md_program == 'gromacs':
         timestep=parsed_input.complex_timestep,
         constraints=parsed_input.complex_constraints,
         temperature=parsed_input.temperature,
-        top_scaling_basis=parsed_input.complex_scaling_top_basis
+        top_scaling_basis=parsed_input.complex_scaling_top_basis,
+        preprocess_topology=parsed_input.no_preprocess_topologies
     ).execute()
     
     ligand_dir = LigandHREMInput(
@@ -242,7 +245,8 @@ if parsed_input.md_program == 'gromacs':
         timestep=parsed_input.ligand_timestep,
         constraints=parsed_input.ligand_constraints,
         temperature=parsed_input.temperature,
-        top_scaling_basis=parsed_input.ligand_scaling_top_basis
+        top_scaling_basis=parsed_input.ligand_scaling_top_basis,
+        preprocess_topology=parsed_input.no_preprocess_topologies
     ).execute()
 
     print(f'Two directories were created\n{complex_dir}\n{ligand_dir}')
