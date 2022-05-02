@@ -116,33 +116,41 @@ class FSDAMInputPreprocessing(object):
         Makes the starting files for fs-dam and writes them in the RESTART dir
         """
 
+        BATTERY_dirs = [str(i) for i in Path('.').glob('BATTERY*')]
+
         # Extract files from trajectory only the first time
         if not self.extra_frames:
-            starting_files = []
-            i = 0
 
-            BATTERY_dirs = [str(i) for i in Path('.').glob('BATTERY*')]
+            if not BATTERY_dirs:
+                raise RuntimeError("Did not find BATTERY* directories containing the HREM")
+
             parallel_input_list = [str(not_used_dir)] * len(BATTERY_dirs)
             parallel_input_list = list(zip(BATTERY_dirs, parallel_input_list))
 
             number_of_cpu = int(os.environ.get('OMP_NUM_THREADS', 1))
             number_of_cpu = min(number_of_cpu, len(BATTERY_dirs))
-            with Pool(number_of_cpu) as pool:
 
-                tmp_files = pool.starmap(
+            with Pool(number_of_cpu) as pool:
+                pool.starmap(
                     _frame_extract_helper, parallel_input_list, chunksize=1)
 
+        # If I am creating extra frames and there are no BATERY dirs it will still work
+        # Even though some BATTERY might not be used
+        # Knowing the BATTERY will give a more uniform sampling
+        if BATTERY_dirs:
             starting_files = []
 
-            for i in tmp_files:
-                starting_files += i
+            for i in range(len(BATTERY_dirs)):
+                starting_files.append([str(i) for i in Path('.').glob(f'{not_used_dir}/BATTERY{i}_*.gro')])
 
         else:
-            starting_files = [str(i) for i in Path('.').glob(f'{not_used_dir}/*.gro')]
+            starting_files = [
+                [str(i) for i in Path('.').glob(f'{not_used_dir}/*.gro')]
+            ]
 
         #randomly shuffle the structure files
-        random.shuffle(starting_files)
-        random.shuffle(starting_files)
+        for i in range(len(starting_files)):
+            starting_files[i] = random.sample(starting_files[i], len(starting_files[i]))
 
         # If it is a protein ligand system need to check
         # if the ligand is in the pocket
@@ -182,35 +190,36 @@ class FSDAMInputPreprocessing(object):
         # number of frames
         output_files = []
         n_frames_accepted = 0
-        for _ in range(len(starting_files)):
-            file_name = starting_files.pop(-1)
+        while n_frames_accepted < self.number_of_frames_to_use:
+            for i in range(len(starting_files)):
+                file_name = starting_files[i].pop(-1)
 
-            if out_of_pocket_dir is not None:
-                lig_in_pocket = _safety_checks.check_ligand_in_pocket(
-                    ligand=f'resname {ligand_resname}',
-                    pocket=nearest_neighbors,
-                    pdb_file=file_name,
-                    n_atoms_inside=atoms_in_pocket,
-                    top=None,
-                    make_molecules_whole=False,
-                    tollerance=self.atoms_in_pocket_tollerance)
-            
-            else:
-                lig_in_pocket = True
+                if out_of_pocket_dir is not None:
+                    lig_in_pocket = _safety_checks.check_ligand_in_pocket(
+                        ligand=f'resname {ligand_resname}',
+                        pocket=nearest_neighbors,
+                        pdb_file=file_name,
+                        n_atoms_inside=atoms_in_pocket,
+                        top=None,
+                        make_molecules_whole=False,
+                        tollerance=self.atoms_in_pocket_tollerance)
+                
+                else:
+                    lig_in_pocket = True
 
-            if lig_in_pocket:
-                file_name = shutil.move(str(file_name), str(fsdam_dir))
-                file_name = Path(file_name).resolve()
+                if lig_in_pocket:
+                    file_name = shutil.move(str(file_name), str(fsdam_dir))
+                    file_name = Path(file_name).resolve()
 
-                output_files.append(file_name)
+                    output_files.append(file_name)
 
-                n_frames_accepted += 1
+                    n_frames_accepted += 1
 
-            else:
-                shutil.move(str(file_name), str(out_of_pocket_dir))
+                else:
+                    shutil.move(str(file_name), str(out_of_pocket_dir))
 
-            if n_frames_accepted == self.number_of_frames_to_use:
-                break
+                if n_frames_accepted == self.number_of_frames_to_use:
+                    break
 
         return output_files
 
