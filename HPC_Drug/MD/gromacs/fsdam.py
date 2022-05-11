@@ -148,10 +148,6 @@ class FSDAMInputPreprocessing(object):
                 [str(i) for i in Path('.').glob(f'{not_used_dir}/*.gro')]
             ]
 
-        #randomly shuffle the structure files
-        for i in range(len(starting_files)):
-            starting_files[i] = random.sample(starting_files[i], len(starting_files[i]))
-
         # If it is a protein ligand system need to check
         # if the ligand is in the pocket
         if self.kind_of_system == 'protein-ligand':
@@ -192,6 +188,11 @@ class FSDAMInputPreprocessing(object):
         n_frames_accepted = 0
         while n_frames_accepted < self.number_of_frames_to_use:
             for i in range(len(starting_files)):
+
+                # Randomly shuffle the structure files every time
+                # I do it to avoid possible biases in the random shuffling
+                starting_files[i] = random.sample(starting_files[i], len(starting_files[i]))
+
                 file_name = starting_files[i].pop(-1)
 
                 if out_of_pocket_dir is not None:
