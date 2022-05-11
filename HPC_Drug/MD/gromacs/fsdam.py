@@ -156,7 +156,7 @@ class FSDAMInputPreprocessing(object):
 
             if self.reference_frame is None:
                 reference_frame = mdtraj.load('BATTERY0/scaled0/HREM.trr',
-                    top=str(starting_files[0])).slice(0)
+                    top=str(starting_files[0][0])).slice(0)
             else:
                 reference_frame = mdtraj.load(self.reference_frame)
 
