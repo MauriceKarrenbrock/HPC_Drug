@@ -16,6 +16,7 @@ import argparse
 from pathlib import Path
 import shutil
 import warnings
+import traceback
 
 import mdtraj
 
@@ -161,7 +162,7 @@ if parsed_input.kind_of_process == 'vdssb':
         print(f'Jarzynski free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
     
     except Exception as e:
-        warnings.warn(f"One or more calculations failed because of\n{str(e)}")
+        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
 
     print('Calculating Gaussian Mixtures (EM) free energy, will take some time')
     for i in range(3):
@@ -178,7 +179,7 @@ if parsed_input.kind_of_process == 'vdssb':
             print(f'{i + 1} Gaussian mixtures (EM) free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
         
         except Exception as e:
-            warnings.warn(f"One or more calculations failed because of\n{str(e)}")
+            warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
 
 ##########################################################
 # Do normal FSDAM
@@ -245,7 +246,7 @@ else:
         print(f'Jarzynski total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
     
     except Exception as e:
-        warnings.warn(f"One or more calculations failed because of\n{str(e)}")
+        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
 
 
     # EM gaussian mixtures
@@ -304,7 +305,7 @@ else:
             print(f'{i + 1} Gaussian mixtures (EM) total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
 
     except Exception as e:
-        warnings.warn(f"One or more calculations failed because of\n{str(e)}")
+        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
 
 ##########################################################
 
@@ -356,18 +357,20 @@ with bound_imp_info_file.open() as f:
 
             bound_imp_info[line[0].strip()] = line[1].strip()
 
-unbound_vol = mdtraj.load(unbound_imp_info['gro_file']).unitcell_volumes[0]
-bound_vol = mdtraj.load(bound_imp_info['gro_file']).unitcell_volumes[0]
+unbound_vol = mdtraj.load(str(Path(parsed_input.unbound_dir) / unbound_imp_info['gro_file'])).unitcell_volumes[0]
+bound_vol = mdtraj.load(str(Path(parsed_input.bound_dir) / bound_imp_info['gro_file'])).unitcell_volumes[0]
 
 # nm3 to angstrom3
 unbound_vol *= 1000
 bound_vol *= 1000
 
-unbound_charges = _charge_correction.get_charges_with_parmed(unbound_imp_info['top_file'],
-                                                        xyz=unbound_imp_info['gro_file'])
+unbound_charges = _charge_correction.get_charges_with_parmed(
+                                    str(Path(parsed_input.unbound_dir) / unbound_imp_info['top_file']),
+                                    xyz=str(Path(parsed_input.unbound_dir) / unbound_imp_info['gro_file']))
 
-bound_charges = _charge_correction.get_charges_with_parmed(bound_imp_info['top_file'],
-                                                        xyz=bound_imp_info['gro_file'])
+bound_charges = _charge_correction.get_charges_with_parmed(
+                                    str(Path(parsed_input.bound_dir) / bound_imp_info['top_file']),
+                                    xyz=str(Path(parsed_input.bound_dir) / bound_imp_info['gro_file']))
 
 homogeneus_correction = _charge_correction.correction_homogeneus_host_guest_system(
         host_charge=bound_charges - unbound_charges,
@@ -379,7 +382,7 @@ homogeneus_correction = _charge_correction.correction_homogeneus_host_guest_syst
 homogeneus_correction *= 627.5
 
 globular_correction = _charge_correction.globular_protein_correction(
-        pdb_file=bound_imp_info['gro_file'],
+        pdb_file=str(Path(parsed_input.bound_dir) / bound_imp_info['gro_file']),
         host_charge=bound_charges - unbound_charges,
         guest_charge=unbound_charges,
         ligand=f'resname {unbound_imp_info["ligand_resname"]}')
