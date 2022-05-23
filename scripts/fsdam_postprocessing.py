@@ -357,7 +357,10 @@ with bound_imp_info_file.open() as f:
 
             bound_imp_info[line[0].strip()] = line[1].strip()
 
-unbound_vol = mdtraj.load(str(Path(parsed_input.unbound_dir) / unbound_imp_info['gro_file'])).unitcell_volumes[0]
+# Using the only solvent box go get the volume, as the volume changes while putting the ligand this is an
+# arbitrary approximation 
+unbound_vol = mdtraj.load(str(Path(parsed_input.unbound_dir) / unbound_imp_info['only_solvent_gro'])).unitcell_volumes[0]
+
 bound_vol = mdtraj.load(str(Path(parsed_input.bound_dir) / bound_imp_info['gro_file'])).unitcell_volumes[0]
 
 # nm3 to angstrom3
