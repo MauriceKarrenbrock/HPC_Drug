@@ -15,6 +15,8 @@ use --help for usage info
 import argparse
 from pathlib import Path
 import shutil
+import warnings
+import traceback
 
 import mdtraj
 
@@ -125,14 +127,19 @@ if parsed_input.md_program == 'gromacs':
 
     #################################
     # Volume free energy correction
-    volume_correction = gromacs_volume_correction(directory=bound_dir, temperature=parsed_input.temperature)
+    try:
+        volume_correction = gromacs_volume_correction(directory=bound_dir, temperature=parsed_input.temperature)
+    
+        with open('volume_correction.dat', 'w') as f:
+            f.write('# Volume correction in Kcal/mol, must be added to the dissociation '
+            'free energy or subtracted from the binding free energy\n'
+            f'{volume_correction:.18e}\n')
 
-    with open('volume_correction.dat', 'w') as f:
-        f.write('# Volume correction in Kcal/mol, must be added to the dissociation '
-        'free energy or subtracted from the binding free energy\n'
-        f'{volume_correction:.18e}\n')
+        del volume_correction
 
-    del volume_correction
+    except RuntimeError:
+        with open('volume_correction.dat', 'w') as f:
+            f.write('# No file found\n')
 
     print('created volume_correction.dat with the volume correction')
     ##################################
@@ -143,28 +150,36 @@ if parsed_input.md_program == 'gromacs':
 if parsed_input.kind_of_process == 'vdssb':
 
     print('Calculating Jarzinski free energy, will take some time')
-    obj = superclasses.JarzynskiVDSSBPostProcessingPipeline(
-        bound_files,
-        unbound_files,
-        temperature=parsed_input.temperature,
-        md_program=parsed_input.md_program)
-
-    free_energy, std = obj.execute()
-
-    print(f'Jarzynski free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
-
-    print('Calculating Gaussian Mixtures (EM) free energy, will take some time')
-    for i in range(3):
-        obj = superclasses.GaussianMixturesVDSSBPostProcessingPipeline(
-            bound_files,
-            unbound_files,
+    try:
+        obj = superclasses.JarzynskiVDSSBPostProcessingPipeline(
+            bound_state_dhdl=bound_files,
+            unbound_state_dhdl=unbound_files,
             temperature=parsed_input.temperature,
-            md_program=parsed_input.md_program,
-            n_gaussians=i + 1)
+            md_program=parsed_input.md_program)
 
         free_energy, std = obj.execute()
 
-        print(f'{i + 1} Gaussian mixtures (EM) free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
+        print(f'Jarzynski free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
+    
+    except Exception as e:
+        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
+
+    print('Calculating Gaussian Mixtures (EM) free energy, will take some time')
+    for i in range(3):
+        try:
+            obj = superclasses.GaussianMixturesVDSSBPostProcessingPipeline(
+                bound_state_dhdl=bound_files,
+                unbound_state_dhdl=unbound_files,
+                temperature=parsed_input.temperature,
+                md_program=parsed_input.md_program,
+                n_gaussians=i + 1)
+
+            free_energy, std = obj.execute()
+
+            print(f'{i + 1} Gaussian mixtures (EM) free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
+        
+        except Exception as e:
+            warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
 
 ##########################################################
 # Do normal FSDAM
@@ -172,65 +187,13 @@ else:
 
     # Jarzynski
     print('Calculating Jarzinski free energy, will take some time')
-    unbound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
-        unbound_files,
-        temperature=parsed_input.temperature,
-        md_program=parsed_input.md_program,
-        creation=ligand_creation)
 
-    unbound_free_energy, unbound_std = unbound_obj.execute()
-
-    shutil.move(f'{str(unbound_obj)}_free_energy.dat',
-                'unbound_' + f'{str(unbound_obj)}_free_energy.dat')
-
-    shutil.move('work_values.dat',
-                'unbound_work_values.dat')
-
-    print(f'Jarzynski unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
-
-    bound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
-        bound_files,
-        temperature=parsed_input.temperature,
-        md_program=parsed_input.md_program,
-        creation=False)
-
-    bound_free_energy, bound_std = bound_obj.execute()
-
-    shutil.move(f'{str(bound_obj)}_free_energy.dat',
-                'bound_' + f'{str(bound_obj)}_free_energy.dat')
-
-    shutil.move('work_values.dat',
-                'bound_work_values.dat')
-
-    print(f'Jarzynski bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
-
-    if ligand_creation:
-        total_free_energy = bound_free_energy + unbound_free_energy
-    else:
-        total_free_energy = bound_free_energy - unbound_free_energy
-
-    total_std = bound_std + unbound_std
-
-    with open(f'{str(bound_obj)}_total_free_energy.dat', 'w') as f:
-
-        f.write(
-            '#total unbinding free energy (no volume correction done) in Kcal mol\n'
-            '#Dg  STD   CI95%\n'
-            f'{total_free_energy:.18e} {total_std:.18e} {1.96*(total_std):.18e}\n'
-        )
-
-    print(f'Jarzynski total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
-
-
-    # EM gaussian mixtures
-    print('Calculating Gaussian mixtures (EM) free energy, will take some time')
-    for i in range(3):
-        unbound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
-            unbound_files,
+    try:
+        unbound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
+            dhdl_files=unbound_files,
             temperature=parsed_input.temperature,
             md_program=parsed_input.md_program,
-            creation=ligand_creation,
-            n_gaussians=i + 1)
+            creation=ligand_creation)
 
         unbound_free_energy, unbound_std = unbound_obj.execute()
 
@@ -240,14 +203,17 @@ else:
         shutil.move('work_values.dat',
                     'unbound_work_values.dat')
 
-        print(f'{i + 1} Gaussian mixtures (EM) unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
+        shutil.move(f'{str(unbound_obj)}_jarzanski_bias.dat', 
+            f'unbound_{str(unbound_obj)}_jarzanski_bias.dat')
 
-        bound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
-            bound_files,
+        print(f'Jarzynski unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
+    
+
+        bound_obj = superclasses.JarzynskiPostProcessingAlchemicalLeg(
+            dhdl_files=bound_files,
             temperature=parsed_input.temperature,
             md_program=parsed_input.md_program,
-            creation=False,
-            n_gaussians=i + 1)
+            creation=False)
 
         bound_free_energy, bound_std = bound_obj.execute()
 
@@ -257,7 +223,10 @@ else:
         shutil.move('work_values.dat',
                     'bound_work_values.dat')
 
-        print(f'{i + 1} Gaussian mixtures (EM) bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
+        shutil.move(f'{str(unbound_obj)}_jarzanski_bias.dat', 
+            f'bound_{str(unbound_obj)}_jarzanski_bias.dat')
+
+        print(f'Jarzynski bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
 
         if ligand_creation:
             total_free_energy = bound_free_energy + unbound_free_energy
@@ -270,11 +239,73 @@ else:
 
             f.write(
                 '#total unbinding free energy (no volume correction done) in Kcal mol\n'
-                '#Dg   STD   CI95%\n'
+                '#Dg  STD   CI95%\n'
                 f'{total_free_energy:.18e} {total_std:.18e} {1.96*(total_std):.18e}\n'
             )
 
-        print(f'{i + 1} Gaussian mixtures (EM) total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
+        print(f'Jarzynski total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
+    
+    except Exception as e:
+        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
+
+
+    # EM gaussian mixtures
+    print('Calculating Gaussian mixtures (EM) free energy, will take some time')
+    try:
+        for i in range(3):
+            unbound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
+                dhdl_files=unbound_files,
+                temperature=parsed_input.temperature,
+                md_program=parsed_input.md_program,
+                creation=ligand_creation,
+                n_gaussians=i + 1)
+
+            unbound_free_energy, unbound_std = unbound_obj.execute()
+
+            shutil.move(f'{str(unbound_obj)}_free_energy.dat',
+                        'unbound_' + f'{str(unbound_obj)}_free_energy.dat')
+
+            shutil.move('work_values.dat',
+                        'unbound_work_values.dat')
+
+            print(f'{i + 1} Gaussian mixtures (EM) unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
+
+            bound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
+                dhdl_files=bound_files,
+                temperature=parsed_input.temperature,
+                md_program=parsed_input.md_program,
+                creation=False,
+                n_gaussians=i + 1)
+
+            bound_free_energy, bound_std = bound_obj.execute()
+
+            shutil.move(f'{str(bound_obj)}_free_energy.dat',
+                        'bound_' + f'{str(bound_obj)}_free_energy.dat')
+
+            shutil.move('work_values.dat',
+                        'bound_work_values.dat')
+
+            print(f'{i + 1} Gaussian mixtures (EM) bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
+
+            if ligand_creation:
+                total_free_energy = bound_free_energy + unbound_free_energy
+            else:
+                total_free_energy = bound_free_energy - unbound_free_energy
+
+            total_std = bound_std + unbound_std
+
+            with open(f'{str(bound_obj)}_total_free_energy.dat', 'w') as f:
+
+                f.write(
+                    '#total unbinding free energy (no volume correction done) in Kcal mol\n'
+                    '#Dg   STD   CI95%\n'
+                    f'{total_free_energy:.18e} {total_std:.18e} {1.96*(total_std):.18e}\n'
+                )
+
+            print(f'{i + 1} Gaussian mixtures (EM) total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
+
+    except Exception as e:
+        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
 
 ##########################################################
 
@@ -326,18 +357,23 @@ with bound_imp_info_file.open() as f:
 
             bound_imp_info[line[0].strip()] = line[1].strip()
 
-unbound_vol = mdtraj.load(unbound_imp_info['gro_file']).unitcell_volumes[0]
-bound_vol = mdtraj.load(bound_imp_info['gro_file']).unitcell_volumes[0]
+# Using the only solvent box go get the volume, as the volume changes while putting the ligand this is an
+# arbitrary approximation 
+unbound_vol = mdtraj.load(str(Path(parsed_input.unbound_dir) / unbound_imp_info['only_solvent_gro'])).unitcell_volumes[0]
+
+bound_vol = mdtraj.load(str(Path(parsed_input.bound_dir) / bound_imp_info['gro_file'])).unitcell_volumes[0]
 
 # nm3 to angstrom3
 unbound_vol *= 1000
 bound_vol *= 1000
 
-unbound_charges = _charge_correction.get_charges_with_parmed(unbound_imp_info['top_file'],
-                                                        xyz=unbound_imp_info['gro_file'])
+unbound_charges = _charge_correction.get_charges_with_parmed(
+                                    str(Path(parsed_input.unbound_dir) / unbound_imp_info['top_file']),
+                                    xyz=str(Path(parsed_input.unbound_dir) / unbound_imp_info['gro_file']))
 
-bound_charges = _charge_correction.get_charges_with_parmed(bound_imp_info['top_file'],
-                                                        xyz=bound_imp_info['gro_file'])
+bound_charges = _charge_correction.get_charges_with_parmed(
+                                    str(Path(parsed_input.bound_dir) / bound_imp_info['top_file']),
+                                    xyz=str(Path(parsed_input.bound_dir) / bound_imp_info['gro_file']))
 
 homogeneus_correction = _charge_correction.correction_homogeneus_host_guest_system(
         host_charge=bound_charges - unbound_charges,
@@ -349,7 +385,7 @@ homogeneus_correction = _charge_correction.correction_homogeneus_host_guest_syst
 homogeneus_correction *= 627.5
 
 globular_correction = _charge_correction.globular_protein_correction(
-        pdb_file=bound_imp_info['gro_file'],
+        pdb_file=str(Path(parsed_input.bound_dir) / bound_imp_info['gro_file']),
         host_charge=bound_charges - unbound_charges,
         guest_charge=unbound_charges,
         ligand=f'resname {unbound_imp_info["ligand_resname"]}')
