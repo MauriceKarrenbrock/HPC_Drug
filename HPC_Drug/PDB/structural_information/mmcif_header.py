@@ -70,9 +70,9 @@ def get_metal_binding_residues(mmcif2dict, metals = important_lists.metals):
                     string = f"Not implemented metal bound, going on pretending nothing happened\n\
                     More info:\n\
                     _struct_conn.ptnr1_label_comp_id = \
-                    {_mmcif2dict['_structure_conn.ptnr1_label_comp_id'][i]}\n\
+                    {_mmcif2dict['_struct_conn.ptnr1_label_comp_id'][i]}\n\
                     _struct_conn.ptnr2_label_comp_id = \
-                    {_mmcif2dict['_structure_conn.ptnr2_label_comp_id'][i]}" 
+                    {_mmcif2dict['_struct_conn.ptnr2_label_comp_id'][i]}" 
 
                     print(string)
 

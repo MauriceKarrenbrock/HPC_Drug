@@ -36,13 +36,13 @@ class test_get_metal_binding_residues(unittest.TestCase):
     def test_with_valid_dictionary(self):
 
         input_dict = {
-            '_structure_conn.conn_type_id' : ['metalc', 'metalc', 'DUMMY'],
-            '_structure_conn.ptnr1_label_comp_id' : ['HIS', 'ZN', 'DUMMY'],
-            '_structure_conn.ptnr2_label_comp_id' : ['ZN', 'HIS', 'DUMMY'],
-            '_structure_conn.ptnr1_label_atom_id' : ['E2', 'ZN', 'DUMMY'],
-            '_structure_conn.ptnr2_label_atom_id' : ['ZN', 'E2', 'DUMMY'],
-            '_structure_conn.ptnr1_auth_seq_id' : ['1', '2', '3'],
-            '_structure_conn.ptnr2_auth_seq_id' : ['4', '5', '6']
+            '_struct_conn.conn_type_id' : ['metalc', 'metalc', 'DUMMY'],
+            '_struct_conn.ptnr1_label_comp_id' : ['HIS', 'ZN', 'DUMMY'],
+            '_struct_conn.ptnr2_label_comp_id' : ['ZN', 'HIS', 'DUMMY'],
+            '_struct_conn.ptnr1_label_atom_id' : ['E2', 'ZN', 'DUMMY'],
+            '_struct_conn.ptnr2_label_atom_id' : ['ZN', 'E2', 'DUMMY'],
+            '_struct_conn.ptnr1_auth_seq_id' : ['1', '2', '3'],
+            '_struct_conn.ptnr2_auth_seq_id' : ['4', '5', '6']
         }
 
         expected_output_dict = {
@@ -59,13 +59,13 @@ class test_get_metal_binding_residues(unittest.TestCase):
         with mock.patch("HPC_Drug.PDB.structural_information.mmcif_header.print") as mocked_function:
 
             input_dict = {
-                '_structure_conn.conn_type_id' : 'metalc',
-                '_structure_conn.ptnr1_label_comp_id' : 'HIS',
-                '_structure_conn.ptnr2_label_comp_id' : 'UNKNOWN',
-                '_structure_conn.ptnr1_label_atom_id' : 'E2',
-                '_structure_conn.ptnr2_label_atom_id' : 'UNKNOWN',
-                '_structure_conn.ptnr1_auth_seq_id' : '1',
-                '_structure_conn.ptnr2_auth_seq_id' : '4'
+                '_struct_conn.conn_type_id' : 'metalc',
+                '_struct_conn.ptnr1_label_comp_id' : 'HIS',
+                '_struct_conn.ptnr2_label_comp_id' : 'UNKNOWN',
+                '_struct_conn.ptnr1_label_atom_id' : 'E2',
+                '_struct_conn.ptnr2_label_atom_id' : 'UNKNOWN',
+                '_struct_conn.ptnr1_auth_seq_id' : '1',
+                '_struct_conn.ptnr2_auth_seq_id' : '4'
             }
 
             expected_output_dict = {}
@@ -88,13 +88,13 @@ class test_get_disulf_bonds(unittest.TestCase):
     def test_with_valid_dictionary(self):
 
         input_dict = {
-            '_structure_conn.conn_type_id' : ['disulf', 'disulf', 'DUMMY'],
-            '_structure_conn.ptnr1_label_comp_id' : ['CYS', 'CYS', 'DUMMY'],
-            '_structure_conn.ptnr2_label_comp_id' : ['CYS', 'CYS', 'DUMMY'],
-            '_structure_conn.ptnr1_label_atom_id' : ['SG', 'SG', 'DUMMY'],
-            '_structure_conn.ptnr2_label_atom_id' : ['SG', 'SG', 'DUMMY'],
-            '_structure_conn.ptnr1_auth_seq_id' : ['1', '2', '3'],
-            '_structure_conn.ptnr2_auth_seq_id' : ['2', '1', '4']
+            '_struct_conn.conn_type_id' : ['disulf', 'disulf', 'DUMMY'],
+            '_struct_conn.ptnr1_label_comp_id' : ['CYS', 'CYS', 'DUMMY'],
+            '_struct_conn.ptnr2_label_comp_id' : ['CYS', 'CYS', 'DUMMY'],
+            '_struct_conn.ptnr1_label_atom_id' : ['SG', 'SG', 'DUMMY'],
+            '_struct_conn.ptnr2_label_atom_id' : ['SG', 'SG', 'DUMMY'],
+            '_struct_conn.ptnr1_auth_seq_id' : ['1', '2', '3'],
+            '_struct_conn.ptnr2_auth_seq_id' : ['2', '1', '4']
         }
 
         expected_output_dict = {
