@@ -402,8 +402,8 @@ lines = ('# This charge corrections are in Kcal/mol\n'
     '# All the charges are in atomic charges\n'
     '# Check ref https://doi.org/10.1007/s10822-018-0151-9 and https://pubs.acs.org/doi/abs/10.1021/ct400626b \n'
     '\n'
-    f'ligand_charge = {sum(unbound_charges):.18e}\n'
-    f'host_charge = {sum(bound_charges - unbound_charges):.18e}\n'
+    f'ligand_charge = {unbound_charges:.18e}\n'
+    f'host_charge = {bound_charges - unbound_charges:.18e}\n'
     f'homogeneus_correction = {homogeneus_correction:.18e}\n'
     f'globular_correction = {globular_correction:.18e}\n')
 
