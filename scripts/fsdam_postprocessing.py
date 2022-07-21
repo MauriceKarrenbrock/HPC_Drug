@@ -371,9 +371,13 @@ unbound_charges = _charge_correction.get_charges_with_parmed(
                                     str(Path(parsed_input.unbound_dir) / unbound_imp_info['top_file']),
                                     xyz=str(Path(parsed_input.unbound_dir) / unbound_imp_info['gro_file']))
 
+unbound_charges = sum(unbound_charges)
+
 bound_charges = _charge_correction.get_charges_with_parmed(
                                     str(Path(parsed_input.bound_dir) / bound_imp_info['top_file']),
                                     xyz=str(Path(parsed_input.bound_dir) / bound_imp_info['gro_file']))
+
+bound_charges = sum(bound_charges)
 
 homogeneus_correction = _charge_correction.correction_homogeneus_host_guest_system(
         host_charge=bound_charges - unbound_charges,
