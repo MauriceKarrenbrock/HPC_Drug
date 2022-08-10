@@ -382,8 +382,8 @@ bound_charges = sum(bound_charges)
 homogeneus_correction = _charge_correction.correction_homogeneus_host_guest_system(
         host_charge=bound_charges - unbound_charges,
         guest_charge=unbound_charges,
-        host_guest_box_volume=unbound_vol,
-        only_guest_box_volume=bound_vol)
+        host_guest_box_volume=bound_vol,
+        only_guest_box_volume=unbound_vol)
 
 # hartee to kcal/mol
 homogeneus_correction *= 627.5
@@ -401,6 +401,9 @@ lines = ('# This charge corrections are in Kcal/mol\n'
     '# The globular correction is only valid with globular proteins (it assumes the protein as a perfact sphere)\n'
     '# All the charges are in atomic charges\n'
     '# Check ref https://doi.org/10.1007/s10822-018-0151-9 and https://pubs.acs.org/doi/abs/10.1021/ct400626b \n'
+    '\n'
+    'ATTENTION! In gromacs the homogeneus correction is done under the hood by gromacs itself\n'
+    'See the function ewald_charge_correction in the source file src/gromacs/ewald/ewald.cpp of the gromacs MD program\n'
     '\n'
     f'ligand_charge = {unbound_charges:.18e}\n'
     f'host_charge = {bound_charges - unbound_charges:.18e}\n'
