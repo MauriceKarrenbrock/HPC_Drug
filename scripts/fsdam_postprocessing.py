@@ -379,7 +379,7 @@ bound_charges = _charge_correction.get_charges_with_parmed(
 
 bound_charges = sum(bound_charges)
 
-homogeneus_correction = _charge_correction.correction_homogeneus_host_guest_system(
+homogeneus_correction = _charge_correction.homogeneus_charge_correction_vDSSB(
         host_charge=bound_charges - unbound_charges,
         guest_charge=unbound_charges,
         host_guest_box_volume=bound_vol,
@@ -394,13 +394,13 @@ globular_correction = _charge_correction.globular_protein_correction(
         guest_charge=unbound_charges,
         ligand=f'resname {unbound_imp_info["ligand_resname"]}')
 
-lines = ('# This charge corrections are in Kcal/mol\n'
+lines = ('# This charge corrections are in Kcal/mol and is for the vDSSB method\n'
     '# They should be added to the dissociacion free energy or removed from the binding free energy\n'
     '# The calculation took for granted that there are no counterions in the unbound system\n'
     '# The homogeneus correction should always be used in case of charged ligands\n'
     '# The globular correction is only valid with globular proteins (it assumes the protein as a perfact sphere)\n'
     '# All the charges are in atomic charges\n'
-    '# Check ref https://doi.org/10.1007/s10822-018-0151-9 and https://pubs.acs.org/doi/abs/10.1021/ct400626b \n'
+    '# Check ref https://doi.org/10.1063/5.0086640 and https://pubs.acs.org/doi/abs/10.1021/ct400626b \n'
     '\n'
     'ATTENTION! In gromacs the homogeneus correction is done under the hood by gromacs itself\n'
     'See the function ewald_charge_correction in the source file src/gromacs/ewald/ewald.cpp of the gromacs MD program\n'
