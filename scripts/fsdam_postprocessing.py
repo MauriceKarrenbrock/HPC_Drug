@@ -251,8 +251,8 @@ else:
 
     # EM gaussian mixtures
     print('Calculating Gaussian mixtures (EM) free energy, will take some time')
-    try:
-        for i in range(3):
+    for i in range(3):
+        try:
             unbound_obj = superclasses.GaussianMixturesPostProcessingAlchemicalLeg(
                 dhdl_files=unbound_files,
                 temperature=parsed_input.temperature,
@@ -304,8 +304,8 @@ else:
 
             print(f'{i + 1} Gaussian mixtures (EM) total free energy {total_free_energy}\n' f'CI95 {1.96*(total_std)}')
 
-    except Exception as e:
-        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
+        except Exception as e:
+            warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
 
 ##########################################################
 
