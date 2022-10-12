@@ -67,20 +67,22 @@ parser.add_argument('--kind-of-process',
                     action='store',
                     type=str,
                     default='vdssb',
-                    choices=['fsdam-unbound-creation', 'fsdam-unbound-annihilation', 'vdssb'],
-                    help='if you are doing a standard FSDAM or a vDSSB, for the bound system (protein + ligand) '
-                    'it will always be taken for granted that the ligand was annihilated, if you are doing vDSSB the ligand MUST '
-                    'be created in a box of water, if you are doing standard FSDAM you have to specify what you are doing '
-                    'with the unbound system')
+                    choices=['fsdam', 'vdssb'],
+                    help='if you are doing a standard FSDAM or a vDSSB, '
+                    'remember that if you are doing vDSSB if you are annihilating the ligand in the bound system you must be creatighn it in the unbound '
+                    'and viceversa (use the --bound-creation and --unbound-creation flags)')
+
+parser.add_argument('--bound-creation',
+                    action='store_true',
+                    help='If in the bound transformation you are creating the ligand in the protein-ligand system use this flag, '
+                    'remember that if you are doing vDSSB if you are annihilating the ligand in the bound system you must be creatighn it in the unbound '
+                    'and viceversa')
+
+parser.add_argument('--unbound-creation',
+                    action='store_true',
+                    help='If in the unbound transformation you are creating the ligand in a box of water use this flag')
 
 parsed_input = parser.parse_args()
-
-
-if parsed_input.kind_of_process == 'fsdam-unbound-annihilation':
-    ligand_creation = False
-else:
-    ligand_creation = True
-
 
 bound_dir = Path(parsed_input.bound_dir)
 unbound_dir = Path(parsed_input.unbound_dir)
@@ -155,7 +157,9 @@ if parsed_input.kind_of_process == 'vdssb':
             bound_state_dhdl=bound_files,
             unbound_state_dhdl=unbound_files,
             temperature=parsed_input.temperature,
-            md_program=parsed_input.md_program)
+            md_program=parsed_input.md_program,
+            bound_creation=parsed_input.bound_creation,
+            unbound_creation=parsed_input.unbound_creation)
 
         free_energy, std = obj.execute()
 
@@ -172,7 +176,9 @@ if parsed_input.kind_of_process == 'vdssb':
                 unbound_state_dhdl=unbound_files,
                 temperature=parsed_input.temperature,
                 md_program=parsed_input.md_program,
-                n_gaussians=i + 1)
+                n_gaussians=i + 1,
+                bound_creation=parsed_input.bound_creation,
+                unbound_creation=parsed_input.unbound_creation)
 
             free_energy, std = obj.execute()
 
@@ -193,7 +199,7 @@ else:
             dhdl_files=unbound_files,
             temperature=parsed_input.temperature,
             md_program=parsed_input.md_program,
-            creation=ligand_creation)
+            creation=parsed_input.unbound_creation)
 
         unbound_free_energy, unbound_std = unbound_obj.execute()
 
@@ -213,7 +219,7 @@ else:
             dhdl_files=bound_files,
             temperature=parsed_input.temperature,
             md_program=parsed_input.md_program,
-            creation=False)
+            creation=parsed_input.bound_creation)
 
         bound_free_energy, bound_std = bound_obj.execute()
 
@@ -228,10 +234,17 @@ else:
 
         print(f'Jarzynski bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
 
-        if ligand_creation:
-            total_free_energy = bound_free_energy + unbound_free_energy
+        # Will always print the unbinding free energy
+        if parsed_input.bound_creation:
+            if parsed_input.unbound_creation:
+                total_free_energy = - bound_free_energy + unbound_free_energy
+            else:
+                total_free_energy = - (bound_free_energy + unbound_free_energy)
         else:
-            total_free_energy = bound_free_energy - unbound_free_energy
+            if parsed_input.unbound_creation:
+                total_free_energy = bound_free_energy + unbound_free_energy
+            else:
+                total_free_energy = bound_free_energy - unbound_free_energy
 
         total_std = bound_std + unbound_std
 
@@ -257,7 +270,7 @@ else:
                 dhdl_files=unbound_files,
                 temperature=parsed_input.temperature,
                 md_program=parsed_input.md_program,
-                creation=ligand_creation,
+                creation=parsed_input.unbound_creation,
                 n_gaussians=i + 1)
 
             unbound_free_energy, unbound_std = unbound_obj.execute()
@@ -274,7 +287,7 @@ else:
                 dhdl_files=bound_files,
                 temperature=parsed_input.temperature,
                 md_program=parsed_input.md_program,
-                creation=False,
+                creation=parsed_input.bound_creation,
                 n_gaussians=i + 1)
 
             bound_free_energy, bound_std = bound_obj.execute()
@@ -287,10 +300,17 @@ else:
 
             print(f'{i + 1} Gaussian mixtures (EM) bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
 
-            if ligand_creation:
-                total_free_energy = bound_free_energy + unbound_free_energy
+            # Will always print the unbinding free energy
+            if parsed_input.bound_creation:
+                if parsed_input.unbound_creation:
+                    total_free_energy = - bound_free_energy + unbound_free_energy
+                else:
+                    total_free_energy = - (bound_free_energy + unbound_free_energy)
             else:
-                total_free_energy = bound_free_energy - unbound_free_energy
+                if parsed_input.unbound_creation:
+                    total_free_energy = bound_free_energy + unbound_free_energy
+                else:
+                    total_free_energy = bound_free_energy - unbound_free_energy
 
             total_std = bound_std + unbound_std
 
@@ -313,7 +333,7 @@ print('Creating csv files with work vs lambda (useful for plotting)')
 # Bound
 bound_csv = integrate_works.make_work_vs_lambda_csv(work_files=bound_files,
                             md_program=parsed_input.md_program,
-                            creation=False,
+                            creation=parsed_input.bound_creation,
                             num_runs=len(bound_files))
 
 shutil.move(bound_csv,
@@ -322,7 +342,7 @@ shutil.move(bound_csv,
 # Unbound
 unbound_csv = integrate_works.make_work_vs_lambda_csv(work_files=unbound_files,
                             md_program=parsed_input.md_program,
-                            creation=ligand_creation,
+                            creation=parsed_input.unbound_creation,
                             num_runs=len(bound_files))
 
 shutil.move(unbound_csv,
