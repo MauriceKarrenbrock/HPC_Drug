@@ -97,43 +97,30 @@ unbound_dir = Path(parsed_input.unbound_dir)
 
 if parsed_input.md_program == 'gromacs':
 
-    # Bound files
-    bound_files = [[], []]
+    def _get_files_for_dir_gromacs(directory, order=['q', 'vdw']):
+        output_files = [[], []]
 
-    bound_files[0] = bound_dir.glob('RESTART/q*.xvg')
-    bound_files[0] = sorted([i.resolve() for i in bound_files[0] if 'pull' not in str(i)])
+        output_files[0] = directory.glob(f'RESTART/{order[0]}*.xvg')
+        output_files[0] = sorted([i.resolve() for i in output_files[0] if 'pull' not in str(i)])
 
-    bound_files[1] = bound_dir.glob('RESTART/vdw*.xvg')
-    bound_files[1] = sorted([i.resolve() for i in bound_files[1] if 'pull' not in str(i)])
+        output_files[1] = directory.glob(f'RESTART/{order[1]}*.xvg')
+        output_files[1] = sorted([i.resolve() for i in output_files[1] if 'pull' not in str(i)])
 
-    i = 0
-    while (bound_dir / f'Extra_RESTART{i}').exists():
-        tmp_files = bound_dir.glob(f'Extra_RESTART{i}/q*.xvg')
-        bound_files[0] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
+        i = 0
+        while (directory / f'Extra_RESTART{i}').exists():
+            tmp_files = directory.glob(f'Extra_RESTART{i}/{order[0]}*.xvg')
+            output_files[0] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
 
-        tmp_files = bound_dir.glob('RESTART/vdw*.xvg')
-        bound_files[1] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
+            tmp_files = directory.glob(f'Extra_RESTART{i}/{order[1]}*.xvg')
+            output_files[1] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
 
-        i += 1
+            i += 1
+        
+        return output_files
 
-    # Unbound files
-    unbound_files = [[], []]
+    bound_files = _get_files_for_dir_gromacs(bound_dir, order=['q', 'vdw'])
 
-    unbound_files[0] = unbound_dir.glob('RESTART/vdw*.xvg')
-    unbound_files[0] = sorted([i.resolve() for i in unbound_files[0] if 'pull' not in str(i)])
-
-    unbound_files[1] = unbound_dir.glob('RESTART/q*.xvg')
-    unbound_files[1] = sorted([i.resolve() for i in unbound_files[1] if 'pull' not in str(i)])
-
-    i = 0
-    while (unbound_dir / f'Extra_RESTART{i}').exists():
-        tmp_files = unbound_dir.glob(f'Extra_RESTART{i}/vdw*.xvg')
-        unbound_files[0] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
-
-        tmp_files = unbound_dir.glob('RESTART/q*.xvg')
-        unbound_files[1] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
-
-        i += 1
+    unbound_files = _get_files_for_dir_gromacs(unbound_dir, order=['vdw', 'q'])
 
     #################################
     # Volume free energy correction
