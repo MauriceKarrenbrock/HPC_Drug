@@ -82,6 +82,14 @@ parser.add_argument('--unbound-creation',
                     action='store_true',
                     help='If in the unbound transformation you are creating the ligand in a box of water use this flag')
 
+# not_generate_csv is a store_false flag
+# so it is true when you have to generate the csv files
+# and false when you should not
+parser.add_argument('--not-generate-csv',
+                    action='store_false',
+                    help='If you use this flag the work vs lambda CSV files will not be generated, '
+                    'generating them tends to be time consuming and they tend to be big files')
+
 parsed_input = parser.parse_args()
 
 bound_dir = Path(parsed_input.bound_dir)
@@ -329,26 +337,30 @@ else:
 
 ##########################################################
 
-print('Creating csv files with work vs lambda (useful for plotting)')
-# Bound
-bound_csv = integrate_works.make_work_vs_lambda_csv(work_files=bound_files,
-                            md_program=parsed_input.md_program,
-                            creation=parsed_input.bound_creation,
-                            num_runs=len(bound_files))
+# not_generate_csv is a store_false flag
+# so it is true when you have to generate the csv files
+# and false when you should not
+if parsed_input.not_generate_csv:
+    print('Creating csv files with work vs lambda (useful for plotting)')
+    # Bound
+    bound_csv = integrate_works.make_work_vs_lambda_csv(work_files=bound_files,
+                                md_program=parsed_input.md_program,
+                                creation=parsed_input.bound_creation,
+                                num_runs=len(bound_files))
 
-shutil.move(bound_csv,
-            f'bound_{bound_csv}')
+    shutil.move(bound_csv,
+                f'bound_{bound_csv}')
 
-# Unbound
-unbound_csv = integrate_works.make_work_vs_lambda_csv(work_files=unbound_files,
-                            md_program=parsed_input.md_program,
-                            creation=parsed_input.unbound_creation,
-                            num_runs=len(bound_files))
+    # Unbound
+    unbound_csv = integrate_works.make_work_vs_lambda_csv(work_files=unbound_files,
+                                md_program=parsed_input.md_program,
+                                creation=parsed_input.unbound_creation,
+                                num_runs=len(bound_files))
 
-shutil.move(unbound_csv,
-            f'unbound_{bound_csv}')
+    shutil.move(unbound_csv,
+                f'unbound_{bound_csv}')
 
-print(f'Created {bound_csv} and {unbound_csv}')
+    print(f'Created {bound_csv} and {unbound_csv}')
 
 # Calculate charge correction
 
