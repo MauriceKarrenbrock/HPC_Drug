@@ -331,7 +331,7 @@ if parsed_input.not_generate_csv:
                                 num_runs=len(bound_files_1))
 
     shutil.move(unbound_csv_1,
-                f'unbound_{unbound_csv_1}')
+                f'unbound_1_{unbound_csv_1}')
 
     unbound_csv_2 = integrate_works.make_work_vs_lambda_csv(work_files=unbound_files_2,
                                 md_program=parsed_input.md_program,
@@ -339,7 +339,7 @@ if parsed_input.not_generate_csv:
                                 num_runs=len(bound_files_2))
 
     shutil.move(unbound_csv_2,
-                f'unbound_{unbound_csv_2}')
+                f'unbound_2_{unbound_csv_2}')
 
     print(f'CSV creation done')
 
