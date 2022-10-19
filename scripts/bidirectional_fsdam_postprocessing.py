@@ -47,9 +47,7 @@ parser.add_argument(
     type=str,
     help=
     'the directory in which the various RESTART and Extra_RESTART* directories are for '
-    'the ligand system, the program will use them and detect them all'
-    'If using BAR to avoid float overflow works_1 should be negative and'
-    'works_2 positive')
+    'the ligand system, the program will use them and detect them all')
 
 parser.add_argument(
     '--bound-dir_1',
@@ -57,9 +55,7 @@ parser.add_argument(
     type=str,
     help=
     'the directory in which the various RESTART and Extra_RESTART* directories are for '
-    'the protein-ligand system, the program will use them and detect them all'
-    'If using BAR to avoid float overflow works_1 should be negative and'
-    'works_2 positive')
+    'the protein-ligand system, the program will use them and detect them all')
 
 parser.add_argument(
     '--unbound-dir_2',
@@ -67,9 +63,7 @@ parser.add_argument(
     type=str,
     help=
     'the directory in which the various RESTART and Extra_RESTART* directories are for '
-    'the ligand system, the program will use them and detect them all'
-    'If using BAR to avoid float overflow works_1 should be negative and'
-    'works_2 positive')
+    'the ligand system, the program will use them and detect them all')
 
 parser.add_argument(
     '--bound-dir_2',
@@ -77,9 +71,7 @@ parser.add_argument(
     type=str,
     help=
     'the directory in which the various RESTART and Extra_RESTART* directories are for '
-    'the protein-ligand system, the program will use them and detect them all'
-    'If using BAR to avoid float overflow works_1 should be negative and'
-    'works_2 positive')
+    'the protein-ligand system, the program will use them and detect them all')
 
 
 parser.add_argument('--temperature',
@@ -201,6 +193,7 @@ if parsed_input.md_program == 'gromacs':
 # Do vDSSB
 if parsed_input.kind_of_process == 'vdssb':
 
+    # BAR
     print('Calculating BAR bidirectional (Crooks) free energy, will take some time')
     try:
         obj = _super.BarVDSSBPostProcessingPipeline(
@@ -222,13 +215,36 @@ if parsed_input.kind_of_process == 'vdssb':
     except Exception as e:
         warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
 
+
+    # Gaussian crossing
+    print('Calculating Crooks via gaussian crossing bidirectional free energy, will take some time')
+    try:
+        obj = _super.CrooksGaussianCrossingVDSSBPostProcessingPipeline(
+            bound_state_dhdl_1=bound_files_1,
+            unbound_state_dhdl_1=unbound_files_1,
+            bound_state_dhdl_2=bound_files_2,
+            unbound_state_dhdl_2=unbound_files_2,
+            temperature=parsed_input.temperature,
+            md_program=parsed_input.md_program,
+            bound_creation_1=parsed_input.bound_creation_1,
+            unbound_creation_1=parsed_input.unbound_creation_1,
+            bound_creation_2=parsed_input.bound_creation_2,
+            unbound_creation_2=parsed_input.unbound_creation_2)
+
+        free_energy, std = obj.execute()
+
+        print(f'Crooks via gaussian crossing bidirectional (Crooks) free energy {free_energy:.18e} Kcal/mol\nCI95 {std*1.96:.18e}')
+    
+    except Exception as e:
+        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
+
+
 ##########################################################
 # Do normal FSDAM
 else:
 
-    # Jarzynski
-    print('Calculating Jarzinski free energy, will take some time')
-
+    # BAR
+    print('Calculating BAR free energy, will take some time')
     try:
         unbound_obj = _super.BarPostProcessingAlchemicalLeg(
             dhdl_files_1=unbound_files_1,
@@ -299,6 +315,55 @@ else:
     
     except Exception as e:
         warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
+
+
+    # Gaussian crossing
+    print('Calculating Crooks via gaussian crossing free energy, will take some time')
+    try:
+        unbound_obj = _super.CrooksGaussianCrossingPostProcessingAlchemicalLeg(
+            dhdl_files_1=unbound_files_1,
+            dhdl_files_2=unbound_files_2,
+            temperature=parsed_input.temperature,
+            md_program=parsed_input.md_program,
+            creation_1=parsed_input.unbound_creation_1,
+            creation_2=parsed_input.unbound_creation_2)
+
+        unbound_free_energy, unbound_std = unbound_obj.execute()
+
+        shutil.move(f'{str(unbound_obj)}_free_energy.dat',
+                    'unbound_' + f'{str(unbound_obj)}_free_energy.dat')
+
+        shutil.move('work_values_1.dat',
+                    'unbound_work_values_1.dat')
+        shutil.move('work_values_2.dat',
+                    'unbound_work_values_2.dat')
+
+        print(f'Crooks via gaussian crossing bidirectional unbound free energy {unbound_free_energy}\n' f'CI95 {1.96*(unbound_std)}')
+    
+
+        bound_obj = _super.CrooksGaussianCrossingPostProcessingAlchemicalLeg(
+            dhdl_files_1=bound_files_1,
+            dhdl_files_2=bound_files_2,
+            temperature=parsed_input.temperature,
+            md_program=parsed_input.md_program,
+            creation_1=parsed_input.bound_creation_1,
+            creation_2=parsed_input.bound_creation_2)
+
+        bound_free_energy, bound_std = bound_obj.execute()
+
+        shutil.move(f'{str(bound_obj)}_free_energy.dat',
+                    'bound_' + f'{str(bound_obj)}_free_energy.dat')
+
+        shutil.move('work_values_1.dat',
+                    'bound_work_values_1.dat')
+        shutil.move('work_values_2.dat',
+                    'bound_work_values_2.dat')
+
+        print(f'Crooks via gaussian crossing bidirectional bound free energy {bound_free_energy}\n' f'CI95 {1.96*(bound_std)}')
+
+    except Exception as e:
+        warnings.warn(f"One or more calculations failed because of\n{traceback.format_exc()}")
+
 
 ##########################################################
 
