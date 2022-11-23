@@ -48,7 +48,8 @@ class ComplexHREMInput(object):
                 timestep=None,
                 constraints='h-bonds',
                 temperature=298.15,
-                top_scaling_basis=0.2):
+                top_scaling_basis=0.2,
+                preprocess_topology=True):
 
         self.pdb_file = pdb_file
 
@@ -117,6 +118,8 @@ class ComplexHREMInput(object):
             self.temperature = 298.15
 
         self.top_scaling_basis = top_scaling_basis
+
+        self.preprocess_topology = preprocess_topology
 
 
     def _write_template_on_file(self):
@@ -250,7 +253,7 @@ class ComplexHREMInput(object):
                                 number_of_replicas=self.replicas,
                                 basis=self.top_scaling_basis,
                                 plumed_path='plumed',
-                                preprocess_top=False)
+                                preprocess_top=self.preprocess_topology)
 
 
     def execute(self):
@@ -344,7 +347,8 @@ class LigandHREMInput(object):
                 timestep=None,
                 constraints='h-bonds',
                 temperature=298.15,
-                top_scaling_basis=0.1):
+                top_scaling_basis=0.1,
+                preprocess_topology=True):
 
         self.ligand_gro_file = ligand_gro_file
 
@@ -417,6 +421,8 @@ class LigandHREMInput(object):
 
         self.top_scaling_basis = top_scaling_basis
 
+        self.preprocess_topology = preprocess_topology
+
     
     def _write_template_on_file(self):
         """Creates the mdp
@@ -475,7 +481,7 @@ class LigandHREMInput(object):
                                 number_of_replicas=self.replicas,
                                 basis=self.top_scaling_basis,
                                 plumed_path='plumed',
-                                preprocess_top=False)
+                                preprocess_top=self.preprocess_topology)
 
 
     def _write_workloadmanager_inputs(self):

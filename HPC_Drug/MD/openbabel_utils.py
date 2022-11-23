@@ -8,7 +8,11 @@
 ######################################################################################
 
 from pathlib import Path
-import openbabel
+
+try:
+    from openbabel import openbabel
+except ImportError:
+    import openbabel
 
 def convert_and_protonate_file_to_sdf(input_file, sdf_file, ph=7.0, ligand_resname='LIG'):
     """Uses openbabel to convert a input file to ad sdf and adds hydrogens at the given pH

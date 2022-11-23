@@ -28,7 +28,7 @@ class test_Ligand(unittest.TestCase):
                                 tpg_file = "tpg_file",
                                 prm_file = "prm_file")
 
-        self.assertEqual(test_class.resname, "resname")
+        self.assertEqual(test_class.resname, "RESNAME")
         self.assertEqual(test_class.file_type, "pdb")
         self.assertEqual(test_class.pdb_file, f"{test_class.resname}_lgand.{test_class.file_type}")
         self.assertEqual(test_class.structure, "structure")

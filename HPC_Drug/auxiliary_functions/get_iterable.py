@@ -10,8 +10,10 @@
 """
 This file contains the function to get an iterable
 """
-
-import collections
+try:
+    import collections.abc as collections
+except ImportError:
+    import collections
 
 
 def get_iterable(x):

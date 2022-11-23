@@ -28,9 +28,7 @@ class test_Protein(unittest.TestCase):
                                 chain = 'a',
                                 cys_dict = "cys_dict",
                                 gro_file = "gro_file",
-                                top_file = "top_file",
-                                tpg_file = "tpg_file",
-                                prm_file = "prm_file")
+                                top_file = "top_file")
 
         self.assertEqual(test_class.protein_id, "protein_id")
         self.assertEqual(test_class.pdb_file, f"{test_class.protein_id}.{test_class.file_type}")
@@ -44,8 +42,6 @@ class test_Protein(unittest.TestCase):
         self.assertEqual(test_class.cys_dict, "cys_dict")
         self.assertEqual(test_class.gro_file, "gro_file")
         self.assertEqual(test_class.top_file, "top_file")
-        self.assertEqual(test_class.tpg_file, "tpg_file")
-        self.assertEqual(test_class.prm_file, "prm_file")
         self.assertEqual(test_class._ligands, [])
 
     def test_init_raise(self):
