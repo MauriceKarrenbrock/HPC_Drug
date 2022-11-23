@@ -5,7 +5,7 @@ It automates the setup of hamiltonian replica exchange HREM and non equilibrium 
 
 At the moment it only works for [Gromacs](https://www.gromacs.org/) (with [Plumed](https://www.plumed.org/)) but it can easily be adapted for any MD program that is supported by [Parmed](https://github.com/ParmEd/ParmEd). 
 
-The latest version of the software can be found on GitHub https://github.com/MauriceKarrenbrock/HPC_Drug
+The latest version of the software can be found on GitHub [here](https://github.com/MauriceKarrenbrock/HPC_Drug), and the documentation can be found [here]()
 
 ## What it can do and how to use it
 HPC_Drug offers some out of the box scripts to set up a vDSSB by starting from a protein-ligand PDB file and a ligand SDF file (for example downloaded from the PDB databank).
@@ -62,6 +62,7 @@ If you find a bug please open an issue on [GitHub](https://github.com/MauriceKar
 
 ## Contributions
 If you would like to contribute please first open an issue in order to discuss about it and then feel free to make a pull request, but please follow good coding practices and write some tests for the code you wrote.
+
 ## License
 [GNU Affero General Public License (agpl v3)](https://www.gnu.org/licenses/agpl-3.0.en.html)
 
