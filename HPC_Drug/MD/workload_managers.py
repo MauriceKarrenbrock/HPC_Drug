@@ -63,9 +63,7 @@ class WorkloadManagerHeader(object):
 
 
 class SlurmHeader(WorkloadManagerHeader):
-    """
-    the execute() method returns a list of strings (with no newline characters, you shall add them later es '\n'.join()) 
-    that creates the #SBATCH header
+    """The execute() method returns a list of strings (with no newline characters, you shall add them later es '\n'.join()) that creates the #SBATCH header
     """
 
     
@@ -130,9 +128,7 @@ class SlurmHeader(WorkloadManagerHeader):
 
 
 class PBSHeader(WorkloadManagerHeader):
-    """
-    the execute() method returns a list of strings (with no newline characters, you shall add them later es '\n'.join()) 
-    that creates the #SBATCH header
+    """The execute() method returns a list of strings (with no newline characters, you shall add them later es '\n'.join()) that creates the #SBATCH header
     """
 
     

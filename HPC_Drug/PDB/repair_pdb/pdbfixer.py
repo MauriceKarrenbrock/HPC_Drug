@@ -7,20 +7,18 @@
 # A copy of the license must be included with any copy of the program or part of it  #
 ######################################################################################
 
-"""
-This file contains the function to repair a PDB or a mmCIF file with pdbfixer
+"""This file contains the function to repair a PDB or a mmCIF file with pdbfixer
 """
 
 import pdbfixer
 import simtk.openmm.app
 
 def repair(input_file_name, output_file_name, add_H=False, ph=7.0):
-    """
-    Repairs a pdb file or a mmcif/pdbx
+    """Repairs a pdb file or a mmcif/pdbx
 
-    repairs a PDB or mmCIF file with pdbfixer and returns the new file name
+    Repairs a PDB or mmCIF file with pdbfixer and returns the new file name
     will add missing atoms and residues, replace non standard atom and residue names
-    with standard ones and if `add_H`=True adds hydrogens
+    with standard ones and if `add_H` = True adds hydrogens
 
     Parameters
     ------------
@@ -35,7 +33,7 @@ def repair(input_file_name, output_file_name, add_H=False, ph=7.0):
 
     Returns
     ---------
-    output_file_name
+    output_file_name : str
     """
 
     input_file_type = str(input_file_name).strip().split('.')[-1]
