@@ -11,6 +11,7 @@ git+https://github.com/MauriceKarrenbrock/FSDAMGromacs.git #FSDAMGromacs
 git+https://github.com/MauriceKarrenbrock/HREMGromacs.git #HREMGromacs
 git+https://github.com/MauriceKarrenbrock/PythonPDBStructures.git #PythonPDBStructures
 openbabel=2.4
+pymbar>=4.0.1
 
 #not python requirements
 #primadorac http://www.chim.unifi.it/orac
