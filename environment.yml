@@ -20,6 +20,7 @@ dependencies:
   - pytest
   - pytest-mock
   - parmed
+  - pymbar>=4.0.1
   - pip:
     - 'git+https://github.com/MauriceKarrenbrock/FSDAMGromacs.git'
     - 'git+https://github.com/MauriceKarrenbrock/HREMGromacs.git'
