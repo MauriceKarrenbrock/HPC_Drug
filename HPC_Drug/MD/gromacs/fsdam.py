@@ -1,5 +1,5 @@
 ######################################################################################
-# Copyright (c) 2020-2021 Maurice Karrenbrock                                        #
+# Copyright (c) 2020-2023 Maurice Karrenbrock                                        #
 #                                                                                    #
 # This software is open-source and is distributed under the                          #
 # GNU Affero General Public License v3 (agpl v3 license)                             #
@@ -45,6 +45,111 @@ def _frame_extract_helper(battery, not_used_dir):
         files.append(Path(f'{not_used_dir}/{battery}_{k}.gro').resolve())
 
     return files
+
+
+def create_complex_lig_creation_frames(apo_files,
+                                    holo_files,
+                                    ligand_in_vacuum_files,
+                                    apo_files_top, 
+                                    holo_files_top,
+                                    ligand_in_vacuum_files_top,
+                                    lig_selection_string,
+                                    output_dir=".",
+                                    verbose=False):
+    """Create the starting configurations to create a ligand in a apo protein
+
+    This function will create the input files needed to create a ligand in a protein pocket
+    it works by superimposing frames from the replica exchange of the ligand
+    in vacuum on the binding pocket of the apo protein by using frames of the
+    replica exchange of the holo system as a reference
+    All molecules must be whole
+
+    Parameters
+    --------------
+    apo_files : str or iterable(str)
+        Files of the apo replica exchange run(s)
+        any format supported by mdtraj is accepted (xtc, trr, pdb, gro, ...)
+    holo_files : str or iterable(str)
+        Files of the holo replica exchange run(s)
+        any format supported by mdtraj is accepted (xtc, trr, pdb, gro, ...)
+    ligand_in_vacuum_files : str or iterable(str)
+        Files of the ligand in vacuum replica exchange run(s)
+        any format supported by mdtraj is accepted (xtc, trr, pdb, gro, ...)
+    apo_files_top : str
+        A file of the apo system to use as topology for mdtraj (like pdb or gro files)
+    holo_files_top : str
+        A file of the holo system to use as topology for mdtraj (like pdb or gro files)
+    ligand_in_vacuum_files_top : str
+        A file of the ligand in vacuum system to use as topology for mdtraj (like pdb or gro files)
+    lig_selection_string : str
+        A mdtraj selection string that allows to select the ligand
+    output_dir : str, default=current working directory
+        The directory in which the output files should be saved
+        (will be created if it does not exist)
+    verbose : bool, defaul=False
+
+    Returns
+    ----------------
+    int
+        the number of files created
+
+    Warning
+    ----------
+    This function is a bit naive and sometimes the ligand does not get put in the binding pocket
+    (I do not know why), therefore check the output files carefully
+    """
+
+    output_dir = Path(output_dir).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    apo_files = mdtraj.load(apo_files, top=apo_files_top)
+
+    holo_files = mdtraj.load(holo_files, top=holo_files_top)
+
+    ligand_in_vacuum_files = mdtraj.load(ligand_in_vacuum_files,
+                                        top=ligand_in_vacuum_files_top)
+
+    holo_files.atom_slice(holo_files.top.select("not water"), inplace=True)
+
+    holo_files.center_coordinates()
+
+    apo_files.center_coordinates()
+
+    ligand_in_vacuum_files.center_coordinates()
+
+    if verbose:
+        print("Loading of the apo holo and lig files finished")
+        print("Proceding with the creation of the output files")
+
+    i=0
+    for apo, holo, lig in zip(apo_files, holo_files, ligand_in_vacuum_files):
+
+        holo.unitcell_vectors = apo.unitcell_vectors
+
+        holo.center_coordinates()
+
+        lig.unitcell_vectors = apo.unitcell_vectors
+
+        lig.center_coordinates()
+
+        holo = holo.superpose(apo, atom_indices=holo.top.select("name CA"), ref_atom_indices=apo.top.select("name CA"))
+
+        holo = holo.atom_slice(holo.top.select(lig_selection_string)) # keep only ligand
+
+        lig = lig.superpose(holo, atom_indices=lig.top.select("not (symbol H)"), ref_atom_indices=holo.top.select("not (symbol H)"))
+
+        apo = apo.stack(lig)
+
+        apo.save(str(output_dir / f"starting_config_{i}.pdb"))
+
+        i += 1
+
+    if verbose:
+        print(f"Number of files created = {i}")
+
+    return i
+
+
 
 class FSDAMInputPreprocessing(object):
 
