@@ -14,6 +14,9 @@ from HPC_Drug.MD.gromacs.hrem import ComplexHREMInput, LigandHREMInput
 parser = argparse.ArgumentParser(
     description='This script will set up an hamiltonian replica exchange both for '
     'the protein ligand system and for the ligand alone. '
+    'If you want to setup the HREM of an APO protein by giving the coordinates '
+    'of the protein with the ligand (HOLO) and the topology of the APO '
+    '(assuming the residue order is the same) should do the trick. '
     'THE INPUT FILES GENERATED ARE VERY GENERIC AND SHALL NEVER BE USED BLINDLY!',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 

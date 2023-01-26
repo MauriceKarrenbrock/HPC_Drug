@@ -7,10 +7,8 @@
 # A copy of the license must be included with any copy of the program or part of it  #
 ######################################################################################
 
-import os
 import argparse
 
-from HPC_Drug.auxiliary_functions import path
 from HPC_Drug.MD.gromacs import fsdam
 
 
