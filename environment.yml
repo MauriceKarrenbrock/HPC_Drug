@@ -1,6 +1,5 @@
 name: HPC_Drug
 channels:
-  - omnia
   - conda-forge
   - bioconda
   - defaults
@@ -14,7 +13,6 @@ dependencies:
   - openmmforcefields
   - pip
   - plumed
-  - python
   - pdbfixer
   - mdtraj
   - scipy
@@ -23,23 +21,8 @@ dependencies:
   - pytest
   - pytest-mock
   - parmed
+  - pymbar>=4.0.1
   - pip:
-    - astunparse
-    - bootstrapped
-    - certifi
-    - cycler
-    - decorator
-    - griddataformats
-    - gsd
-    - joblib
-    - kiwisolver
-    - mmtf-python
-    - msgpack
-    - networkx
-    - pillow
-    - python-dateutil
-    - pytz
-    - tqdm
     - 'git+https://github.com/MauriceKarrenbrock/FSDAMGromacs.git'
     - 'git+https://github.com/MauriceKarrenbrock/HREMGromacs.git'
     - 'git+https://github.com/MauriceKarrenbrock/PythonAuxiliaryFunctions.git'
