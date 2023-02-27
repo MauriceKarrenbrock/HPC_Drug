@@ -13,15 +13,14 @@ import unittest.mock as mock
 
 from HPC_Drug.PDB.repair_pdb import pdbfixer
 
-class test__repair(unittest.TestCase):
-    """Tests _repair the private function"""
+class test_repair(unittest.TestCase):
+    """Tests repair the private function"""
 
     def test_with_wrong_file_type(self):
 
         with self.assertRaises(TypeError):
 
-            pdbfixer._repair(input_file_name = "test_input",
-                            file_type = "WRONG",
+            pdbfixer.repair(input_file_name = "test_input.WRONG",
                             output_file_name = "test_output")
 
     def test_with_add_H_False_pdb(self):
@@ -40,9 +39,8 @@ class test__repair(unittest.TestCase):
 
 
                     #The function to test
-                    output = pdbfixer._repair(input_file_name = "test_input",
-                                    file_type = "pdb",
-                                    output_file_name = "test_output",
+                    output = pdbfixer.repair(input_file_name = "test_input.pdb",
+                                    output_file_name = "test_output.pdb",
                                     add_H = False)
 
                     
@@ -58,7 +56,9 @@ class test__repair(unittest.TestCase):
 
                     mocked_fixer.addMissingAtoms.assert_called_once()
 
-                    self.assertEqual(output, "test_output")
+                    mocked_pdbwriter.assert_called()
+
+                    self.assertEqual(output, "test_output.pdb")
 
 
     def test_with_add_H_True_pdb(self):
@@ -77,9 +77,8 @@ class test__repair(unittest.TestCase):
 
 
                     #The function to test
-                    output = pdbfixer._repair(input_file_name = "test_input",
-                                    file_type = "pdb",
-                                    output_file_name = "test_output",
+                    output = pdbfixer.repair(input_file_name = "test_input.pdb",
+                                    output_file_name = "test_output.pdb",
                                     add_H = True,
                                     ph = 7.0)
 
@@ -100,7 +99,7 @@ class test__repair(unittest.TestCase):
 
                     mocked_pdbwriter.assert_called()
 
-                    self.assertEqual(output, "test_output")
+                    self.assertEqual(output, "test_output.pdb")
 
     #WON'T BE TESTED AS LONG AS THERE IS THE patch
     # def test_with_add_H_True_cif(self):
@@ -118,8 +117,7 @@ class test__repair(unittest.TestCase):
     #                 mocked_PDBFixer.return_value = mocked_fixer
             
     #                 #The function to test
-    #                 output = pdbfixer._repair(input_file_name = "test_input",
-    #                                 file_type = "cif",
+    #                 output = pdbfixer.repair(input_file_name = "test_input.cif",
     #                                 output_file_name = "test_output",
     #                                 add_H = True,
     #                                 ph = 7.0)
@@ -142,24 +140,3 @@ class test__repair(unittest.TestCase):
     #                 mocked_pdbwriter.assert_called()
 
     #                 self.assertEqual(output, "test_output")
-
-
-class test_repair(unittest.TestCase):
-
-    def test_with_correct_input(self):
-
-        def dummy(path):
-            return path
-
-        with mock.patch("HPC_Drug.auxiliary_functions.path.absolute_filepath", side_effect = dummy):
-
-            with mock.patch("HPC_Drug.PDB.repair_pdb.pdbfixer._repair", return_value = "file") as mocked_repair:
-
-                Protein = mock.Mock()
-                Protein.pdb_file = None
-
-                Protein = pdbfixer.repair(Protein = Protein)
-
-                mocked_repair.assert_called_once()
-
-                self.assertEqual(Protein.pdb_file, "file")

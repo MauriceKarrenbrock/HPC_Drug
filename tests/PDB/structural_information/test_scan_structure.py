@@ -10,6 +10,7 @@
 
 import unittest
 import unittest.mock as mock
+import pytest
 
 from HPC_Drug.PDB.structural_information import scan_structure
 
@@ -285,9 +286,9 @@ class test_get_disulf_bonds_with_no_header(unittest.TestCase):
 
 
 
-class test_get_organic_ligands_with_no_header(unittest.TestCase):
+class Testget_organic_ligands_with_no_header():
     
-    def test_with_no_ligands(self):
+    def test_with_no_ligands(self, mocker):
 
         residue_1 = mock.Mock()
         residue_2 = mock.Mock()
@@ -303,28 +304,25 @@ class test_get_organic_ligands_with_no_header(unittest.TestCase):
         structure = mock.MagicMock()
         structure.return_value = structure
         structure.__iter__.return_value = residues
+        structure.get_residues.return_value = residues
 
-        output = scan_structure.get_organic_ligands_with_no_header(structure = structure,
-                                                    protein_chain = None,
-                                                    protein_model = None)
+        m_bio = mocker.patch('HPC_Drug.PDB.biopython.get_structure')
 
-        self.assertEqual(output, None)
+        m_bio.return_value = structure
+
+        output = scan_structure.get_organic_ligands_with_no_header(pdb_file='test.pdb')
+
+        assert output == []
+
+        m_bio.assert_called_once_with('test.pdb')
 
     def test_with_wrong_structure(self):
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
         
-            scan_structure.get_organic_ligands_with_no_header(structure = "WRONG",
-                                                    protein_chain = 'A',
-                                                    protein_model = 0)
+            scan_structure.get_organic_ligands_with_no_header(pdb_file="WRONG")
 
-        with self.assertRaises(AttributeError):
-        
-            scan_structure.get_organic_ligands_with_no_header(structure = "WRONG",
-                                                    protein_chain = None,
-                                                    protein_model = None)
-
-    def test_wit_no_chain_model_selection(self):
+    def test_with_ligand(self, mocker):
 
         residue_1 = mock.Mock()
         residue_2 = mock.Mock()
@@ -340,40 +338,18 @@ class test_get_organic_ligands_with_no_header(unittest.TestCase):
         structure = mock.MagicMock()
         structure.return_value = structure
         structure.__iter__.return_value = residues
+        structure.get_residues.return_value = residues
 
-        output = scan_structure.get_organic_ligands_with_no_header(structure = structure,
-                                                    protein_chain = None,
-                                                    protein_model = None,
-                                                    metals = ["ZN"])
+        #input_structure = { 0 : { 'A' : structure } }
 
-        self.assertEqual(output, [["LIGAND", 1]])
+        m_bio = mocker.patch('HPC_Drug.PDB.biopython.get_structure')
 
+        m_bio.return_value = structure #input_structure
 
-    def test_with_model_chain_selection(self):
+        output = scan_structure.get_organic_ligands_with_no_header(pdb_file='test.pdb',
+                                                                metals="ZN")
 
-        residue_1 = mock.Mock()
-        residue_2 = mock.Mock()
-
-        residue_1.resname = "LIGAND"
-        residue_2.resname = "ZN"
-
-        residue_1.id = ("h", 1, "")
-        residue_2.id = ("h", 2, "")
-
-        residues = [residue_1, residue_2]
-
-        structure = mock.MagicMock()
-        structure.return_value = structure
-        structure.__iter__.return_value = residues
-
-        input_structure = { 0 : { 'A' : structure } }
-
-        output = scan_structure.get_organic_ligands_with_no_header(structure = input_structure,
-                                                                protein_chain = 'A',
-                                                                protein_model = 0,
-                                                                metals = "ZN")
-
-        self.assertEqual(output, [["LIGAND", 1]])
+        assert output == [["LIGAND", 1]]
 
 
 

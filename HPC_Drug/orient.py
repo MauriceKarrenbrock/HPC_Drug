@@ -25,7 +25,6 @@ import PythonPDBStructures.geometry as _geometry
 #import sys
 
 from HPC_Drug import important_lists
-from HPC_Drug import pipeline_functions
 from HPC_Drug import file_manipulation
 from HPC_Drug.structures import ligand
 from HPC_Drug.structures import protein

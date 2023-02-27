@@ -41,7 +41,11 @@ def select_protein_and_ions(input_file, output_file, **kwargs):
     traj.save(str(output_file), force_overwrite=True)
 
 
-def remove_trash(input_file, output_file, trash=None, **kwargs):
+def remove_trash(input_file,
+    output_file,
+    trash=None,
+    protein_selection_string='protein',
+    **kwargs):
     """Removes unwanted residues from a structure given the unwanted residue names
 
     Parameters
@@ -53,6 +57,8 @@ def remove_trash(input_file, output_file, trash=None, **kwargs):
     trash : iterable(str), optional
         the residue names to remove
         as default it is list(HPC_Drug.important_lists.trash) + list(HPC_Drug.important_lists.trash_ions)
+    protein_selection_string : str, optional, default=protein
+        A mdtraj selection string to define the protein
     kwargs
         any extra keyword argument that might be needed
         for the mdtraj.load function
@@ -63,9 +69,20 @@ def remove_trash(input_file, output_file, trash=None, **kwargs):
 
     traj = mdtraj.load(str(input_file), **kwargs)
 
+    protein_atoms = traj.topology.select(f'{protein_selection_string}')
+
+    def is_trash(atom, topology):
+        if atom in protein_atoms:
+            return False
+
+        if (topology.atom(atom).residue.name not in trash) or (
+            traj.topology.atom(atom).residue.name.upper() not in trash):
+            return False
+        
+        return True
+
     good_atoms = [atom.index for atom in traj.topology.atoms if
-                atom.residue.name not in trash if
-                atom.residue.name.upper() not in trash]
+                not is_trash(atom.index, traj.topology)]
 
     traj.atom_slice(good_atoms, inplace=True)
 

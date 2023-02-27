@@ -9,12 +9,11 @@
 
 
 """
+DEPRECATED is here only because old stuff still uses it
+
 This file contains the classes for file manipulation like PDB & mmCIF
 """
 
-from HPC_Drug import pipeline_functions
-from HPC_Drug.structures import ligand
-from HPC_Drug.structures import protein
 from HPC_Drug import important_lists
 from HPC_Drug import orient
 from HPC_Drug.auxiliary_functions import get_iterable
@@ -22,10 +21,7 @@ from HPC_Drug.auxiliary_functions import get_iterable
 
 import Bio.PDB
 import Bio.PDB.MMCIF2Dict
-import os
 import prody
-import pdbfixer
-import simtk.openmm.app
 
 
 def mmcif2pdb(Protein = None):

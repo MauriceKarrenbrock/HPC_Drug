@@ -5,12 +5,11 @@
 #------------------------------------------------
 
 #Protein code and desired file type, possible values 'cif' or 'pdb'
-#'cif' is for PDBx/mmCIF (default)
-#'pdb' for standard PDB file (not implemented)
+#'cif' is for PDBx/mmCIF
+#'pdb' for standard PDB file (DEFAULT)
 
 protein = 5aol
-#3m5e
-protein_filetype = cif
+protein_filetype = pdb
 
 #the model to take from the mmcif, if omitted model = 0 will be taken (starts from 0)
 #Protein_model = 0
@@ -48,35 +47,51 @@ local = no
 ligand_in_protein = yes
 #ligand = ligand.pdb
 
-#The program with which elaborate the ligand (optimization and potential)
-#default primadorac (amber force field)
 
-ligand_elaboration_program = primadorac
-ligand_elaboration_program_path = ~/ORAC/trunk/tools/primadorac/primadorac.bash
-
-
-#The molecular dynamics MD program
-#of choice and the path to the executable
+# The molecular dynamics MD program
+# you want the HREM to be setup for
+# at the moment the only supproted one is gromacs
 
 MD_program = gromacs
-MD_program_path = gmx
 
-#protein ff
-#insert the name of the .ff dir without the .ff
-#it is case sensitive
-#if omitted default one is amber99sb-ildn
-protein_tpg_file = amber99sb-ildn
+# The path to the gromacs executable
+# gromacs is always used to minimaze and equilibrate the
+# system no matter what MD program the HREM will be setup for
 
-#the solvent model that will be chosen
-#standard is spce
-# from the standard gromacs share directory
-#other options can be none tip3p etc...
-#check gromacs pdb2gmx -water documentation for more options
-solvent_pdb = spce
+gromacs_program_path = gmx
+
+# protein_forcefields and water_forcefields
+# should be comma separated lists (or single names) of
+# xml forcefield files that openmm Forcefield object can
+# find, therefore thez can be one of them inside openmm, openmmforcefields
+# or custom ones in your working directory
+# DEFAULTS:
+# protein_forcefields = amber/ff14SB.xml
+# water_forcefields = amber/tip3p_standard.xml
+protein_forcefields = amber/ff14SB.xml
+water_forcefields = amber/tip3p_standard.xml
+
+
+# ligand_forcefield must be one of the FF supported by
+# openmmforcefields.generators, at the moment GAFFx.x and the
+# openff initiative ones (es SMIRNOFF) are supported
+# DEFAULT = gaff-2.11
+# to see the alternatives in a python terminal make:
+# $ from openmmforcefields.generators import GAFFTemplateGenerator, SMIRNOFFTemplateGenerator
+# $ print(GAFFTemplateGenerator.INSTALLED_FORCEFIELDS)
+# $ print('\n')
+# $ print(SMIRNOFFTemplateGenerator.INSTALLED_FORCEFIELDS)
+ligand_forcefield = gaff-2.11
+
+# the solvent model that will be used
+# default is tip3p
+# It must be supported by openmm Modeller object
+water_model = tip3p
 
 #there can be custom residue substitutions for metal binding residues
 #default standard
 #standard, custom_zinc
+# at the moment only implemented for amber FF
 residue_substitution = standard
 
 #gromacs can use gpu accelerators
@@ -107,8 +122,6 @@ number_of_cores_per_node = 64
 #the box shape and dimentions for the protein ligand system (bound)
 #box borders is the distance in nm between the protein and the box, default 1.2
 box_borders = 1.2
-#cubic and triclinic are the only 2 options, default cubic, the boxes will always have 90 angles
-box_shape = cubic
 
 #number of HREM replicas per each Battery for bound and unbound state, default 8
 number_of_hrem_replicas_per_battery_bound = 8

@@ -20,20 +20,10 @@ class test_remove_disordered_atoms(unittest.TestCase):
 
             with mock.patch("HPC_Drug.PDB.remove_disordered_atoms.Bio.PDB.MMCIFIO") as mocked_IO:
 
-                Protein = mock.Mock()
-
-                Protein.file_type = "cif"
-
-                Protein.pdb_file = "test_file"
-
-                Protein.structure = "test_structure"
-
-                Protein.protein_id = "id"
-
-                remove_disordered_atoms.remove_disordered_atoms(Protein = Protein)
+                remove_disordered_atoms.remove_disordered_atoms('input_cif.cif', 'output_cif.cif')
 
                 mocked_parser.assert_called_once()
-                mocked_parser.return_value.assert_has_calls([mock.call.get_structure("id", "test_file")])
+                mocked_parser.return_value.assert_has_calls([mock.call.get_structure("aaaa", "input_cif.cif")])
 
                 mocked_IO.assert_called_once()
                 mocked_IO.return_value.set_structure.assert_called_once()
@@ -46,20 +36,10 @@ class test_remove_disordered_atoms(unittest.TestCase):
 
             with mock.patch("HPC_Drug.PDB.remove_disordered_atoms.Bio.PDB.PDBIO") as mocked_IO:
 
-                Protein = mock.Mock()
-
-                Protein.file_type = "pdb"
-
-                Protein.pdb_file = "test_file"
-
-                Protein.structure = "test_structure"
-
-                Protein.protein_id = "id"
-
-                remove_disordered_atoms.remove_disordered_atoms(Protein = Protein)
+                remove_disordered_atoms.remove_disordered_atoms('input_pdb.pdb', 'output_pdb.pdb')
 
                 mocked_parser.assert_called_once()
-                mocked_parser.return_value.assert_has_calls([mock.call.get_structure("id", "test_file")])
+                mocked_parser.return_value.assert_has_calls([mock.call.get_structure("aaaa", "input_pdb.pdb")])
 
                 mocked_IO.assert_called_once()
                 mocked_IO.return_value.set_structure.assert_called_once()

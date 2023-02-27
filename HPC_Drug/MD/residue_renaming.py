@@ -8,9 +8,14 @@
 ######################################################################################
 
 """
-This file contains some high level classes to rename the residues acording to the MD program and
+This file contains some high level classes to rename the residues acording to the FF and
 the ff options chosen
+
+And also the concrete classes that implement it
 """
+
+import warnings
+from HPC_Drug import important_lists
 
 class ResidueRenamer(object):
     """
@@ -19,53 +24,45 @@ class ResidueRenamer(object):
     """
 
     def __init__(self,
-                Protein,
-                MD_program,
+                structure, #biopython structure
+                substitutions_dict,
+                forcefield='amber',
                 substitution = "standard",
                 ph = 7.0):
 
-        if MD_program == "orac":
+        class ProteinObj(): #Only for retro compatibility
+            def __init__(self,
+                structure,
+                substitutions_dict,):
+                self.structure = structure
+                self.substitutions_dict = substitutions_dict
 
-            from HPC_Drug.MD.orac import residue_renaming
+        self.Protein = ProteinObj(structure,
+                        substitutions_dict)
+
+        if forcefield == 'amber':
             
             if substitution == "standard":
 
-                self.residue_substitutor = residue_renaming.OracResidueRenamerStandardSubstitution(Protein = Protein, ph = ph)
+                self.residue_substitutor = AmberResidueRenamerStandardSubstitution(Protein=self.Protein, ph = ph)
 
             elif substitution == "custom_zinc":
 
-                self.residue_substitutor = residue_renaming.OracResidueRenamerCustomZincSubstitution(Protein = Protein, ph = ph)
-
-            else:
-                raise NotImplementedError(f"{substitution} is not an implemented substitution method (remember that it is case sensitive)")
-
-        elif MD_program == "gromacs":
-
-            from HPC_Drug.MD.gromacs import residue_renaming
-            
-            if substitution == "standard":
-
-                self.residue_substitutor = residue_renaming.GromacsResidueRenamerStandardSubstitution(Protein = Protein, ph = ph)
-
-            elif substitution == "custom_zinc":
-
-                self.residue_substitutor = residue_renaming.GromacsResidueRenamerCustomZincSubstitution(Protein = Protein, ph = ph)
+                self.residue_substitutor = AmberResidueRenamerCustomZincSubstitution(Protein=self.Protein, ph = ph)
 
             else:
                 raise NotImplementedError(f"{substitution} is not an implemented substitution method (remember that it is case sensitive)")
 
 
         else:
-            raise NotImplementedError(f"MD_program = {MD_program} is not an implemented option, remember that the input is case sensitive")
+            raise NotImplementedError(f"The forcefield {forcefield} is not an implemented option, remember that the input is case sensitive")
 
-
-        self.Protein = Protein
 
     def execute(self):
 
         self.Protein = self.residue_substitutor.execute()
 
-        return self.Protein
+        return self.Protein.structure
 
 
         
@@ -73,7 +70,7 @@ class ResidueRenamer(object):
 class SpecificResidueRenamerSuperclass(object):
     """
     This is the superclass for all the specific
-    residue renaming classes (MDprogram specific, substitution type specific etc)
+    residue renaming classes (forcefield specific, substitution type specific etc)
     """
 
     def __init__(self):
@@ -147,3 +144,189 @@ class SpecificResidueRenamerSuperclass(object):
     def execute(self):
 
         raise NotImplementedError("This method has not been impemented")
+
+
+#######################################
+# AMBER
+########################################
+
+class AmberResidueRenamerStandardSubstitution(SpecificResidueRenamerSuperclass):
+
+    def __init__(self, Protein, ph = 7.0):
+
+        self.Protein = Protein
+
+        self.ph = ph
+
+    def _rename_hist(self, residue):
+
+        res_id = residue.id[1]
+
+        if res_id in self.Protein.substitutions_dict.keys():
+
+            if self.Protein.substitutions_dict[res_id][2] not in important_lists.metals:
+
+                warnings.warn(f"{self.Protein.substitutions_dict[res_id][2]} is not a known metal, thus residue nr {res_id} could have been renamed wrongly")
+
+            if self.Protein.substitutions_dict[res_id][1] == 'NE2':
+                residue.resname = 'HID'
+        
+            elif self.Protein.substitutions_dict[res_id][1] == 'ND1':
+                residue.resname = 'HIE'
+            
+            else:
+                raise NotImplementedError(f"{self.Protein.substitutions_dict[res_id][1]} is not an implemented atom name for histidine")
+
+        else:
+
+            if self.ph < 6.0:
+                residue.resname = 'HIS'
+            
+            else:
+                residue.resname = 'HID'
+
+        return residue
+
+                    
+    def _rename_cyst(self, residue):
+
+        res_id = residue.id[1]
+
+        if res_id in self.Protein.substitutions_dict.keys():
+
+            if self.Protein.substitutions_dict[res_id][2].lower().strip() == "disulf":
+
+                residue.resname = 'CYX'
+
+            else:
+
+                if self.Protein.substitutions_dict[res_id][2] not in important_lists.metals:
+
+                    warnings.warn(f"{self.Protein.substitutions_dict[res_id][2]} is not a known metal, thus residue nr {res_id} could have been renamed wrongly")
+
+
+                residue.resname = "CYM"
+
+
+        return residue
+
+
+    def _hook(self, residue):
+
+        resname = residue.resname.upper()
+
+        if resname in important_lists.hist_resnames:
+            
+            residue = self._rename_hist(residue = residue)
+
+        elif resname in important_lists.cyst_resnames:
+
+            residue = self._rename_cyst(residue = residue)
+
+
+        elif resname in ("GLU", "ASP"):
+
+            #no renaming needed in amber ff
+            pass
+
+        return residue
+
+
+    def execute(self):
+
+        self._iterate_residues(structure = self.Protein.structure)
+
+        return self.Protein
+
+
+
+class AmberResidueRenamerCustomZincSubstitution(SpecificResidueRenamerSuperclass):
+
+    def __init__(self, Protein, ph = 7.0):
+
+        self.Protein = Protein
+
+        self.ph = ph
+
+        self.standard_substitutor = AmberResidueRenamerStandardSubstitution(Protein = self.Protein, ph = self.ph)
+
+
+    def _rename_glu(self, residue):
+
+        residue.resname = "GLZ"
+
+        if not self._check_if_residue_binds_metal_with_two_atoms_instead_of_one(residue = residue, metal = "ZN"):
+
+            for atom in residue:
+
+                if atom.name == self.Protein.substitutions_dict[residue.id[1]][1].strip().upper():
+
+                    atom.fullname = " OZ "
+
+                    break
+
+        return residue
+
+
+    def _rename_asp(self, residue):
+
+        residue.resname = "ASZ"
+
+        if not self._check_if_residue_binds_metal_with_two_atoms_instead_of_one(residue = residue, metal = "ZN"):
+
+            for atom in residue:
+
+                if atom.name == self.Protein.substitutions_dict[residue.id[1]][1].strip().upper():
+
+                    atom.fullname = " OZ "
+
+                    break
+
+        return residue
+
+
+    def _hook(self, residue):
+
+        res_id = residue.id[1]
+
+        if res_id in self.Protein.substitutions_dict.keys():
+            
+            if self.Protein.substitutions_dict[res_id][2].strip().upper() == "ZN":
+
+                resname = residue.resname.upper()
+
+                if resname == "HID":
+                    
+                    residue.resname = "HDZ"
+                    
+                elif resname == "HIE":
+                    
+                    residue.resname = "HEZ"
+
+                elif resname == "CYM":
+
+                    residue.resname = "CYZ"
+
+
+                elif resname == "GLU":
+
+                    residue = self._rename_glu(residue = residue)
+
+                elif resname == "ASP":
+
+                    residue = self._rename_asp(residue = residue)
+
+        return residue
+
+
+    def execute(self):
+
+        self.Protein = self.standard_substitutor.execute()
+
+        self._iterate_residues(structure = self.Protein.structure)
+
+        return self.Protein
+
+########################################
+# END AMBER
+#########################################

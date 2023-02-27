@@ -7,16 +7,17 @@
 # A copy of the license must be included with any copy of the program or part of it  #
 ######################################################################################
 
-import os
 import argparse
 
-from HPC_Drug.auxiliary_functions import path
 from HPC_Drug.MD.gromacs import fsdam
 
 
 parser = argparse.ArgumentParser(
     description="This script creates the input for FS-DAM both for the boded and unbonded system. "
-    "For Gromacs\n You must run this script in the HREM root directory",
+    "For Gromacs\n You must run this script in the HREM root directory\n"
+    "The frames extraction from the HREM trajectory can be parallelized by setting the "
+    "environment variable OMP_NUM_THREADS, but in any cas the program will "
+    "never use more core than the number of existing BATTERY* directories, the default is 1",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--program-path',
@@ -29,8 +30,8 @@ parser.add_argument('--hrem-type',
     action="store",
     default="protein-ligand",
     type=str,
-    choices = ["protein-ligand", "only-ligand"],
-    help = "If the HREM dir contains the output of the ligand alone (unbound) or the protein-ligand system (bound) (default)")
+    choices = ["protein-ligand", "only-ligand", "solvated-ligand"],
+    help = "If the HREM dir contains the output of the ligand alone (unbound), or the ligand in water, or the protein-ligand system (bound) (default)")
 
 parser.add_argument('--vdw-timestep-ps',
     action="store",
@@ -86,6 +87,15 @@ parser.add_argument('--atoms-in-pocket',
     help = "The number of atoms that must be in the binding pocket uìin order to consider the ligand "
     "in the pocket. If not given the number of atoms in the --reference-frame will be used ")
 
+parser.add_argument('--atoms-in-pocket-tollerance',
+    action="store",
+    default=0,
+    type=int,
+    help = "A structure will be accepted if the number of atoms in the pocket are the target amount +- the given tollerance "
+    "the default is zero, if you want to deactivate the selection you can put this value to "
+    "a very high number (es 1000000)")
+
+
 parser.add_argument('--extra-frames',
     action="store_true",
     default=False,
@@ -96,15 +106,13 @@ parser.add_argument('--extra-frames',
 
 parsed_input = parser.parse_args()
 
-parsed_input.program_path = path.absolute_programpath(parsed_input.program_path)
-
-if parsed_input.hrem_type == "protein-ligand":
-
+if parsed_input.hrem_type in ("protein-ligand", "solvated-ligand"):
     creation=False
+    add_water = False
 
 elif parsed_input.hrem_type == "only-ligand":
-
     creation=True
+    add_water = True
 
 # From comma separated list to list of int
 if parsed_input.pbc_atoms is not None:
@@ -123,6 +131,9 @@ fsdam_obj = fsdam.FSDAMInputPreprocessing(gromacs_path = parsed_input.program_pa
                 constrains=parsed_input.constrains,
                 reference_frame=parsed_input.reference_frame,
                 atoms_in_pocket=parsed_input.atoms_in_pocket,
-                extra_frames=parsed_input.extra_frames)
+                atoms_in_pocket_tollerance=parsed_input.atoms_in_pocket_tollerance,
+                extra_frames=parsed_input.extra_frames,
+                add_water=add_water,
+                kind_of_system=parsed_input.hrem_type)
 
 fsdam_obj.execute()

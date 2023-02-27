@@ -66,41 +66,6 @@ class test_parse_mmcif(unittest.TestCase):
 
                 biopython.parse_mmcif(protein_id = i[0], file_name = i[1])
 
-
-class test_parse_structure_factory(unittest.TestCase):
-
-    def test_with_wrong_input(self):
-
-        with mock.patch('HPC_Drug.structures.protein.Protein', file_type = "WRONG", autospec=True) as mocked_protein:
-
-            with self.assertRaises(TypeError):
-
-                biopython.structure_factory(Protein = mocked_protein)
-
-    def test_with_pdb(self):
-
-        with mock.patch('HPC_Drug.structures.protein.Protein', file_type = "pdb", pdb_file = "file.pdb", protein_id = "idid", autospec=True) as mocked_protein:
-
-            with mock.patch('HPC_Drug.PDB.biopython.parse_pdb', return_value = "test") as mocked_parser:
-
-                output = biopython.structure_factory(mocked_protein)
-
-                mocked_parser.assert_called_once_with(protein_id = 'idid', file_name = 'file.pdb')
-
-                self.assertEqual(output, "test")
-
-    def test_with_mmcif(self):
-
-        with mock.patch('HPC_Drug.structures.protein.Protein', file_type = "cif", pdb_file = "file.cif", protein_id = "idid", autospec=True) as mocked_protein:
-
-            with mock.patch('HPC_Drug.PDB.biopython.parse_mmcif', return_value = "test") as mocked_parser:
-
-                output = biopython.structure_factory(mocked_protein)
-
-                mocked_parser.assert_called_once_with(protein_id = 'idid', file_name = 'file.cif')
-
-                self.assertEqual(output, "test")
-
         
 class test_parse_mmcif2dict(unittest.TestCase):
 

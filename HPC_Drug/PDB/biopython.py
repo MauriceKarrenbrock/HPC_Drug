@@ -57,28 +57,30 @@ def parse_mmcif(protein_id, file_name):
 
     return structure
 
-def structure_factory(Protein):
+def get_structure(file_name):
     """This is a function that uses the right
-    parse_{} function depending on Protein.file_type
+    parse_{} function depending on `file_name` suffix
 
-    Protein :: HPC_Drug.structures.protein.Protein instance or HPC_Drug.structures.ligand.Ligand instance
-    or wathever has a file_type and pdb_file attribute
+    Parameters
+    ------------
+    file_name : str
+        a pdb or mmcif file
     
-    return structure"""
+    Returns
+    ------------
+    a biopython structure
+    """
     
-    file_type = Protein.file_type.strip().lower()
+    file_suffix = str(file_name).split('.')[-1]
 
-    if file_type == 'cif':
+    if file_suffix == 'cif':
+        return parse_mmcif(protein_id='aaaa', file_name=file_name)
 
-        return parse_mmcif(protein_id = Protein.protein_id, file_name = Protein.pdb_file)
-
-    elif file_type == 'pdb':
-
-        return parse_pdb(protein_id = Protein.protein_id, file_name = Protein.pdb_file)
+    elif file_suffix in ('pdb', 'ent'):
+        return parse_pdb(protein_id='aaaa', file_name=file_name)
 
     else:
-
-        raise TypeError(f"Protein.file_type can only be 'cif' or 'pdb' not {Protein.file_type}")
+        raise TypeError(f"file_name can only be 'cif' or 'pdb' not {file_suffix}")
 
 
 def mmcif2dict(file_name):

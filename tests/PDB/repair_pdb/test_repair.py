@@ -19,14 +19,20 @@ class test_repair(unittest.TestCase):
 
         with self.assertRaises(NotImplementedError):
 
-            repair.repair(Protein = "test", repairing_method = "WRONG_METHOD")
+            repair.repair(input_file='input_file',
+                        output_file='output_file',
+                        repairing_method = "WRONG_METHOD")
 
     def test_with_correct_input(self):
 
         with mock.patch("HPC_Drug.PDB.repair_pdb.pdbfixer.repair", return_value = "repaired") as mocked_repair:
 
-            output = repair.repair(Protein = "test", repairing_method = "pdbfixer")
+            output = repair.repair(input_file='input_file',
+                                    output_file='output_file',
+                                    repairing_method = "pdbfixer")
 
-            mocked_repair.assert_called_once_with(Protein = "test")
+            mocked_repair.assert_called_once_with(input_file_name='input_file',
+                                    output_file_name='output_file',
+                                    add_H=False)
 
             self.assertEqual(output, "repaired")
