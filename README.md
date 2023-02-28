@@ -54,8 +54,7 @@ At this point you only have to copy one of the scripts from the `scripts` direct
 The main difference is that version 2 dropped the support for the [Orac](http://www1.chim.unifi.it/orac/) MD program and doesn't use [Primadorac](http://www1.chim.unifi.it/orac/primadorac/) to parametrize the ligands anymore; instead, through the [Openmmforcefields](https://github.com/openmm/openmmforcefields) interface, it allows to parametrize the ligands with the Gaff forcefields through antechamber or with the [Openff](https://github.com/openforcefield/openff-forcefields) or [Smirnoff99Frost](https://github.com/openforcefield/smirnoff99Frosst/) ones through the [openff-toolkit](https://github.com/openforcefield/openff-toolkit).
 Another difference is that the version one was more automathic but also less flexible than this version.
 
-If for any reason you want to use the version 1 (that is the version referenced in the papers DOI: [10.1021/acs.jctc.0c00634](https://pubs.acs.org/doi/10.1021/acs.jctc.0c00634), and DOI: [10.1021/acs.jcim.1c00909](https://pubs.acs.org/doi/10.1021/acs.jcim.1c00909)) switch to the branch version-1
-```git checkout version-1```
+If for any reason you want to use the version 1 (that is the version referenced in the papers DOI: [10.1021/acs.jctc.0c00634](https://pubs.acs.org/doi/10.1021/acs.jctc.0c00634), and DOI: [10.1021/acs.jcim.1c00909](https://pubs.acs.org/doi/10.1021/acs.jcim.1c00909)) switch to the branch version v1.0
 
 ## Issues
 If you find a bug please open an issue on [GitHub](https://github.com/MauriceKarrenbrock/HPC_Drug/issues)
@@ -70,6 +69,8 @@ See the `LICENSE` file
 
 ## Citation
 Please cite this papers:
+
+1. Karrenbrock M, Procacci P, Gervasio FL. A nonequilibrium alchemical method for drug-receptor absolute binding free energy calculations: the role of restraints. ChemRxiv. Cambridge: Cambridge Open Engage; 2023; This content is a preprint and has not been peer-reviewed. DOI: [10.26434/chemrxiv-2023-mc1gw](https://doi.org/10.26434/chemrxiv-2023-mc1gw)
 
 1. Virtual Double-System Single-Box: A Nonequilibrium Alchemical Technique for Absolute Binding Free Energy Calculations: Application to Ligands of the SARS-CoV-2 Main Protease
 Marina Macchiagodena, Marco Pagliai, Maurice Karrenbrock, Guido Guarnieri, Francesco Iannone, and Piero Procacci
