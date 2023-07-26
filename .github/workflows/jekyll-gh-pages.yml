@@ -41,7 +41,6 @@ jobs:
           conda env update --file environment.yml --name base
       - name: Make docs
         run: |
-          python -m pip install .
           python -m pip install -r doc-requirements.txt
           cd docs
           make html
