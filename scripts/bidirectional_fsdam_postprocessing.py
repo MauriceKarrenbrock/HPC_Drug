@@ -129,35 +129,77 @@ unbound_dir_2 = Path(parsed_input.unbound_dir_2)
 if parsed_input.md_program == 'gromacs':
 
     def _get_files_for_dir_gromacs(directory, order=['q', 'vdw']):
-        output_files = [[], []]
 
-        output_files[0] = directory.glob(f'RESTART/{order[0]}*.xvg')
-        output_files[0] = sorted([i.resolve() for i in output_files[0] if 'pull' not in str(i)])
+        output_files = []
 
-        output_files[1] = directory.glob(f'RESTART/{order[1]}*.xvg')
-        output_files[1] = sorted([i.resolve() for i in output_files[1] if 'pull' not in str(i)])
+        for prefix in order:
 
-        i = 0
-        while (directory / f'Extra_RESTART{i}').exists():
-            tmp_files = directory.glob(f'Extra_RESTART{i}/{order[0]}*.xvg')
-            output_files[0] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
+            tmp = sorted([i.resolve() for i in directory.glob(f'RESTART/{prefix}*.xvg') if 'pull' not in str(i)])
+            
+            i = 0
+            while (directory / f'Extra_RESTART{i}').exists():
+                
+                tmp += sorted([i.resolve() for i in directory.glob(f'Extra_RESTART{i}/{prefix}*.xvg') if 'pull' not in str(i)])
+                i += 1
 
-            tmp_files = directory.glob(f'Extra_RESTART{i}/{order[1]}*.xvg')
-            output_files[1] += sorted([i.resolve() for i in tmp_files if 'pull' not in str(i)])
+            output_files.append(tmp)
 
-            i += 1
+            if not tmp:
+                return None
+
+        if len(output_files) == 1:
+            output_files = output_files[0]
         
         return output_files
 
-    # Bound files
-    bound_files_1 = _get_files_for_dir_gromacs(bound_dir_1, order=['q', 'vdw'])
 
-    bound_files_2 = _get_files_for_dir_gromacs(bound_dir_2, order=['q', 'vdw'])
+    # Bound files
+    # There are many possible situations
+    possible_filenames = (
+        ('q', 'vdw'),
+        ('b_1_', 'b_2_'),
+        ('b',)
+    )
+
+    bound_files_1 = None
+    for p in possible_filenames:
+        bound_files_1 = _get_files_for_dir_gromacs(bound_dir_1, order=p)
+        if bound_files_1 is not None:
+            break
+    else:
+        raise RuntimeError(f"Could not find the xvg files in {bound_dir_1}")
+
+    bound_files_2 = None
+    for p in possible_filenames:
+        bound_files_2 = _get_files_for_dir_gromacs(bound_dir_2, order=p)
+        if bound_files_2 is not None:
+            break
+    else:
+        raise RuntimeError(f"Could not find the xvg files in {bound_dir_2}")
 
     # Unbound files
-    unbound_files_1 = _get_files_for_dir_gromacs(unbound_dir_1, order=['vdw', 'q'])
+    # There are many possible situations
+    possible_filenames = (
+        ('vdw', 'q'),
+        ('u_1_', 'u_2_'),
+        ('u',)
+    )
 
-    unbound_files_2 = _get_files_for_dir_gromacs(unbound_dir_2, order=['vdw', 'q'])
+    unbound_files_1 = None
+    for p in possible_filenames:
+        unbound_files_1 = _get_files_for_dir_gromacs(unbound_dir_1, order=p)
+        if unbound_files_1 is not None:
+            break
+    else:
+        raise RuntimeError(f"Could not find the xvg files in {unbound_dir_1}")
+
+    unbound_files_2 = None
+    for p in possible_filenames:
+        unbound_files_2 = _get_files_for_dir_gromacs(unbound_dir_2, order=p)
+        if unbound_files_2 is not None:
+            break
+    else:
+        raise RuntimeError(f"Could not find the xvg files in {unbound_dir_2}")
 
     #################################
     # Volume free energy correction
