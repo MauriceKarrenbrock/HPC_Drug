@@ -68,9 +68,12 @@ If you would like to contribute please first open an issue in order to discuss a
 See the `LICENSE` file
 
 ## Citation
-Please cite this papers:
+Please cite these papers:
 
-1. Karrenbrock M, Procacci P, Gervasio FL. A nonequilibrium alchemical method for drug-receptor absolute binding free energy calculations: the role of restraints. ChemRxiv. Cambridge: Cambridge Open Engage; 2023; This content is a preprint and has not been peer-reviewed. DOI: [10.26434/chemrxiv-2023-mc1gw](https://doi.org/10.26434/chemrxiv-2023-mc1gw)
+1. Addressing Suboptimal Poses in Nonequilibrium Alchemical Calculations
+Maurice Karrenbrock, Valerio Rizzi, Piero Procacci, Francesco Luigi Gervasio
+The Journal of Physical Chemistry B 2024
+DOI: [10.1021/acs.jpcb.3c06516](https://pubs.acs.org/doi/10.1021/acs.jpcb.3c06516)
 
 1. Virtual Double-System Single-Box: A Nonequilibrium Alchemical Technique for Absolute Binding Free Energy Calculations: Application to Ligands of the SARS-CoV-2 Main Protease
 Marina Macchiagodena, Marco Pagliai, Maurice Karrenbrock, Guido Guarnieri, Francesco Iannone, and Piero Procacci
